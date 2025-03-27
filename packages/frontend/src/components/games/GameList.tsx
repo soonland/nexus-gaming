@@ -6,7 +6,6 @@ import {
   InputLeftElement,
   Stack,
   Button,
-  HStack,
   Select,
   useDisclosure,
   Modal,
@@ -18,9 +17,12 @@ import {
   Text,
   Spinner,
   Center,
+  Box,
+  Flex,
+  FormLabel,
 } from '@chakra-ui/react';
 import { SearchIcon, AddIcon } from '@chakra-ui/icons';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { GameCard } from './GameCard';
 import { GameForm } from './GameForm';
 import { Game, GameFormData } from '../../types/game';
@@ -34,6 +36,14 @@ interface GameListProps {
 }
 
 const PLATFORM_OPTIONS = ['Toutes', 'PC', 'PlayStation', 'Xbox', 'Nintendo Switch', 'Mobile'];
+const SORT_OPTIONS = [
+  { value: 'title-asc', label: 'Titre (A-Z)' },
+  { value: 'title-desc', label: 'Titre (Z-A)' },
+  { value: 'date-desc', label: 'Plus récents' },
+  { value: 'date-asc', label: 'Plus anciens' },
+  { value: 'rating-desc', label: 'Meilleures notes' },
+  { value: 'rating-asc', label: 'Notes les plus basses' },
+];
 
 export const GameList = ({
   games,
@@ -45,59 +55,132 @@ export const GameList = ({
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [searchTerm, setSearchTerm] = useState('');
   const [platformFilter, setPlatformFilter] = useState('Toutes');
-  console.log(games);
-  const filteredGames = (games ?? []).filter((game) => {
-    const matchesSearch = (game.title ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      game.developer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      game.publisher.toLowerCase().includes(searchTerm.toLowerCase());
+  const [sortOption, setSortOption] = useState('title-asc');
+  const [releaseYearFilter, setReleaseYearFilter] = useState('');
 
-    const matchesPlatform = platformFilter === 'Toutes' ||
-      game.platform.includes(platformFilter);
+  const currentYear = new Date().getFullYear();
+  const yearOptions = Array.from(
+    { length: 10 },
+    (_, i) => (currentYear + 1 - i).toString()
+  );
 
-    return matchesSearch && matchesPlatform;
-  });
+  const filteredAndSortedGames = useMemo(() => {
+    const result = (games ?? []).filter((game) => {
+      const matchesSearch = (game.title ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        game.developer.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        game.publisher.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const matchesPlatform = platformFilter === 'Toutes' ||
+        game.platform.includes(platformFilter);
+
+      const matchesYear = !releaseYearFilter ||
+        (game.releaseDate && new Date(game.releaseDate).getFullYear().toString() === releaseYearFilter) ||
+        (game.releasePeriod && game.releasePeriod.value.startsWith(releaseYearFilter));
+
+      return matchesSearch && matchesPlatform && matchesYear;
+    });
+
+    // Sort the filtered results
+    result.sort((a, b) => {
+      switch (sortOption) {
+        case 'title-asc':
+          return (a.title ?? '').localeCompare(b.title ?? '');
+        case 'title-desc':
+          return (b.title ?? '').localeCompare(a.title ?? '');
+        case 'date-desc':
+          return new Date(b.releaseDate || b.releasePeriod?.value || 0).getTime() -
+                 new Date(a.releaseDate || a.releasePeriod?.value || 0).getTime();
+        case 'date-asc':
+          return new Date(a.releaseDate || a.releasePeriod?.value || 0).getTime() -
+                 new Date(b.releaseDate || b.releasePeriod?.value || 0).getTime();
+        case 'rating-desc':
+          return (b.averageRating || 0) - (a.averageRating || 0);
+        case 'rating-asc':
+          return (a.averageRating || 0) - (b.averageRating || 0);
+        default:
+          return 0;
+      }
+    });
+
+    return result;
+  }, [games, searchTerm, platformFilter, sortOption, releaseYearFilter]);
 
   return (
     <Container maxW="container.xl" py={8}>
       <Stack spacing={6}>
-        <HStack spacing={4}>
-          <InputGroup maxW="400px">
-            <InputLeftElement pointerEvents="none">
-              <SearchIcon color="gray.300" />
-            </InputLeftElement>
-            <Input
-              placeholder="Rechercher un jeu..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </InputGroup>
+        <Stack spacing={4}>
+          <Flex gap={4} wrap="wrap">
+            <InputGroup maxW="400px">
+              <InputLeftElement pointerEvents="none">
+                <SearchIcon color="gray.300" />
+              </InputLeftElement>
+              <Input
+                placeholder="Rechercher un jeu..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </InputGroup>
 
-          <Select
-            maxW="200px"
-            value={platformFilter}
-            onChange={(e) => setPlatformFilter(e.target.value)}
-          >
-            {PLATFORM_OPTIONS.map((platform) => (
-              <option key={platform} value={platform}>
-                {platform}
-              </option>
-            ))}
-          </Select>
+            {isAdmin && onGameCreate && (
+              <Button leftIcon={<AddIcon />} colorScheme="blue" onClick={onOpen}>
+                Ajouter un jeu
+              </Button>
+            )}
+          </Flex>
 
-          {isAdmin && onGameCreate && (
-            <Button leftIcon={<AddIcon />} colorScheme="blue" onClick={onOpen}>
-              Ajouter un jeu
-            </Button>
-          )}
-        </HStack>
+          <Flex gap={4} wrap="wrap" align="flex-end">
+            <Box minW="200px">
+              <FormLabel>Plateforme</FormLabel>
+              <Select
+                value={platformFilter}
+                onChange={(e) => setPlatformFilter(e.target.value)}
+              >
+                {PLATFORM_OPTIONS.map((platform) => (
+                  <option key={platform} value={platform}>
+                    {platform}
+                  </option>
+                ))}
+              </Select>
+            </Box>
+
+            <Box minW="200px">
+              <FormLabel>Année de sortie</FormLabel>
+              <Select
+                value={releaseYearFilter}
+                onChange={(e) => setReleaseYearFilter(e.target.value)}
+                placeholder="Toutes les années"
+              >
+                {yearOptions.map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </Select>
+            </Box>
+
+            <Box minW="200px">
+              <FormLabel>Trier par</FormLabel>
+              <Select
+                value={sortOption}
+                onChange={(e) => setSortOption(e.target.value)}
+              >
+                {SORT_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </Select>
+            </Box>
+          </Flex>
+        </Stack>
 
         {isLoading ? (
           <Center py={10}>
             <Spinner size="xl" />
           </Center>
-        ) : (filteredGames?.length ?? 0) > 0 ? (
+        ) : (filteredAndSortedGames?.length ?? 0) > 0 ? (
           <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
-            {filteredGames?.map((game) => (
+            {filteredAndSortedGames.map((game) => (
               <GameCard
                 key={game.id}
                 game={game}
