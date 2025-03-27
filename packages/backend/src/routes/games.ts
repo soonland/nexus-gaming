@@ -48,6 +48,7 @@ export async function gameRoutes(server: FastifyServerInstance) {
 
     // Calculate average rating for each game
     const gamesWithRating = games.map((game) => {
+      console.log(game)
       const ratings = game.reviews.map((review) => review.rating)
       const averageRating =
         ratings.length > 0
@@ -55,6 +56,7 @@ export async function gameRoutes(server: FastifyServerInstance) {
           : null
 
       const { reviews, ...gameWithoutReviews } = game
+      console.log(gameWithoutReviews)
       return {
         ...gameWithoutReviews,
         averageRating,
