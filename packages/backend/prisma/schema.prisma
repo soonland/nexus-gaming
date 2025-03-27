@@ -1,0 +1,73 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String    @id @default(uuid())
+  email     String    @unique
+  password  String
+  username  String    @unique
+  role      Role      @default(USER)
+  reviews   Review[]
+  articles  Article[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Game {
+  id          String       @id @default(uuid())
+  title       String
+  description String
+  releaseDate DateTime
+  platform    String[]
+  publisher   String
+  developer   String
+  coverImage  String?
+  reviews     Review[]
+  articles    ArticleGame[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  rating    Float    @default(0)
+  content   String
+  gameId    String
+  userId    String
+  game      Game     @relation(fields: [gameId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Article {
+  id          String       @id @default(uuid())
+  title       String
+  content     String
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+  games       ArticleGame[]
+  publishedAt DateTime     @default(now())
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model ArticleGame {
+  articleId String
+  gameId    String
+  article   Article @relation(fields: [articleId], references: [id])
+  game      Game    @relation(fields: [gameId], references: [id])
+
+  @@id([articleId, gameId])
+}
+
+enum Role {
+  USER
+  ADMIN
+}

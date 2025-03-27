@@ -1,0 +1,38 @@
+{
+  "name": "nexus-gaming",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "sync:check": "syncpack list-mismatches",
+    "sync:fix": "syncpack fix-mismatches"
+  },
+  "syncpack": {
+    "source": [
+      "package.json",
+      "packages/*/package.json"
+    ],
+    "semverRange": "^",
+    "sortFirst": [
+      "name",
+      "private",
+      "version",
+      "description",
+      "type",
+      "scripts",
+      "dependencies",
+      "devDependencies",
+      "peerDependencies"
+    ],
+    "versionGroups": []
+  },
+  "devDependencies": {
+    "syncpack": "^13.0.3",
+    "turbo": "^1.12.5"
+  }
+}
