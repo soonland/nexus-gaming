@@ -43,17 +43,18 @@ export const GameForm = ({
     formState: { errors },
     setValue,
     watch,
-  } = useForm<GameFormData>({
-    defaultValues: initialData || {
-      title: '',
-      description: '',
+    } = useForm<GameFormData>({
+    defaultValues: {
+      title: initialData?.title || '',
+      description: initialData?.description || '',
       releasePeriod: {
         type: 'date',
-        value: ''
+        value: initialData?.releaseDate || ''
       },
-      platform: [],
-      publisher: '',
-      developer: '',
+      platform: initialData?.platform || [],
+      publisher: initialData?.publisher || '',
+      developer: initialData?.developer || '',
+      coverImage: initialData?.coverImage || '',
     },
   });
 

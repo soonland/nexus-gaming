@@ -54,13 +54,13 @@ export const GameDetail = ({ game, isAdmin = false, onUpdate }: GameDetailProps)
       <Container maxW="container.lg" py={8}>
         <GameForm
           initialData={{
-            title: game.title,
-            description: game.description,
-            releaseDate: game.releaseDate,
-            platform: game.platform,
-            publisher: game.publisher,
-            developer: game.developer,
-            coverImage: game.coverImage,
+            title: game?.title ?? '',
+            description: game?.description ?? '',
+            releaseDate: game?.releaseDate,
+            platform: game?.platform,
+            publisher: game?.publisher,
+            developer: game?.developer,
+            coverImage: game?.coverImage ?? '',
           }}
           onSubmit={handleUpdate}
           onCancel={() => setIsEditing(false)}
@@ -104,7 +104,7 @@ export const GameDetail = ({ game, isAdmin = false, onUpdate }: GameDetailProps)
                 <Text>•</Text>
                 <Text>{game.publisher}</Text>
                 <Text>•</Text>
-                <Text>{new Date(game.releaseDate).toLocaleDateString()}</Text>
+                <Text>{game.releaseDate ? new Date(game.releaseDate).toLocaleDateString() : 'N/A'}</Text>
               </HStack>
             </Stack>
           </Container>
@@ -189,7 +189,7 @@ export const GameDetail = ({ game, isAdmin = false, onUpdate }: GameDetailProps)
                       <Text fontWeight="bold">{article.title}</Text>
                       <Text color="gray.500">
                         par {article.user.username} •{' '}
-                        {new Date(article.publishedAt).toLocaleDateString()}
+                        {article.publishedAt ? new Date(article.publishedAt).toLocaleDateString() : 'N/A'}
                       </Text>
                     </HStack>
                   </Box>

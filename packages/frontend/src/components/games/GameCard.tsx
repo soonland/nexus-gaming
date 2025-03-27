@@ -75,10 +75,10 @@ export const GameCard = ({ game, onClick }: GameCardProps) => {
           </Text>
 
           <Text fontSize="sm" color="gray.500">
-            {new Date(game.releaseDate).toLocaleDateString()}
+            {game.releaseDate ? new Date(game.releaseDate).toLocaleDateString() : 'N/A'}
           </Text>
 
-          {game.averageRating !== null && game.averageRating !== undefined && (
+          {game.averageRating != null && (
             <HStack spacing={1}>
               <Icon as={StarIcon} color="yellow.400" />
               <Text>{game.averageRating.toFixed(1)}</Text>

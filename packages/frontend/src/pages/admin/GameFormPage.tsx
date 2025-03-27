@@ -8,7 +8,7 @@ import axios from 'axios'
 import { Game } from '@/types/game'
 
 const transformGameToFormData = (game: Game): GameFormData => {
-  const { releaseDate, ...rest } = game;
+  const { releaseDate, title, ...rest } = game;
   let releasePeriod = undefined;
 
   if (releaseDate) {
@@ -20,6 +20,7 @@ const transformGameToFormData = (game: Game): GameFormData => {
 
   return {
     ...rest,
+    title: title,
     releasePeriod,
   };
 };

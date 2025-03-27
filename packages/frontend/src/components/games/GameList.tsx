@@ -47,7 +47,7 @@ export const GameList = ({
   const [platformFilter, setPlatformFilter] = useState('Toutes');
   console.log(games);
   const filteredGames = (games ?? []).filter((game) => {
-    const matchesSearch = game.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchesSearch = (game.title ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       game.developer.toLowerCase().includes(searchTerm.toLowerCase()) ||
       game.publisher.toLowerCase().includes(searchTerm.toLowerCase());
 

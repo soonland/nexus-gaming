@@ -15,32 +15,46 @@ import {
 import { Link as RouterLink } from 'react-router-dom'
 import { useGames } from '@/hooks/useGames'
 import { useState } from 'react'
+import Swal from 'sweetalert2'
 
 export const AdminGameListPage = () => {
   const { games, deleteGame, isLoading } = useGames()
   const [deletingId, setDeletingId] = useState<string | null>(null)
-  const toast = useToast()
+  const toast = useToast();
 
   const handleDelete = async (id: string) => {
-    try {
-      setDeletingId(id)
-      await deleteGame(id)
-      toast({
-        title: 'Jeu supprimé',
-        status: 'success',
-        duration: 3000,
-      })
-    } catch (error) {
-      toast({
-        title: 'Erreur',
-        description: 'Une erreur est survenue lors de la suppression',
-        status: 'error',
-        duration: 5000,
-      })
-    } finally {
-      setDeletingId(null)
-    }
-  }
+    Swal.fire({
+      title: 'Êtes-vous sûr(e) ?',
+      text: 'Vous ne pourrez pas revenir en arrière !',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Oui, supprimer !',
+      cancelButtonText: 'Annuler',
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          setDeletingId(id);
+          await deleteGame(id);
+          toast({
+            title: 'Jeu supprimé',
+            status: 'success',
+            duration: 3000,
+          });
+        } catch (error) {
+          toast({
+            title: 'Erreur',
+            description: 'Une erreur est survenue lors de la suppression',
+            status: 'error',
+            duration: 5000,
+          });
+        } finally {
+          setDeletingId(null);
+        }
+      }
+    });
+  };
 
   return (
     <Container maxW="container.xl" py={8}>
