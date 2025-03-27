@@ -71,8 +71,11 @@ export async function authRoutes(server: FastifyServerInstance) {
         },
       })
 
-      // Generate token
-      const token = server.jwt.sign({ id: user.id })
+      // Generate token with role information
+      const token = server.jwt.sign({ 
+        id: user.id,
+        role: user.role 
+      })
 
       return reply.send({ user, token })
     },
@@ -121,8 +124,11 @@ export async function authRoutes(server: FastifyServerInstance) {
         })
       }
 
-      // Generate token
-      const token = server.jwt.sign({ id: user.id })
+      // Generate token with role information
+      const token = server.jwt.sign({ 
+        id: user.id,
+        role: user.role 
+      })
 
       const { password: _, ...userWithoutPassword } = user
       return reply.send({ user: userWithoutPassword, token })

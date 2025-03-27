@@ -12,11 +12,11 @@ import {
   Grid,
   GridItem,
   Badge,
-  useToast,
   useColorModeValue,
 } from '@chakra-ui/react';
 import { useForm, Controller } from 'react-hook-form';
 import { GameFormData } from '../../types/game';
+import { ReleaseDateSelector } from './ReleaseDateSelector';
 
 const PLATFORMS = ['PC', 'PlayStation', 'Xbox', 'Nintendo Switch', 'Mobile'];
 
@@ -33,7 +33,6 @@ export const GameForm = ({
   onCancel,
   isSubmitting = false,
 }: GameFormProps) => {
-  const toast = useToast();
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
 
@@ -48,7 +47,10 @@ export const GameForm = ({
     defaultValues: initialData || {
       title: '',
       description: '',
-      releaseDate: '',
+      releasePeriod: {
+        type: 'date',
+        value: ''
+      },
       platform: [],
       publisher: '',
       developer: '',
@@ -65,28 +67,10 @@ export const GameForm = ({
     setValue('platform', updated);
   };
 
-  const onFormSubmit = async (data: GameFormData) => {
-    try {
-      await onSubmit(data);
-      toast({
-        title: initialData ? 'Jeu mis à jour' : 'Jeu créé',
-        status: 'success',
-        duration: 3000,
-      });
-    } catch (error) {
-      toast({
-        title: 'Erreur',
-        description: 'Une erreur est survenue',
-        status: 'error',
-        duration: 5000,
-      });
-    }
-  };
-
   return (
     <Box
       as="form"
-      onSubmit={handleSubmit(onFormSubmit)}
+      onSubmit={handleSubmit(onSubmit)}
       bg={bgColor}
       borderWidth="1px"
       borderColor={borderColor}
@@ -96,7 +80,7 @@ export const GameForm = ({
       <VStack spacing={6} align="stretch">
         <Grid templateColumns="repeat(2, 1fr)" gap={6}>
           <GridItem colSpan={2}>
-            <FormControl isInvalid={!!errors.title}>
+            <FormControl isRequired isInvalid={!!errors.title}>
               <FormLabel>Titre</FormLabel>
               <Input
                 {...register('title', {
@@ -110,7 +94,7 @@ export const GameForm = ({
           </GridItem>
 
           <GridItem>
-            <FormControl isInvalid={!!errors.developer}>
+            <FormControl isRequired isInvalid={!!errors.developer}>
               <FormLabel>Développeur</FormLabel>
               <Input
                 {...register('developer', {
@@ -124,7 +108,7 @@ export const GameForm = ({
           </GridItem>
 
           <GridItem>
-            <FormControl isInvalid={!!errors.publisher}>
+            <FormControl isRequired isInvalid={!!errors.publisher}>
               <FormLabel>Éditeur</FormLabel>
               <Input
                 {...register('publisher', {
@@ -138,7 +122,7 @@ export const GameForm = ({
           </GridItem>
 
           <GridItem colSpan={2}>
-            <FormControl isInvalid={!!errors.description}>
+            <FormControl isRequired isInvalid={!!errors.description}>
               <FormLabel>Description</FormLabel>
               <Textarea
                 {...register('description', {
@@ -153,22 +137,15 @@ export const GameForm = ({
           </GridItem>
 
           <GridItem>
-            <FormControl isInvalid={!!errors.releaseDate}>
-              <FormLabel>Date de sortie</FormLabel>
-              <Input
-                type="date"
-                {...register('releaseDate', {
-                  required: 'La date de sortie est requise',
-                })}
-              />
-              <FormErrorMessage>
-                {errors.releaseDate && errors.releaseDate.message}
-              </FormErrorMessage>
-            </FormControl>
+            <ReleaseDateSelector
+              control={control}
+              register={register}
+              errors={errors}
+            />
           </GridItem>
 
           <GridItem>
-            <FormControl isInvalid={!!errors.platform}>
+            <FormControl isRequired isInvalid={!!errors.platform}>
               <FormLabel>Plateformes</FormLabel>
               <Controller
                 name="platform"
@@ -202,11 +179,11 @@ export const GameForm = ({
 
           <GridItem colSpan={2}>
             <FormControl>
-              <FormLabel>Image de couverture</FormLabel>
+              <FormLabel>Image de couverture (optionnel)</FormLabel>
               <Input
                 type="url"
                 {...register('coverImage')}
-                placeholder="URL de l'image (optionnel)"
+                placeholder="URL de l'image"
               />
             </FormControl>
           </GridItem>

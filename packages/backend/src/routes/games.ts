@@ -6,12 +6,43 @@ import { AuthenticatedRequest } from '../types/auth'
 const gameSchema = Type.Object({
   title: Type.String(),
   description: Type.String(),
-  releaseDate: Type.String({ format: 'date' }),
+  releasePeriod: Type.Optional(Type.Object({
+    type: Type.Union([
+      Type.Literal('date'),
+      Type.Literal('quarter'),
+      Type.Literal('month')
+    ]),
+    value: Type.String()
+  })),
   platform: Type.Array(Type.String()),
   publisher: Type.String(),
   developer: Type.String(),
   coverImage: Type.Optional(Type.String()),
 })
+
+const formatGameDates = (game: any) => ({
+  ...game,
+  releaseDate: game.releaseDate ? game.releaseDate.toISOString().split('T')[0] : null,
+  createdAt: game.createdAt ? game.createdAt.toISOString() : null,
+  updatedAt: game.updatedAt ? game.updatedAt.toISOString() : null
+})
+
+const parseReleasePeriod = (releasePeriod: any) => {
+  if (!releasePeriod) return null;
+
+  switch (releasePeriod.type) {
+    case 'date':
+      return new Date(`${releasePeriod.value}T00:00:00Z`);
+    case 'month':
+      return new Date(`${releasePeriod.value}-01T00:00:00Z`);
+    case 'quarter':
+      const [year, quarter] = releasePeriod.value.split('-Q');
+      const month = ((parseInt(quarter) - 1) * 3 + 1).toString().padStart(2, '0');
+      return new Date(`${year}-${month}-01T00:00:00Z`);
+    default:
+      return null;
+  }
+}
 
 export async function gameRoutes(server: FastifyServerInstance) {
   // Get all games
@@ -24,7 +55,7 @@ export async function gameRoutes(server: FastifyServerInstance) {
           id: Type.String(),
           title: Type.String(),
           description: Type.String(),
-          releaseDate: Type.String(),
+          releaseDate: Type.Union([Type.String(), Type.Null()]),
           platform: Type.Array(Type.String()),
           publisher: Type.String(),
           developer: Type.String(),
@@ -37,31 +68,30 @@ export async function gameRoutes(server: FastifyServerInstance) {
     },
     handler: async (request: FastifyRequest, reply: FastifyReply) => {
       const games = await server.prisma.game.findMany({
-      include: {
-        reviews: {
-          select: {
-            rating: true,
+        include: {
+          reviews: {
+            select: {
+              rating: true,
+            },
           },
         },
-      },
-    })
+      })
 
-    // Calculate average rating for each game
-    const gamesWithRating = games.map((game) => {
-      console.log(game)
-      const ratings = game.reviews.map((review) => review.rating)
-      const averageRating =
-        ratings.length > 0
-          ? ratings.reduce((a, b) => a + b, 0) / ratings.length
-          : null
+      // Calculate average rating for each game
+      const gamesWithRating = games.map((game) => {
+        const ratings = game.reviews.map((review) => review.rating)
+        const averageRating =
+          ratings.length > 0
+            ? ratings.reduce((a, b) => a + b, 0) / ratings.length
+            : null
 
-      const { reviews, ...gameWithoutReviews } = game
-      console.log(gameWithoutReviews)
-      return {
-        ...gameWithoutReviews,
-        averageRating,
-      }
-    })
+        const { reviews, ...gameWithoutReviews } = game
+        
+        return {
+          ...formatGameDates(gameWithoutReviews),
+          averageRating,
+        }
+      })
 
       return reply.send(gamesWithRating)
     }
@@ -80,7 +110,7 @@ export async function gameRoutes(server: FastifyServerInstance) {
           id: Type.String(),
           title: Type.String(),
           description: Type.String(),
-          releaseDate: Type.String(),
+          releaseDate: Type.Union([Type.String(), Type.Null()]),
           platform: Type.Array(Type.String()),
           publisher: Type.String(),
           developer: Type.String(),
@@ -115,45 +145,45 @@ export async function gameRoutes(server: FastifyServerInstance) {
     handler: async (request: FastifyRequest, reply: FastifyReply) => {
       const { id } = request.params as { id: string }
 
-    const game = await server.prisma.game.findUnique({
-      where: { id },
-      include: {
-        reviews: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                username: true,
+      const game = await server.prisma.game.findUnique({
+        where: { id },
+        include: {
+          reviews: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  username: true,
+                },
               },
             },
           },
-        },
-        articles: {
-          include: {
-            article: {
-              select: {
-                id: true,
-                title: true,
-                publishedAt: true,
-                user: {
-                  select: {
-                    username: true,
+          articles: {
+            include: {
+              article: {
+                select: {
+                  id: true,
+                  title: true,
+                  publishedAt: true,
+                  user: {
+                    select: {
+                      username: true,
+                    },
                   },
                 },
               },
             },
           },
         },
-      },
-    })
-
-    if (!game) {
-      return reply.status(404).send({
-        message: 'Jeu non trouvé',
       })
-    }
 
-      return reply.send(game)
+      if (!game) {
+        return reply.status(404).send({
+          message: 'Jeu non trouvé',
+        })
+      }
+
+      return reply.send(formatGameDates(game))
     }
   })
 
@@ -170,7 +200,7 @@ export async function gameRoutes(server: FastifyServerInstance) {
           id: Type.String(),
           title: Type.String(),
           description: Type.String(),
-          releaseDate: Type.String(),
+          releaseDate: Type.Union([Type.String(), Type.Null()]),
           platform: Type.Array(Type.String()),
           publisher: Type.String(),
           developer: Type.String(),
@@ -191,13 +221,17 @@ export async function gameRoutes(server: FastifyServerInstance) {
         })
       }
 
-      const gameData = request.body as any
+      const { releasePeriod, ...rest } = request.body as any
+      const releaseDate = parseReleasePeriod(releasePeriod);
 
       const game = await server.prisma.game.create({
-        data: gameData,
+        data: {
+          ...rest,
+          releaseDate
+        },
       })
 
-      return reply.status(201).send(game)
+      return reply.status(201).send(formatGameDates(game))
     }
   })
 
@@ -217,7 +251,7 @@ export async function gameRoutes(server: FastifyServerInstance) {
           id: Type.String(),
           title: Type.String(),
           description: Type.String(),
-          releaseDate: Type.String(),
+          releaseDate: Type.Union([Type.String(), Type.Null()]),
           platform: Type.Array(Type.String()),
           publisher: Type.String(),
           developer: Type.String(),
@@ -242,14 +276,18 @@ export async function gameRoutes(server: FastifyServerInstance) {
       }
 
       const { id } = request.params as { id: string }
-      const gameData = request.body as any
+      const { releasePeriod, ...rest } = request.body as any
+      const releaseDate = releasePeriod ? parseReleasePeriod(releasePeriod) : undefined;
 
       const game = await server.prisma.game.update({
         where: { id },
-        data: gameData,
+        data: {
+          ...rest,
+          ...(releaseDate !== undefined && { releaseDate })
+        },
       })
 
-      return reply.send(game)
+      return reply.send(formatGameDates(game))
     }
   })
 

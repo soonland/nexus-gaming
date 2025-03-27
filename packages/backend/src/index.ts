@@ -17,8 +17,25 @@ const server: FastifyServerInstance = fastify({
 server.decorate('authenticate', async function(request: any, reply: any) {
   try {
     await request.jwtVerify()
+    // Fetch user with role after token verification
+    const user = await server.prisma.user.findUnique({
+      where: { id: request.user.id },
+      select: { id: true, role: true, email: true }
+    })
+    
+    if (!user) {
+      return reply.status(401).send({
+        message: 'Session invalide. Veuillez vous reconnecter.'
+      })
+    }
+    
+    // Update request.user with role information
+    request.user = user
   } catch (err) {
-    reply.send(err)
+    server.log.error('Authentication error:', err)
+    return reply.status(401).send({
+      message: 'Session invalide. Veuillez vous reconnecter.'
+    })
   }
 })
 

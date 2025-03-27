@@ -73,7 +73,7 @@ export const AdminGameListPage = () => {
               <Td>{game.title}</Td>
               <Td>{game.developer}</Td>
               <Td>{game.publisher}</Td>
-              <Td>{new Date(game.releaseDate).toLocaleDateString()}</Td>
+              <Td>{game.releaseDate ? new Date(game.releaseDate).toLocaleDateString() : 'N/A'}</Td>
               <Td>
                 <HStack spacing={2}>
                   <Button

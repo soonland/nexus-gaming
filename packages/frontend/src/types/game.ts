@@ -2,7 +2,11 @@ export interface Game {
   id: string;
   title: string;
   description: string;
-  releaseDate: string;
+  releaseDate: string | null;
+  releasePeriod?: {
+    type: 'date' | 'quarter' | 'month';
+    value: string; // YYYY-MM-DD for date, YYYY-QN for quarter, YYYY-MM for month
+  };
   platform: string[];
   publisher: string;
   developer: string;
@@ -15,7 +19,11 @@ export interface Game {
 export interface GameFormData {
   title: string;
   description: string;
-  releaseDate: string;
+  releaseDate?: string;
+  releasePeriod?: {
+    type: 'date' | 'quarter' | 'month';
+    value: string;
+  };
   platform: string[];
   publisher: string;
   developer: string;

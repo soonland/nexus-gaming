@@ -1,16 +1,18 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import axios from 'axios';
 import { api } from '../services/api/client';
 import { Game, GameFormData, GameWithDetails } from '../types/game';
+import { useAuth } from '@/providers/AuthProvider';
 
 const API_URL = '/games';
 
 export const useGames = () => {
   const queryClient = useQueryClient();
+  const { fetchUser } = useAuth();
   const { data: games = [], isLoading } = useQuery<Game[]>({
     queryKey: ['games'],
     queryFn: async () => {
       const r = await api.get(API_URL);
-      console.log("r", r);
       return r.data;
     },
   });
@@ -23,8 +25,22 @@ export const useGames = () => {
 
   const createGameMutation = useMutation({
     mutationFn: async (newGame: GameFormData) => {
-      const { data } = await api.post(API_URL, newGame);
-      return data;
+      console.log('Creating game with data:', newGame);
+      try {
+        const { data } = await api.post(API_URL, newGame);
+        return data;
+      } catch (error: unknown) {
+        if (axios.isAxiosError(error) && error.response) {
+          if (error.response.status === 403) {
+            // Refresh user data as role might have changed
+            await fetchUser();
+          }
+          console.error('Error creating game:', error.response?.data || error.message);
+        } else {
+          console.error('Unexpected error:', error);
+        }
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['games'] });

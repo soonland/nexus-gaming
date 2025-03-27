@@ -9,12 +9,20 @@ export const useAuth = () => {
   const fetchUser = useCallback(async () => {
     try {
       const token = localStorage.getItem('token')
-      if (token) {
-        const userData = await authApi.getCurrentUser()
-        setUser(userData)
+      if (!token) {
+        setUser(null)
+        setLoading(false)
+        return
       }
+
+      const userData = await authApi.getCurrentUser()
+      setUser(userData)
+      console.log('Current user data:', userData) // Debug log
     } catch (error) {
       console.error('Error fetching user:', error)
+      // Clear invalid token and user state
+      localStorage.removeItem('token')
+      setUser(null)
     } finally {
       setLoading(false)
     }
@@ -25,9 +33,15 @@ export const useAuth = () => {
   }, [fetchUser])
 
   const login = async (credentials: { email: string; password: string }) => {
-    const response = await authApi.login(credentials)
-    setUser(response.user)
-    return response
+    try {
+      const response = await authApi.login(credentials)
+      console.log('Login response:', response) // Debug log
+      setUser(response.user)
+      return response
+    } catch (error) {
+      console.error('Login error:', error)
+      throw error
+    }
   }
 
   const logout = () => {
@@ -41,5 +55,6 @@ export const useAuth = () => {
     login,
     logout,
     isAuthenticated: !!user,
+    fetchUser
   }
 }

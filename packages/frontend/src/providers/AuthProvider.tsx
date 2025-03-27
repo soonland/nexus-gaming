@@ -8,15 +8,21 @@ interface AuthContextType {
   login: (credentials: { email: string; password: string }) => Promise<{ user: User; token: string }>
   logout: () => void
   isAuthenticated: boolean
+  fetchUser: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const auth = useAuthHook()
+  const { fetchUser, ...auth } = useAuthHook()
+
+  const contextValue = {
+    ...auth,
+    fetchUser
+  }
 
   return (
-    <AuthContext.Provider value={auth}>
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   )
