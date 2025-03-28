@@ -5,7 +5,6 @@ import {
   InputGroup,
   InputLeftElement,
   Stack,
-  Button,
   Select,
   useDisclosure,
   Modal,
@@ -26,8 +25,9 @@ import {
   WrapItem,
   useColorModeValue,
 } from '@chakra-ui/react';
-import { SearchIcon, AddIcon } from '@chakra-ui/icons';
+import { SearchIcon } from '@chakra-ui/icons';
 import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { GameCard } from './GameCard';
 import { GameForm } from './GameForm';
 import { Game, GameFormData } from '../../types/game';
@@ -35,9 +35,7 @@ import { usePlatforms } from '@/hooks/usePlatforms';
 
 interface GameListProps {
   games?: Game[];
-  isAdmin?: boolean;
   isLoading?: boolean;
-  onGameClick?: (game: Game) => void;
   onGameCreate?: (data: GameFormData) => Promise<void>;
 }
 
@@ -52,12 +50,11 @@ const SORT_OPTIONS = [
 
 export const GameList = ({
   games,
-  isAdmin = false,
   isLoading = false,
-  onGameClick,
   onGameCreate,
 }: GameListProps) => {
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const navigate = useNavigate();
+  const { isOpen, onClose } = useDisclosure();
   const [searchTerm, setSearchTerm] = useState('');
   const [platformFilters, setPlatformFilters] = useState<string[]>([]); 
   const [sortOption, setSortOption] = useState('title-asc');
@@ -142,12 +139,6 @@ export const GameList = ({
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </InputGroup>
-
-            {isAdmin && onGameCreate && (
-              <Button leftIcon={<AddIcon />} colorScheme="blue" onClick={onOpen}>
-                Ajouter un jeu
-              </Button>
-            )}
           </Flex>
 
           <Flex gap={6} wrap="wrap" align="flex-start">
@@ -157,7 +148,7 @@ export const GameList = ({
                 borderWidth="1px" 
                 borderRadius="md" 
                 borderColor={borderColor}
-                p={3}
+                p={1}
               >
                 <CheckboxGroup 
                   value={platformFilters} 
@@ -165,7 +156,7 @@ export const GameList = ({
                     setPlatformFilters(value as string[]);
                   }}
                 >
-                  <Wrap spacing={3}>
+                  <Wrap>
                     {platforms?.map((platform) => (
                       <WrapItem key={platform.id}>
                         <Checkbox
@@ -236,7 +227,7 @@ export const GameList = ({
               <GameCard
                 key={game.id}
                 game={game}
-                onClick={() => onGameClick?.(game)}
+                onClick={() => navigate(`/games/${game.id}`)}
               />
             ))}
           </SimpleGrid>

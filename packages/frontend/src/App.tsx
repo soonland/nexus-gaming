@@ -4,6 +4,7 @@ import { Routes, Route } from 'react-router-dom'
 import { AuthProvider } from '@/providers/AuthProvider'
 import { Navbar } from '@/components/shared/Navbar'
 import { GamesPage } from '@/pages/GamesPage'
+import { GamePage } from '@/pages/GamePage'
 import { LoginPage } from '@/pages/LoginPage'
 import { ArticlesPage } from '@/pages/ArticlesPage'
 import { ArticleDetail } from '@/components/articles/ArticleDetail'
@@ -27,6 +28,7 @@ export default function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/articles" element={<ArticlesPage />} />
           <Route path="/articles/:id" element={<ArticleDetail />} />
+          <Route path="/games/:id" element={<GamePage />} />
           
           {/* Admin Routes */}
           <Route element={<AdminRoute />}>
