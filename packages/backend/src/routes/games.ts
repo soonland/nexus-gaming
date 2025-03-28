@@ -9,7 +9,7 @@ type GameWithRelations = Game & {
     id: string
     name: string
     manufacturer: string
-    releaseDate: Date | null
+    releaseDate: string | null
     createdAt: Date
     updatedAt: Date
   }[]
@@ -21,43 +21,18 @@ type GameWithRelations = Game & {
 const gameSchema = Type.Object({
   title: Type.String(),
   description: Type.String(),
-  releasePeriod: Type.Optional(Type.Object({
-    type: Type.Union([
-      Type.Literal('date'),
-      Type.Literal('quarter'),
-      Type.Literal('month')
-    ]),
-    value: Type.String()
-  })),
+  releaseDate: Type.Optional(Type.String()),
   platformIds: Type.Array(Type.String()),
   publisher: Type.String(),
   developer: Type.String(),
   coverImage: Type.Optional(Type.String()),
 })
 
-const formatGameDates = (game: GameWithRelations) => ({
+const formatDates = (game: GameWithRelations) => ({
   ...game,
-  releaseDate: game.releaseDate ? game.releaseDate.toISOString().split('T')[0] : null,
   createdAt: game.createdAt.toISOString(),
   updatedAt: game.updatedAt.toISOString(),
 })
-
-const parseReleasePeriod = (releasePeriod: any) => {
-  if (!releasePeriod) return null;
-
-  switch (releasePeriod.type) {
-    case 'date':
-      return new Date(`${releasePeriod.value}T00:00:00Z`);
-    case 'month':
-      return new Date(`${releasePeriod.value}-01T00:00:00Z`);
-    case 'quarter':
-      const [year, quarter] = releasePeriod.value.split('-Q');
-      const month = ((parseInt(quarter) - 1) * 3 + 1).toString().padStart(2, '0');
-      return new Date(`${year}-${month}-01T00:00:00Z`);
-    default:
-      return null;
-  }
-}
 
 export async function gameRoutes(server: FastifyServerInstance) {
   // Get all games
@@ -108,10 +83,10 @@ export async function gameRoutes(server: FastifyServerInstance) {
         const { reviews, ...gameWithoutReviews } = game
         
         return {
-          ...formatGameDates(gameWithoutReviews),
+          ...formatDates(gameWithoutReviews),
           platforms: game.platforms.map(platform => ({
             ...platform,
-            releaseDate: platform.releaseDate ? platform.releaseDate.toISOString().split('T')[0] : null
+            releaseDate: platform.releaseDate
           })),
           averageRating,
         }
@@ -167,10 +142,10 @@ export async function gameRoutes(server: FastifyServerInstance) {
       }
 
       return reply.send({
-        ...formatGameDates(game),
+        ...formatDates(game),
         platforms: game.platforms.map(platform => ({
           ...platform,
-          releaseDate: platform.releaseDate ? platform.releaseDate.toISOString().split('T')[0] : null
+          releaseDate: platform.releaseDate
         }))
       })
     }
@@ -214,13 +189,11 @@ export async function gameRoutes(server: FastifyServerInstance) {
         })
       }
 
-      const { releasePeriod, platformIds, ...rest } = request.body as any
-      const releaseDate = parseReleasePeriod(releasePeriod)
+      const { platformIds, ...rest } = request.body as any
 
       const game = await server.prisma.game.create({
         data: {
           ...rest,
-          releaseDate,
           platforms: {
             connect: platformIds.map((id: string) => ({ id }))
           }
@@ -231,10 +204,10 @@ export async function gameRoutes(server: FastifyServerInstance) {
       }) as GameWithRelations
 
       return reply.status(201).send({
-        ...formatGameDates(game),
+        ...formatDates(game),
         platforms: game.platforms.map(platform => ({
           ...platform,
-          releaseDate: platform.releaseDate ? platform.releaseDate.toISOString().split('T')[0] : null
+          releaseDate: platform.releaseDate
         }))
       })
     }
@@ -285,15 +258,13 @@ export async function gameRoutes(server: FastifyServerInstance) {
       }
 
       const { id } = request.params as { id: string }
-      const { releasePeriod, platformIds, ...rest } = request.body as any
-      const releaseDate = releasePeriod ? parseReleasePeriod(releasePeriod) : undefined
+      const { platformIds, ...rest } = request.body as any
 
       try {
         const game = await server.prisma.game.update({
           where: { id },
           data: {
             ...rest,
-            ...(releaseDate !== undefined && { releaseDate }),
             ...(platformIds && {
               platforms: {
                 set: platformIds.map((id: string) => ({ id }))
@@ -306,10 +277,10 @@ export async function gameRoutes(server: FastifyServerInstance) {
         }) as GameWithRelations
 
         return reply.send({
-          ...formatGameDates(game),
+          ...formatDates(game),
           platforms: game.platforms.map(platform => ({
             ...platform,
-            releaseDate: platform.releaseDate ? platform.releaseDate.toISOString().split('T')[0] : null
+            releaseDate: platform.releaseDate
           }))
         })
       } catch (error) {

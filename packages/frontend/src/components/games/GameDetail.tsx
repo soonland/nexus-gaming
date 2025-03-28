@@ -143,7 +143,7 @@ export const GameDetail = ({ game, isAdmin = false, onUpdate }: GameDetailProps)
             </Text>
           </Box>
 
-          {game.reviews.length > 0 && (
+          {game?.reviews?.length > 0 && (
             <Box>
               <Heading size="md" mb={4}>
                 Avis
@@ -170,7 +170,7 @@ export const GameDetail = ({ game, isAdmin = false, onUpdate }: GameDetailProps)
             </Box>
           )}
 
-          {game.articles.length > 0 && (
+          {game?.articles?.length > 0 && (
             <Box>
               <Heading size="md" mb={4}>
                 Articles

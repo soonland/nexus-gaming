@@ -6,24 +6,10 @@ import { GameFormData } from '@/types/game'
 import axios from 'axios'
 import { Game } from '@/types/game'
 
-const transformGameToFormData = (game: Game): GameFormData => {
-  const { releaseDate, title, ...rest } = game;
-  let releasePeriod = undefined;
-
-  if (releaseDate) {
-    releasePeriod = {
-      type: 'date' as const,
-      value: releaseDate,
-    };
-  }
-
-  return {
-    ...rest,
-    title: title,
-    releasePeriod,
-    platformIds: game.platforms.map((platform) => platform.id),
-  };
-};
+const transformGameToFormData = (game: Game): GameFormData => ({
+  ...game,
+  platformIds: game.platforms.map((platform) => platform.id),
+});
 
 export const AdminGameFormPage = () => {
   const { id } = useParams()

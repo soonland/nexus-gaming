@@ -1,46 +1,298 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from '@prisma/client';
+import { hash } from 'bcrypt';
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
 async function main() {
-  // Create initial platforms
-  const platforms = [
-    {
-      name: 'PlayStation 5',
-      manufacturer: 'Sony',
-      releaseDate: new Date('2020-11-12')
-    },
-    {
-      name: 'Xbox Series X',
-      manufacturer: 'Microsoft',
-      releaseDate: new Date('2020-11-10')
-    },
-    {
-      name: 'Nintendo Switch',
-      manufacturer: 'Nintendo',
-      releaseDate: new Date('2017-03-03')
-    },
-    {
-      name: 'PC',
-      manufacturer: 'Various',
-      releaseDate: null
-    }
-  ]
+  // Clean the database
+  await prisma.articleGame.deleteMany();
+  await prisma.article.deleteMany();
+  await prisma.review.deleteMany();
+  await prisma.game.deleteMany();
+  await prisma.platform.deleteMany();
+  await prisma.user.deleteMany();
 
-  console.log('Seeding platforms...')
-  for (const platform of platforms) {
-    await prisma.platform.create({
-      data: platform
-    })
+  // Create users
+  const adminPassword = await hash('admin123', 10);
+  const userPassword = await hash('user123', 10);
+
+  const admin = await prisma.user.create({
+    data: {
+      email: 'admin@nexus.com',
+      password: adminPassword,
+      username: 'Admin',
+      role: 'ADMIN',
+    },
+  });
+
+  const users = await Promise.all([
+    prisma.user.create({
+      data: {
+        email: 'alex@example.com',
+        password: userPassword,
+        username: 'AlexGamer',
+        role: 'USER',
+      },
+    }),
+    prisma.user.create({
+      data: {
+        email: 'sophie@example.com',
+        password: userPassword,
+        username: 'SophieGames',
+        role: 'USER',
+      },
+    }),
+    prisma.user.create({
+      data: {
+        email: 'marc@example.com',
+        password: userPassword,
+        username: 'MarcReviewer',
+        role: 'USER',
+      },
+    }),
+  ]);
+
+  // Create platforms
+  const platforms = await Promise.all([
+    prisma.platform.create({
+      data: {
+        name: 'Nintendo Switch',
+        manufacturer: 'Nintendo',
+        releaseDate: '2017-03', // Format mois
+      },
+    }),
+    prisma.platform.create({
+      data: {
+        name: 'PlayStation 5',
+        manufacturer: 'Sony',
+        releaseDate: '2020-Q4', // Format trimestre
+      },
+    }),
+    prisma.platform.create({
+      data: {
+        name: 'Xbox Series X|S',
+        manufacturer: 'Microsoft',
+        releaseDate: '2020-11-10', // Format date précise
+      },
+    }),
+    prisma.platform.create({
+      data: {
+        name: 'PC',
+        manufacturer: 'Various',
+        releaseDate: null, // Pas de date
+      },
+    }),
+  ]);
+
+  const [switch_, ps5, xbox, pc] = platforms;
+
+  // Create games
+  const games = await Promise.all([
+    prisma.game.create({
+      data: {
+        title: 'The Legend of Zelda: Tears of the Kingdom',
+        description: 'Suite très attendue de Breath of the Wild, offrant une nouvelle aventure épique dans le royaume d\'Hyrule avec de nouvelles mécaniques de gameplay innovantes.',
+        releaseDate: '2023-Q2', // Format trimestre
+        publisher: 'Nintendo',
+        developer: 'Nintendo EPD',
+        platforms: {
+          connect: [{ id: switch_.id }],
+        },
+      },
+    }),
+    prisma.game.create({
+      data: {
+        title: 'Cyberpunk 2077',
+        description: 'RPG en monde ouvert se déroulant dans Night City, une mégalopole obsédée par le pouvoir, le glamour et les modifications corporelles.',
+        releaseDate: '2020-12', // Format mois
+        publisher: 'CD Projekt',
+        developer: 'CD Projekt RED',
+        platforms: {
+          connect: [{ id: pc.id }, { id: ps5.id }, { id: xbox.id }],
+        },
+      },
+    }),
+    prisma.game.create({
+      data: {
+        title: 'Elden Ring',
+        description: 'Action-RPG en monde ouvert développé par FromSoftware en collaboration avec George R. R. Martin.',
+        releaseDate: '2022-02-25', // Format date précise
+        publisher: 'Bandai Namco',
+        developer: 'FromSoftware',
+        platforms: {
+          connect: [{ id: pc.id }, { id: ps5.id }, { id: xbox.id }],
+        },
+      },
+    }),
+    prisma.game.create({
+      data: {
+        title: 'Stardew Valley',
+        description: 'Jeu de simulation de vie agricole où vous héritez de l\'ancienne ferme de votre grand-père.',
+        releaseDate: '2016-02-26',
+        publisher: 'ConcernedApe',
+        developer: 'ConcernedApe',
+        platforms: {
+          connect: [{ id: pc.id }, { id: switch_.id }, { id: ps5.id }, { id: xbox.id }],
+        },
+      },
+    }),
+    prisma.game.create({
+      data: {
+        title: 'God of War Ragnarök',
+        description: 'Suite de God of War (2018), suivant Kratos et son fils Atreus dans leur voyage à travers les neuf royaumes.',
+        releaseDate: '2022-11-09',
+        publisher: 'Sony Interactive Entertainment',
+        developer: 'Santa Monica Studio',
+        platforms: {
+          connect: [{ id: ps5.id }],
+        },
+      },
+    }),
+    prisma.game.create({
+      data: {
+        title: 'Hades',
+        description: 'Rogue-like d\'action où vous incarnez le prince des Enfers tentant de s\'échapper du royaume des morts.',
+        releaseDate: '2020-09-17',
+        publisher: 'Supergiant Games',
+        developer: 'Supergiant Games',
+        platforms: {
+          connect: [{ id: pc.id }, { id: switch_.id }, { id: ps5.id }, { id: xbox.id }],
+        },
+      },
+    }),
+    prisma.game.create({
+      data: {
+        title: 'Among Us',
+        description: 'Jeu multijoueur de déduction sociale se déroulant dans l\'espace.',
+        releaseDate: '2018-06-15',
+        publisher: 'InnerSloth',
+        developer: 'InnerSloth',
+        platforms: {
+          connect: [{ id: pc.id }, { id: switch_.id }, { id: ps5.id }, { id: xbox.id }],
+        },
+      },
+    }),
+    prisma.game.create({
+      data: {
+        title: 'Baldur\'s Gate 3',
+        description: 'RPG épique basé sur Dungeons & Dragons, développé par les créateurs de Divinity: Original Sin.',
+        releaseDate: '2023-08-03',
+        publisher: 'Larian Studios',
+        developer: 'Larian Studios',
+        platforms: {
+          connect: [{ id: pc.id }, { id: ps5.id }],
+        },
+      },
+    }),
+  ]);
+
+  // Create reviews
+  const reviews = [];
+  for (const game of games) {
+    const gameReviews = await Promise.all([
+      prisma.review.create({
+        data: {
+          rating: 4.5 + Math.random() * 0.5,
+          content: `Une expérience de jeu incroyable. ${game.title} repousse les limites du genre et offre des heures de divertissement.`,
+          gameId: game.id,
+          userId: users[0].id,
+        },
+      }),
+      prisma.review.create({
+        data: {
+          rating: 3.5 + Math.random() * 1.5,
+          content: `Bien que ${game.title} ait quelques défauts mineurs, c'est globalement un excellent jeu qui mérite d'être joué.`,
+          gameId: game.id,
+          userId: users[1].id,
+        },
+      }),
+      prisma.review.create({
+        data: {
+          rating: 4.0 + Math.random() * 1.0,
+          content: `${game.title} propose une expérience unique et mémorable. Recommandé pour tous les amateurs du genre.`,
+          gameId: game.id,
+          userId: users[2].id,
+        },
+      }),
+    ]);
+    reviews.push(...gameReviews);
   }
-  console.log('Seeding completed.')
+
+  // Create articles
+  const articles = await Promise.all([
+    prisma.article.create({
+      data: {
+        title: 'Les meilleurs RPG de 2023',
+        content: 'Une analyse approfondie des RPG les plus marquants de l\'année, de Baldur\'s Gate 3 à Zelda: Tears of the Kingdom. Ces jeux ont redéfini les standards du genre...',
+        userId: users[0].id,
+        games: {
+          create: [
+            { gameId: games[0].id },
+            { gameId: games[7].id },
+          ],
+        },
+      },
+    }),
+    prisma.article.create({
+      data: {
+        title: 'L\'évolution des jeux indépendants',
+        content: 'Comment les jeux indépendants comme Stardew Valley et Hades ont révolutionné l\'industrie et prouvé qu\'une petite équipe peut créer des chefs-d\'œuvre...',
+        userId: users[1].id,
+        games: {
+          create: [
+            { gameId: games[3].id },
+            { gameId: games[5].id },
+          ],
+        },
+      },
+    }),
+    prisma.article.create({
+      data: {
+        title: 'Le phénomène du multijoueur social',
+        content: 'L\'impact des jeux sociaux comme Among Us sur la communauté gaming et comment ils ont changé notre façon de jouer ensemble...',
+        userId: users[2].id,
+        games: {
+          create: [
+            { gameId: games[6].id },
+          ],
+        },
+      },
+    }),
+    prisma.article.create({
+      data: {
+        title: 'Les exclusivités PlayStation qui ont marqué 2022',
+        content: 'God of War Ragnarök a établi de nouveaux standards pour les exclusivités console. Une analyse détaillée de son impact...',
+        userId: users[0].id,
+        games: {
+          create: [
+            { gameId: games[4].id },
+          ],
+        },
+      },
+    }),
+    prisma.article.create({
+      data: {
+        title: 'Le renouveau des RPG open-world',
+        content: 'De Cyberpunk 2077 à Elden Ring, comment les RPG en monde ouvert continuent d\'évoluer et d\'innover...',
+        userId: users[1].id,
+        games: {
+          create: [
+            { gameId: games[1].id },
+            { gameId: games[2].id },
+          ],
+        },
+      },
+    }),
+  ]);
+
+  console.log('Base de données ensemencée avec succès !');
 }
 
 main()
   .catch((e) => {
-    console.error(e)
-    process.exit(1)
+    console.error(e);
+    process.exit(1);
   })
   .finally(async () => {
-    await prisma.$disconnect()
-  })
+    await prisma.$disconnect();
+  });

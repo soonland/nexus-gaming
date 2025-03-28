@@ -1,4 +1,5 @@
 import React from 'react';
+import { formatGameReleaseDate } from '@/utils/dateFormatter';
 import {
   Box,
   Image,
@@ -75,7 +76,7 @@ export const GameCard = ({ game, onClick }: GameCardProps) => {
           </Text>
 
           <Text fontSize="sm" color="gray.500">
-            {game.releaseDate ? new Date(game.releaseDate).toLocaleDateString() : 'N/A'}
+            {formatGameReleaseDate(game.releaseDate)}
           </Text>
 
           {game.averageRating != null && (

@@ -23,7 +23,7 @@ model Platform {
   id           String    @id @default(uuid())
   name         String    @unique
   manufacturer String
-  releaseDate  DateTime?
+  releaseDate  String?
   games        Game[]    
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
@@ -33,7 +33,7 @@ model Game {
   id          String       @id @default(uuid())
   title       String
   description String
-  releaseDate DateTime
+  releaseDate String?
   publisher   String
   developer   String
   coverImage  String?

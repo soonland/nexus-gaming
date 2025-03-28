@@ -21,6 +21,7 @@ import { SearchIcon, CloseIcon, EditIcon, DeleteIcon, AddIcon } from '@chakra-ui
 import { Link as RouterLink } from 'react-router-dom'
 import { useGames } from '@/hooks/useGames'
 import { useState, useMemo } from 'react'
+import { formatGameReleaseDate } from '@/utils/dateFormatter'
 import Swal from 'sweetalert2'
 import { usePlatforms } from '@/hooks/usePlatforms'
 
@@ -38,9 +39,7 @@ export const AdminGameListPage = () => {
     yearSet.add('Toutes')
     games?.forEach(game => {
       if (game.releaseDate) {
-        yearSet.add(new Date(game.releaseDate).getFullYear().toString())
-      } else if (game.releasePeriod?.value) {
-        yearSet.add(game.releasePeriod.value.split('-')[0])
+        yearSet.add(game.releaseDate.split('-')[0])
       }
     })
     return Array.from(yearSet).sort((a, b) => b.localeCompare(a))
@@ -55,9 +54,7 @@ export const AdminGameListPage = () => {
       const matchesConsole = selectedConsole === 'Toutes' || 
         game.platforms.some(console => console.id === selectedConsole)
 
-      const gameYear = game.releaseDate 
-        ? new Date(game.releaseDate).getFullYear().toString()
-        : game.releasePeriod?.value.split('-')[0]
+      const gameYear = game.releaseDate?.split('-')[0]
 
       const matchesYear = selectedYear === 'Toutes' || gameYear === selectedYear
 
@@ -182,7 +179,9 @@ export const AdminGameListPage = () => {
               <Td>{game.developer}</Td>
               <Td>{game.publisher}</Td>
               <Td>{game.platforms.map(c => c.name).join(', ')}</Td>
-              <Td>{game.releaseDate ? new Date(game.releaseDate).toLocaleDateString() : 'N/A'}</Td>
+              <Td>
+                {formatGameReleaseDate(game.releaseDate)}
+              </Td>
               <Td>
                 <HStack spacing={2}>
                   <IconButton

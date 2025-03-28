@@ -1,14 +1,19 @@
-/**
- * Format a date to YYYY-MM-DD format required by the backend
- */
-export const formatDateToYYYYMMDD = (date: string | Date): string => {
-  if (typeof date === 'string') {
-    // If it's already in YYYY-MM-DD format, return as is
-    if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-      return date
-    }
-    // If it contains a T (ISO string) or any other format, convert to YYYY-MM-DD
-    return new Date(date).toISOString().split('T')[0]
+import dayjs from 'dayjs';
+import 'dayjs/locale/fr';
+
+dayjs.locale('fr');
+
+export const formatGameReleaseDate = (date: string | undefined): string => {
+  if (!date) return 'Date non définie';
+  
+  if (date.includes('-Q')) {
+    const [year, quarter] = date.split('-');
+    return `${year} ${quarter}`;
   }
-  return date.toISOString().split('T')[0]
-}
+  
+  if (date.length === 7) {
+    return dayjs(date).format('MMMM YYYY');
+  }
+  
+  return dayjs(date).format('D MMMM YYYY');
+};

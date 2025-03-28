@@ -20,12 +20,18 @@ import {
   Box,
   Flex,
   FormLabel,
+  CheckboxGroup,
+  Checkbox,
+  Wrap,
+  WrapItem,
+  useColorModeValue,
 } from '@chakra-ui/react';
 import { SearchIcon, AddIcon } from '@chakra-ui/icons';
 import { useState, useMemo } from 'react';
 import { GameCard } from './GameCard';
 import { GameForm } from './GameForm';
 import { Game, GameFormData } from '../../types/game';
+import { usePlatforms } from '@/hooks/usePlatforms';
 
 interface GameListProps {
   games?: Game[];
@@ -35,7 +41,6 @@ interface GameListProps {
   onGameCreate?: (data: GameFormData) => Promise<void>;
 }
 
-const PLATFORM_OPTIONS = ['Toutes', 'PC', 'PlayStation', 'Xbox', 'Nintendo Switch', 'Mobile'];
 const SORT_OPTIONS = [
   { value: 'title-asc', label: 'Titre (A-Z)' },
   { value: 'title-desc', label: 'Titre (Z-A)' },
@@ -54,9 +59,13 @@ export const GameList = ({
 }: GameListProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [searchTerm, setSearchTerm] = useState('');
-  const [platformFilter, setPlatformFilter] = useState('Toutes');
+  const [platformFilters, setPlatformFilters] = useState<string[]>([]); 
   const [sortOption, setSortOption] = useState('title-asc');
   const [releaseYearFilter, setReleaseYearFilter] = useState('');
+  const { platforms } = usePlatforms();
+
+  const borderColor = useColorModeValue('gray.200', 'gray.600');
+  const hoverBg = useColorModeValue('gray.50', 'gray.700');
 
   const currentYear = new Date().getFullYear();
   const yearOptions = Array.from(
@@ -70,11 +79,23 @@ export const GameList = ({
         game.developer.toLowerCase().includes(searchTerm.toLowerCase()) ||
         game.publisher.toLowerCase().includes(searchTerm.toLowerCase());
 
-      const matchesYear = !releaseYearFilter ||
-        (game.releaseDate && new Date(game.releaseDate).getFullYear().toString() === releaseYearFilter) ||
-        (game.releasePeriod && game.releasePeriod.value.startsWith(releaseYearFilter));
+      const matchesPlatform = platformFilters.length === 0 ||
+        game.platforms.some(platform => platformFilters.includes(platform.id));
+      
+      if (platformFilters.length > 0) {
+        console.log(`\nFiltering game "${game.title}"`);
+        console.log('- Game platforms:', JSON.stringify(game.platforms));
+        console.log('- Current platform filters:', platformFilters);
+        console.log('- Any matching platform?', matchesPlatform);
+        if (!matchesPlatform) {
+          console.log('  → Game filtered out: no matching platforms');
+        }
+      }
 
-      return matchesSearch && matchesYear;
+      const matchesYear = !releaseYearFilter || 
+        (game.releaseDate && game.releaseDate.startsWith(releaseYearFilter));
+
+      return matchesSearch && matchesPlatform && matchesYear;
     });
 
     // Sort the filtered results
@@ -85,11 +106,15 @@ export const GameList = ({
         case 'title-desc':
           return (b.title ?? '').localeCompare(a.title ?? '');
         case 'date-desc':
-          return new Date(b.releaseDate || b.releasePeriod?.value || 0).getTime() -
-                 new Date(a.releaseDate || a.releasePeriod?.value || 0).getTime();
+          if (!a.releaseDate && !b.releaseDate) return 0;
+          if (!a.releaseDate) return 1;
+          if (!b.releaseDate) return -1;
+          return b.releaseDate.localeCompare(a.releaseDate);
         case 'date-asc':
-          return new Date(a.releaseDate || a.releasePeriod?.value || 0).getTime() -
-                 new Date(b.releaseDate || b.releasePeriod?.value || 0).getTime();
+          if (!a.releaseDate && !b.releaseDate) return 0;
+          if (!a.releaseDate) return -1;
+          if (!b.releaseDate) return 1;
+          return a.releaseDate.localeCompare(b.releaseDate);
         case 'rating-desc':
           return (b.averageRating || 0) - (a.averageRating || 0);
         case 'rating-asc':
@@ -100,7 +125,7 @@ export const GameList = ({
     });
 
     return result;
-  }, [games, searchTerm, platformFilter, sortOption, releaseYearFilter]);
+  }, [games, searchTerm, platformFilters, sortOption, releaseYearFilter]);
 
   return (
     <Container maxW="container.xl" py={8}>
@@ -125,19 +150,53 @@ export const GameList = ({
             )}
           </Flex>
 
-          <Flex gap={4} wrap="wrap" align="flex-end">
-            <Box minW="200px">
-              <FormLabel>Plateforme</FormLabel>
-              <Select
-                value={platformFilter}
-                onChange={(e) => setPlatformFilter(e.target.value)}
+          <Flex gap={6} wrap="wrap" align="flex-start">
+            <Box minW="200px" flex="1">
+              <FormLabel>Plateformes</FormLabel>
+              <Box 
+                borderWidth="1px" 
+                borderRadius="md" 
+                borderColor={borderColor}
+                p={3}
               >
-                {PLATFORM_OPTIONS.map((platform) => (
-                  <option key={platform} value={platform}>
-                    {platform}
-                  </option>
-                ))}
-              </Select>
+                <CheckboxGroup 
+                  value={platformFilters} 
+                  onChange={(value) => {
+                    console.log('Platform selection changed:');
+                    console.log('- Previously selected:', platformFilters);
+                    console.log('- Newly selected:', value);
+                    console.log('- Available platforms:', platforms?.map(p => ({ id: p.id, name: p.name })));
+                    setPlatformFilters(value as string[]);
+                  }}
+                >
+                  <Wrap spacing={3}>
+                    {platforms?.map((platform) => (
+                      <WrapItem key={platform.id}>
+                        <Checkbox
+                          value={platform.id}
+                          sx={{
+                            '& .chakra-checkbox__control': {
+                              borderRadius: 'sm',
+                            },
+                            '& .chakra-checkbox__label': {
+                              userSelect: 'none',
+                            },
+                            padding: '2px 8px',
+                            borderRadius: 'md',
+                            _hover: {
+                              bg: hoverBg,
+                            },
+                          }}
+                        >
+                          <Text as="span" fontSize="sm">
+                            {platform.name}
+                          </Text>
+                        </Checkbox>
+                      </WrapItem>
+                    ))}
+                  </Wrap>
+                </CheckboxGroup>
+              </Box>
             </Box>
 
             <Box minW="200px">

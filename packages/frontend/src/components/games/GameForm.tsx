@@ -42,10 +42,7 @@ export const GameForm = ({
     defaultValues: {
       title: initialData?.title || '',
       description: initialData?.description || '',
-      releasePeriod: {
-        type: 'date',
-        value: initialData?.releaseDate || ''
-      },
+      releaseDate: initialData?.releaseDate,
       platformIds: initialData?.platformIds || [],
       publisher: initialData?.publisher || '',
       developer: initialData?.developer || '',
@@ -125,7 +122,6 @@ export const GameForm = ({
           <GridItem>
             <ReleaseDateSelector
               control={control}
-              register={register}
               errors={errors}
             />
           </GridItem>
