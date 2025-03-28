@@ -56,11 +56,17 @@ export function Navbar() {
                         Administration
                       </MenuButton>
                       <MenuList>
+                        <MenuItem as={RouterLink} to="/admin/games">
+                          Liste des jeux
+                        </MenuItem>
                         <MenuItem as={RouterLink} to="/admin/games/new">
                           Créer un jeu
                         </MenuItem>
-                        <MenuItem as={RouterLink} to="/admin/games">
-                          Liste des jeux
+                        <MenuItem as={RouterLink} to="/admin/consoles">
+                          Liste des consoles
+                        </MenuItem>
+                        <MenuItem as={RouterLink} to="/admin/consoles/new">
+                          Créer une console
                         </MenuItem>
                       </MenuList>
                     </Menu>

@@ -10,6 +10,8 @@ import { ArticleDetail } from '@/components/articles/ArticleDetail'
 import { AdminRoute } from '@/components/admin/AdminRoute'
 import { AdminGameListPage } from '@/pages/admin/GameListPage'
 import { AdminGameFormPage } from '@/pages/admin/GameFormPage'
+import { ConsoleListPage } from '@/pages/admin/ConsoleListPage'
+import { ConsoleFormPage } from '@/pages/admin/ConsoleFormPage'
 
 export default function App() {
   return (
@@ -28,6 +30,10 @@ export default function App() {
             <Route path="/admin/games" element={<AdminGameListPage />} />
             <Route path="/admin/games/new" element={<AdminGameFormPage />} />
             <Route path="/admin/games/:id/edit" element={<AdminGameFormPage />} />
+            
+            <Route path="/admin/consoles" element={<ConsoleListPage />} />
+            <Route path="/admin/consoles/new" element={<ConsoleFormPage />} />
+            <Route path="/admin/consoles/:id/edit" element={<ConsoleFormPage />} />
           </Route>
         </Routes>
       </Container>

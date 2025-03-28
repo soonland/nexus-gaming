@@ -19,15 +19,25 @@ model User {
   updatedAt DateTime  @updatedAt
 }
 
+model Platform {
+  id           String    @id @default(uuid())
+  name         String    @unique
+  manufacturer String
+  releaseDate  DateTime?
+  games        Game[]    
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
 model Game {
   id          String       @id @default(uuid())
   title       String
   description String
   releaseDate DateTime
-  platform    String[]
   publisher   String
   developer   String
   coverImage  String?
+  platforms   Platform[]
   reviews     Review[]
   articles    ArticleGame[]
   createdAt   DateTime     @default(now())

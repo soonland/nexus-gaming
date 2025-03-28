@@ -4,6 +4,7 @@ import { authRoutes } from './auth'
 import { gameRoutes } from './games'
 import { reviewRoutes } from './reviews'
 import { articleRoutes } from './articles'
+import { platformRoutes } from './platforms'
 
 export async function configureRoutes(server: FastifyServerInstance) {
   // Health check route
@@ -16,6 +17,7 @@ export async function configureRoutes(server: FastifyServerInstance) {
   server.register(gameRoutes, { prefix: '/games' })
   server.register(reviewRoutes, { prefix: '/reviews' })
   server.register(articleRoutes, { prefix: '/articles' })
+  server.register(platformRoutes, { prefix: '/platforms' })
 }
 
 // Types for route handlers

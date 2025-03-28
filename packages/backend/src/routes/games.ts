@@ -2,6 +2,21 @@ import { FastifyReply, FastifyRequest } from 'fastify'
 import { Type } from '@sinclair/typebox'
 import { FastifyServerInstance } from '../types/server'
 import { AuthenticatedRequest } from '../types/auth'
+import { Game, Prisma } from '@prisma/client'
+
+type GameWithRelations = Game & {
+  platforms: {
+    id: string
+    name: string
+    manufacturer: string
+    releaseDate: Date | null
+    createdAt: Date
+    updatedAt: Date
+  }[]
+  reviews?: {
+    rating: number
+  }[]
+}
 
 const gameSchema = Type.Object({
   title: Type.String(),
@@ -14,17 +29,17 @@ const gameSchema = Type.Object({
     ]),
     value: Type.String()
   })),
-  platform: Type.Array(Type.String()),
+  platformIds: Type.Array(Type.String()),
   publisher: Type.String(),
   developer: Type.String(),
   coverImage: Type.Optional(Type.String()),
 })
 
-const formatGameDates = (game: any) => ({
+const formatGameDates = (game: GameWithRelations) => ({
   ...game,
   releaseDate: game.releaseDate ? game.releaseDate.toISOString().split('T')[0] : null,
-  createdAt: game.createdAt ? game.createdAt.toISOString() : null,
-  updatedAt: game.updatedAt ? game.updatedAt.toISOString() : null
+  createdAt: game.createdAt.toISOString(),
+  updatedAt: game.updatedAt.toISOString(),
 })
 
 const parseReleasePeriod = (releasePeriod: any) => {
@@ -56,7 +71,12 @@ export async function gameRoutes(server: FastifyServerInstance) {
           title: Type.String(),
           description: Type.String(),
           releaseDate: Type.Union([Type.String(), Type.Null()]),
-          platform: Type.Array(Type.String()),
+          platforms: Type.Array(Type.Object({
+            id: Type.String(),
+            name: Type.String(),
+            manufacturer: Type.String(),
+            releaseDate: Type.Union([Type.String(), Type.Null()])
+          })),
           publisher: Type.String(),
           developer: Type.String(),
           coverImage: Type.Optional(Type.String()),
@@ -69,17 +89,17 @@ export async function gameRoutes(server: FastifyServerInstance) {
     handler: async (request: FastifyRequest, reply: FastifyReply) => {
       const games = await server.prisma.game.findMany({
         include: {
+          platforms: true,
           reviews: {
             select: {
               rating: true,
             },
           },
         },
-      })
+      }) as GameWithRelations[]
 
-      // Calculate average rating for each game
       const gamesWithRating = games.map((game) => {
-        const ratings = game.reviews.map((review) => review.rating)
+        const ratings = game.reviews?.map(review => review.rating) || []
         const averageRating =
           ratings.length > 0
             ? ratings.reduce((a, b) => a + b, 0) / ratings.length
@@ -89,6 +109,10 @@ export async function gameRoutes(server: FastifyServerInstance) {
         
         return {
           ...formatGameDates(gameWithoutReviews),
+          platforms: game.platforms.map(platform => ({
+            ...platform,
+            releaseDate: platform.releaseDate ? platform.releaseDate.toISOString().split('T')[0] : null
+          })),
           averageRating,
         }
       })
@@ -101,7 +125,7 @@ export async function gameRoutes(server: FastifyServerInstance) {
   server.get('/:id', {
     schema: {
       tags: ['games'],
-      description: 'Obtenir les détails d\'un jeu spécifique avec ses critiques et articles',
+      description: 'Obtenir les détails d\'un jeu spécifique',
       params: Type.Object({
         id: Type.String({ description: 'ID du jeu' })
       }),
@@ -111,31 +135,17 @@ export async function gameRoutes(server: FastifyServerInstance) {
           title: Type.String(),
           description: Type.String(),
           releaseDate: Type.Union([Type.String(), Type.Null()]),
-          platform: Type.Array(Type.String()),
+          platforms: Type.Array(Type.Object({
+            id: Type.String(),
+            name: Type.String(),
+            manufacturer: Type.String(),
+            releaseDate: Type.Union([Type.String(), Type.Null()])
+          })),
           publisher: Type.String(),
           developer: Type.String(),
           coverImage: Type.Optional(Type.String()),
           createdAt: Type.String(),
           updatedAt: Type.String(),
-          reviews: Type.Array(Type.Object({
-            id: Type.String(),
-            rating: Type.Number(),
-            content: Type.String(),
-            user: Type.Object({
-              id: Type.String(),
-              username: Type.String()
-            })
-          })),
-          articles: Type.Array(Type.Object({
-            article: Type.Object({
-              id: Type.String(),
-              title: Type.String(),
-              publishedAt: Type.String(),
-              user: Type.Object({
-                username: Type.String()
-              })
-            })
-          }))
         }),
         404: Type.Object({
           message: Type.String()
@@ -148,42 +158,21 @@ export async function gameRoutes(server: FastifyServerInstance) {
       const game = await server.prisma.game.findUnique({
         where: { id },
         include: {
-          reviews: {
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  username: true,
-                },
-              },
-            },
-          },
-          articles: {
-            include: {
-              article: {
-                select: {
-                  id: true,
-                  title: true,
-                  publishedAt: true,
-                  user: {
-                    select: {
-                      username: true,
-                    },
-                  },
-                },
-              },
-            },
-          },
+          platforms: true
         },
-      })
+      }) as GameWithRelations | null
 
       if (!game) {
-        return reply.status(404).send({
-          message: 'Jeu non trouvé',
-        })
+        return reply.status(404).send({ message: 'Jeu non trouvé' })
       }
 
-      return reply.send(formatGameDates(game))
+      return reply.send({
+        ...formatGameDates(game),
+        platforms: game.platforms.map(platform => ({
+          ...platform,
+          releaseDate: platform.releaseDate ? platform.releaseDate.toISOString().split('T')[0] : null
+        }))
+      })
     }
   })
 
@@ -201,7 +190,12 @@ export async function gameRoutes(server: FastifyServerInstance) {
           title: Type.String(),
           description: Type.String(),
           releaseDate: Type.Union([Type.String(), Type.Null()]),
-          platform: Type.Array(Type.String()),
+          platforms: Type.Array(Type.Object({
+            id: Type.String(),
+            name: Type.String(),
+            manufacturer: Type.String(),
+            releaseDate: Type.Union([Type.String(), Type.Null()])
+          })),
           publisher: Type.String(),
           developer: Type.String(),
           coverImage: Type.Optional(Type.String()),
@@ -214,24 +208,35 @@ export async function gameRoutes(server: FastifyServerInstance) {
       }
     },
     handler: async (request: AuthenticatedRequest, reply: FastifyReply) => {
-      // Check if user is admin
       if (request.user.role !== 'ADMIN') {
         return reply.status(403).send({
           message: 'Action non autorisée',
         })
       }
 
-      const { releasePeriod, ...rest } = request.body as any
-      const releaseDate = parseReleasePeriod(releasePeriod);
+      const { releasePeriod, platformIds, ...rest } = request.body as any
+      const releaseDate = parseReleasePeriod(releasePeriod)
 
       const game = await server.prisma.game.create({
         data: {
           ...rest,
-          releaseDate
+          releaseDate,
+          platforms: {
+            connect: platformIds.map((id: string) => ({ id }))
+          }
         },
-      })
+        include: {
+          platforms: true
+        }
+      }) as GameWithRelations
 
-      return reply.status(201).send(formatGameDates(game))
+      return reply.status(201).send({
+        ...formatGameDates(game),
+        platforms: game.platforms.map(platform => ({
+          ...platform,
+          releaseDate: platform.releaseDate ? platform.releaseDate.toISOString().split('T')[0] : null
+        }))
+      })
     }
   })
 
@@ -252,7 +257,12 @@ export async function gameRoutes(server: FastifyServerInstance) {
           title: Type.String(),
           description: Type.String(),
           releaseDate: Type.Union([Type.String(), Type.Null()]),
-          platform: Type.Array(Type.String()),
+          platforms: Type.Array(Type.Object({
+            id: Type.String(),
+            name: Type.String(),
+            manufacturer: Type.String(),
+            releaseDate: Type.Union([Type.String(), Type.Null()])
+          })),
           publisher: Type.String(),
           developer: Type.String(),
           coverImage: Type.Optional(Type.String()),
@@ -268,7 +278,6 @@ export async function gameRoutes(server: FastifyServerInstance) {
       }
     },
     handler: async (request: AuthenticatedRequest, reply: FastifyReply) => {
-      // Check if user is admin
       if (request.user.role !== 'ADMIN') {
         return reply.status(403).send({
           message: 'Action non autorisée',
@@ -276,18 +285,39 @@ export async function gameRoutes(server: FastifyServerInstance) {
       }
 
       const { id } = request.params as { id: string }
-      const { releasePeriod, ...rest } = request.body as any
-      const releaseDate = releasePeriod ? parseReleasePeriod(releasePeriod) : undefined;
+      const { releasePeriod, platformIds, ...rest } = request.body as any
+      const releaseDate = releasePeriod ? parseReleasePeriod(releasePeriod) : undefined
 
-      const game = await server.prisma.game.update({
-        where: { id },
-        data: {
-          ...rest,
-          ...(releaseDate !== undefined && { releaseDate })
-        },
-      })
+      try {
+        const game = await server.prisma.game.update({
+          where: { id },
+          data: {
+            ...rest,
+            ...(releaseDate !== undefined && { releaseDate }),
+            ...(platformIds && {
+              platforms: {
+                set: platformIds.map((id: string) => ({ id }))
+              }
+            })
+          },
+          include: {
+            platforms: true
+          }
+        }) as GameWithRelations
 
-      return reply.send(formatGameDates(game))
+        return reply.send({
+          ...formatGameDates(game),
+          platforms: game.platforms.map(platform => ({
+            ...platform,
+            releaseDate: platform.releaseDate ? platform.releaseDate.toISOString().split('T')[0] : null
+          }))
+        })
+      } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+          return reply.status(404).send({ message: 'Jeu non trouvé' })
+        }
+        throw error
+      }
     }
   })
 
@@ -312,7 +342,6 @@ export async function gameRoutes(server: FastifyServerInstance) {
       }
     },
     handler: async (request: AuthenticatedRequest, reply: FastifyReply) => {
-      // Check if user is admin
       if (request.user.role !== 'ADMIN') {
         return reply.status(403).send({
           message: 'Action non autorisée',
@@ -321,11 +350,17 @@ export async function gameRoutes(server: FastifyServerInstance) {
 
       const { id } = request.params as { id: string }
 
-      await server.prisma.game.delete({
-        where: { id },
-      })
-
-      return reply.status(204).send()
+      try {
+        await server.prisma.game.delete({
+          where: { id },
+        })
+        return reply.status(204).send()
+      } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+          return reply.status(404).send({ message: 'Jeu non trouvé' })
+        }
+        throw error
+      }
     }
   })
 }

@@ -10,7 +10,7 @@ import {
   Icon,
 } from '@chakra-ui/react';
 import { StarIcon } from '@chakra-ui/icons';
-import { Game } from '../../types/game';
+import { Game } from '@/types/game';
 
 interface GameCardProps {
   game: Game;
@@ -47,15 +47,15 @@ export const GameCard = ({ game, onClick }: GameCardProps) => {
 
       <Box p="6">
         <Box display="flex" alignItems="baseline">
-          {game.platform.map((platform) => (
+          {game.consoles.map((console) => (
             <Badge
-              key={platform}
+              key={console.id}
               borderRadius="full"
               px="2"
               colorScheme="teal"
               mr="2"
             >
-              {platform}
+              {console.name}
             </Badge>
           ))}
         </Box>

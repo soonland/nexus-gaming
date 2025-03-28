@@ -1,3 +1,5 @@
+import { Console } from './console';
+
 export interface Game {
   id: string;
   title?: string;
@@ -7,7 +9,7 @@ export interface Game {
     type: 'date' | 'quarter' | 'month';
     value: string; // YYYY-MM-DD for date, YYYY-QN for quarter, YYYY-MM for month
   };
-  platform: string[];
+  consoles: Console[];
   publisher: string;
   developer: string;
   coverImage?: string;
@@ -24,7 +26,7 @@ export interface GameFormData {
     type: 'date' | 'quarter' | 'month';
     value: string;
   };
-  platform: string[];
+  consoleIds: string[];
   publisher: string;
   developer: string;
   coverImage?: string;

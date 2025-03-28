@@ -22,23 +22,16 @@ import { Link as RouterLink } from 'react-router-dom'
 import { useGames } from '@/hooks/useGames'
 import { useState, useMemo } from 'react'
 import Swal from 'sweetalert2'
+import { useConsoles } from '@/hooks/useConsoles'
 
 export const AdminGameListPage = () => {
   const { games, deleteGame } = useGames()
+  const { consoles } = useConsoles()
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
-  const [selectedPlatform, setSelectedPlatform] = useState('Toutes')
+  const [selectedConsole, setSelectedConsole] = useState('Toutes')
   const [selectedYear, setSelectedYear] = useState('Toutes')
   const toast = useToast()
-
-  const platforms = useMemo(() => {
-    const platformSet = new Set<string>()
-    platformSet.add('Toutes')
-    games?.forEach(game => {
-      game.platform.forEach(p => platformSet.add(p))
-    })
-    return Array.from(platformSet)
-  }, [games])
 
   const years = useMemo(() => {
     const yearSet = new Set<string>()
@@ -59,8 +52,8 @@ export const AdminGameListPage = () => {
         (game.title?.toLowerCase().includes(searchTerm.toLowerCase()) || 
         game.description.toLowerCase().includes(searchTerm.toLowerCase()))
 
-      const matchesPlatform = selectedPlatform === 'Toutes' || 
-        game.platform.includes(selectedPlatform)
+      const matchesConsole = selectedConsole === 'Toutes' || 
+        game.consoles.some(console => console.id === selectedConsole)
 
       const gameYear = game.releaseDate 
         ? new Date(game.releaseDate).getFullYear().toString()
@@ -68,9 +61,9 @@ export const AdminGameListPage = () => {
 
       const matchesYear = selectedYear === 'Toutes' || gameYear === selectedYear
 
-      return matchesSearch && matchesPlatform && matchesYear
+      return matchesSearch && matchesConsole && matchesYear
     })
-  }, [games, searchTerm, selectedPlatform, selectedYear])
+  }, [games, searchTerm, selectedConsole, selectedYear])
 
   const handleDelete = async (id: string) => {
     Swal.fire({
@@ -135,12 +128,13 @@ export const AdminGameListPage = () => {
 
           <Select
             maxW="200px"
-            value={selectedPlatform}
-            onChange={(e) => setSelectedPlatform(e.target.value)}
+            value={selectedConsole}
+            onChange={(e) => setSelectedConsole(e.target.value)}
           >
-            {platforms.map((platform) => (
-              <option key={platform} value={platform}>
-                {platform}
+            <option value="Toutes">Toutes les consoles</option>
+            {consoles.map((console) => (
+              <option key={console.id} value={console.id}>
+                {console.name}
               </option>
             ))}
           </Select>
@@ -163,7 +157,7 @@ export const AdminGameListPage = () => {
             icon={<CloseIcon />}
             onClick={() => {
               setSearchTerm('')
-              setSelectedPlatform('Toutes')
+              setSelectedConsole('Toutes')
               setSelectedYear('Toutes')
             }}
           />
@@ -176,6 +170,7 @@ export const AdminGameListPage = () => {
             <Th>Titre</Th>
             <Th>Développeur</Th>
             <Th>Éditeur</Th>
+            <Th>Consoles</Th>
             <Th>Date de sortie</Th>
             <Th>Actions</Th>
           </Tr>
@@ -186,6 +181,7 @@ export const AdminGameListPage = () => {
               <Td>{game.title}</Td>
               <Td>{game.developer}</Td>
               <Td>{game.publisher}</Td>
+              <Td>{game.consoles.map(c => c.name).join(', ')}</Td>
               <Td>{game.releaseDate ? new Date(game.releaseDate).toLocaleDateString() : 'N/A'}</Td>
               <Td>
                 <HStack spacing={2}>

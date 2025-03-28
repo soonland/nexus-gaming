@@ -64,7 +64,8 @@ async function main() {
           { name: 'auth', description: 'Authentification et gestion des utilisateurs' },
           { name: 'games', description: 'Gestion des jeux vidéo' },
           { name: 'articles', description: 'Gestion des articles' },
-          { name: 'reviews', description: 'Gestion des critiques' }
+          { name: 'reviews', description: 'Gestion des critiques' },
+          { name: 'platforms', description: 'Gestion des plateformes de jeu' }
         ],
         securityDefinitions: {
           bearerAuth: {
@@ -76,6 +77,9 @@ async function main() {
       }
     })
 
+    // Register custom plugins first
+    await server.register(prisma)
+
     // Register Swagger UI
     await server.register(swaggerUi, {
       routePrefix: '/',
@@ -85,10 +89,7 @@ async function main() {
       }
     })
 
-    // Register custom plugins
-    await server.register(prisma)
-
-    // Register routes
+    // Register routes after plugins
     await configureRoutes(server)
 
     // Start server

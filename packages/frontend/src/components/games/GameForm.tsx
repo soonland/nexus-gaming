@@ -8,17 +8,14 @@ import {
   Stack,
   VStack,
   Textarea,
-  HStack,
   Grid,
   GridItem,
-  Badge,
   useColorModeValue,
 } from '@chakra-ui/react';
+import { ConsoleSelect } from '../consoles';
 import { useForm, Controller } from 'react-hook-form';
 import { GameFormData } from '../../types/game';
 import { ReleaseDateSelector } from './ReleaseDateSelector';
-
-const PLATFORMS = ['PC', 'PlayStation', 'Xbox', 'Nintendo Switch', 'Mobile'];
 
 interface GameFormProps {
   initialData?: GameFormData;
@@ -51,22 +48,12 @@ export const GameForm = ({
         type: 'date',
         value: initialData?.releaseDate || ''
       },
-      platform: initialData?.platform || [],
+      consoleIds: initialData?.consoleIds || [],
       publisher: initialData?.publisher || '',
       developer: initialData?.developer || '',
       coverImage: initialData?.coverImage || '',
     },
   });
-
-  const selectedPlatforms = watch('platform');
-
-  const handlePlatformToggle = (platform: string) => {
-    const current = selectedPlatforms || [];
-    const updated = current.includes(platform)
-      ? current.filter((p) => p !== platform)
-      : [...current, platform];
-    setValue('platform', updated);
-  };
 
   return (
     <Box
@@ -146,36 +133,18 @@ export const GameForm = ({
           </GridItem>
 
           <GridItem>
-            <FormControl isRequired isInvalid={!!errors.platform}>
-              <FormLabel>Plateformes</FormLabel>
-              <Controller
-                name="platform"
-                control={control}
-                rules={{ required: 'Au moins une plateforme est requise' }}
-                render={() => (
-                  <HStack spacing={2} wrap="wrap">
-                    {PLATFORMS.map((platform) => (
-                      <Badge
-                        key={platform}
-                        borderRadius="full"
-                        px={3}
-                        py={1}
-                        cursor="pointer"
-                        onClick={() => handlePlatformToggle(platform)}
-                        colorScheme={
-                          selectedPlatforms?.includes(platform) ? 'teal' : 'gray'
-                        }
-                      >
-                        {platform}
-                      </Badge>
-                    ))}
-                  </HStack>
-                )}
-              />
-              <FormErrorMessage>
-                {errors.platform && errors.platform.message}
-              </FormErrorMessage>
-            </FormControl>
+            <Controller
+              name="consoleIds"
+              control={control}
+              rules={{ required: 'Au moins une console est requise' }}
+              render={({ field }) => (
+                <ConsoleSelect
+                  value={field.value}
+                  onChange={field.onChange}
+                  error={errors.consoleIds?.message}
+                />
+              )}
+            />
           </GridItem>
 
           <GridItem colSpan={2}>
