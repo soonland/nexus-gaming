@@ -127,9 +127,13 @@ export async function articleRoutes(server: FastifyServerInstance) {
   },
 })
 
-  // Create article
+  // Create article - Admin only
   server.post('/', {
-    onRequest: [server.authenticate],
+    onRequest: [server.authenticate, async (request: AuthenticatedRequest, reply: FastifyReply) => {
+      if (request.user.role !== 'ADMIN') {
+        return reply.status(403).send({ message: 'Seuls les administrateurs peuvent créer des articles' })
+      }
+    }],
     schema: {
       tags: ['articles'],
       description: 'Créer un nouvel article',
@@ -194,9 +198,13 @@ export async function articleRoutes(server: FastifyServerInstance) {
     }
   })
 
-  // Update article
+  // Update article - Admin only
   server.patch('/:id', {
-    onRequest: [server.authenticate],
+    onRequest: [server.authenticate, async (request: AuthenticatedRequest, reply: FastifyReply) => {
+      if (request.user.role !== 'ADMIN') {
+        return reply.status(403).send({ message: 'Seuls les administrateurs peuvent modifier des articles' })
+      }
+    }],
     schema: {
       tags: ['articles'],
       description: 'Modifier un article existant',
@@ -300,9 +308,13 @@ export async function articleRoutes(server: FastifyServerInstance) {
     }
   })
 
-  // Delete article
+  // Delete article - Admin only
   server.delete('/:id', {
-    onRequest: [server.authenticate],
+    onRequest: [server.authenticate, async (request: AuthenticatedRequest, reply: FastifyReply) => {
+      if (request.user.role !== 'ADMIN') {
+        return reply.status(403).send({ message: 'Seuls les administrateurs peuvent supprimer des articles' })
+      }
+    }],
     schema: {
       tags: ['articles'],
       description: 'Supprimer un article',

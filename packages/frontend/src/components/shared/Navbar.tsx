@@ -68,6 +68,12 @@ export function Navbar() {
                         <MenuItem as={RouterLink} to="/admin/platforms/new">
                           Créer une plateforme
                         </MenuItem>
+                        <MenuItem as={RouterLink} to="/admin/articles">
+                          Articles
+                        </MenuItem>
+                        <MenuItem as={RouterLink} to="/admin/articles/new">
+                          Créer un article
+                        </MenuItem>
                       </MenuList>
                     </Menu>
                   )}
