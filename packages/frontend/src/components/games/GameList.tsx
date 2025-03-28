@@ -70,14 +70,11 @@ export const GameList = ({
         game.developer.toLowerCase().includes(searchTerm.toLowerCase()) ||
         game.publisher.toLowerCase().includes(searchTerm.toLowerCase());
 
-      const matchesPlatform = platformFilter === 'Toutes' ||
-        game.platform.includes(platformFilter);
-
       const matchesYear = !releaseYearFilter ||
         (game.releaseDate && new Date(game.releaseDate).getFullYear().toString() === releaseYearFilter) ||
         (game.releasePeriod && game.releasePeriod.value.startsWith(releaseYearFilter));
 
-      return matchesSearch && matchesPlatform && matchesYear;
+      return matchesSearch && matchesYear;
     });
 
     // Sort the filtered results

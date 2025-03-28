@@ -22,11 +22,11 @@ import { Link as RouterLink } from 'react-router-dom'
 import { useGames } from '@/hooks/useGames'
 import { useState, useMemo } from 'react'
 import Swal from 'sweetalert2'
-import { useConsoles } from '@/hooks/useConsoles'
+import { usePlatforms } from '@/hooks/usePlatforms'
 
 export const AdminGameListPage = () => {
   const { games, deleteGame } = useGames()
-  const { consoles } = useConsoles()
+  const { platforms } = usePlatforms()
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedConsole, setSelectedConsole] = useState('Toutes')
@@ -53,7 +53,7 @@ export const AdminGameListPage = () => {
         game.description.toLowerCase().includes(searchTerm.toLowerCase()))
 
       const matchesConsole = selectedConsole === 'Toutes' || 
-        game.consoles.some(console => console.id === selectedConsole)
+        game.platforms.some(console => console.id === selectedConsole)
 
       const gameYear = game.releaseDate 
         ? new Date(game.releaseDate).getFullYear().toString()
@@ -132,9 +132,9 @@ export const AdminGameListPage = () => {
             onChange={(e) => setSelectedConsole(e.target.value)}
           >
             <option value="Toutes">Toutes les consoles</option>
-            {consoles.map((console) => (
-              <option key={console.id} value={console.id}>
-                {console.name}
+            {platforms.map((platform) => (
+              <option key={platform.id} value={platform.id}>
+                {platform.name}
               </option>
             ))}
           </Select>
@@ -181,7 +181,7 @@ export const AdminGameListPage = () => {
               <Td>{game.title}</Td>
               <Td>{game.developer}</Td>
               <Td>{game.publisher}</Td>
-              <Td>{game.consoles.map(c => c.name).join(', ')}</Td>
+              <Td>{game.platforms.map(c => c.name).join(', ')}</Td>
               <Td>{game.releaseDate ? new Date(game.releaseDate).toLocaleDateString() : 'N/A'}</Td>
               <Td>
                 <HStack spacing={2}>

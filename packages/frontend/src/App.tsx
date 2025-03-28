@@ -10,8 +10,8 @@ import { ArticleDetail } from '@/components/articles/ArticleDetail'
 import { AdminRoute } from '@/components/admin/AdminRoute'
 import { AdminGameListPage } from '@/pages/admin/GameListPage'
 import { AdminGameFormPage } from '@/pages/admin/GameFormPage'
-import { ConsoleListPage } from '@/pages/admin/ConsoleListPage'
-import { ConsoleFormPage } from '@/pages/admin/ConsoleFormPage'
+import { AdminPlatformListPage } from '@/pages/admin/PlatformListPage'
+import { AdminPlatformFormPage } from '@/pages/admin/PlatformFormPage'
 
 export default function App() {
   return (
@@ -31,9 +31,9 @@ export default function App() {
             <Route path="/admin/games/new" element={<AdminGameFormPage />} />
             <Route path="/admin/games/:id/edit" element={<AdminGameFormPage />} />
             
-            <Route path="/admin/consoles" element={<ConsoleListPage />} />
-            <Route path="/admin/consoles/new" element={<ConsoleFormPage />} />
-            <Route path="/admin/consoles/:id/edit" element={<ConsoleFormPage />} />
+            <Route path="/admin/platforms" element={<AdminPlatformListPage />} />
+            <Route path="/admin/platforms/new" element={<AdminPlatformFormPage />} />
+            <Route path="/admin/platforms/:id/edit" element={<AdminPlatformFormPage />} />
           </Route>
         </Routes>
       </Container>

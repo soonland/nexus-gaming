@@ -47,7 +47,7 @@ export const GameCard = ({ game, onClick }: GameCardProps) => {
 
       <Box p="6">
         <Box display="flex" alignItems="baseline">
-          {game.consoles.map((console) => (
+          {game.platforms.map((console) => (
             <Badge
               key={console.id}
               borderRadius="full"

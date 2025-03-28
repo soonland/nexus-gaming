@@ -3,7 +3,6 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { GameForm } from '@/components/games/GameForm'
 import { useGames } from '@/hooks/useGames'
 import { GameFormData } from '@/types/game'
-import { formatDateToYYYYMMDD } from '@/utils/dateFormatter'
 import axios from 'axios'
 import { Game } from '@/types/game'
 
@@ -22,6 +21,7 @@ const transformGameToFormData = (game: Game): GameFormData => {
     ...rest,
     title: title,
     releasePeriod,
+    platformIds: game.platforms.map((platform) => platform.id),
   };
 };
 

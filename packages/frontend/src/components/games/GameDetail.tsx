@@ -57,7 +57,7 @@ export const GameDetail = ({ game, isAdmin = false, onUpdate }: GameDetailProps)
             title: game?.title ?? '',
             description: game?.description ?? '',
             releaseDate: game?.releaseDate,
-            platform: game?.platform,
+            platformIds: game?.platforms.map((platform) => platform.id) ?? [],
             publisher: game?.publisher,
             developer: game?.developer,
             coverImage: game?.coverImage ?? '',
@@ -115,15 +115,15 @@ export const GameDetail = ({ game, isAdmin = false, onUpdate }: GameDetailProps)
         <Stack spacing={8}>
           <Box>
             <HStack spacing={2} mb={4}>
-              {game.platform.map((platform) => (
+              {game.platforms.map((platform) => (
                 <Badge
-                  key={platform}
+                  key={platform.id}
                   colorScheme="teal"
                   borderRadius="full"
                   px={3}
                   py={1}
                 >
-                  {platform}
+                  {platform.name}
                 </Badge>
               ))}
             </HStack>

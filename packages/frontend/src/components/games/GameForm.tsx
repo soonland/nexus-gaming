@@ -12,7 +12,7 @@ import {
   GridItem,
   useColorModeValue,
 } from '@chakra-ui/react';
-import { ConsoleSelect } from '../consoles';
+import { PlatformSelect } from '../platforms';
 import { useForm, Controller } from 'react-hook-form';
 import { GameFormData } from '../../types/game';
 import { ReleaseDateSelector } from './ReleaseDateSelector';
@@ -38,9 +38,7 @@ export const GameForm = ({
     handleSubmit,
     control,
     formState: { errors },
-    setValue,
-    watch,
-    } = useForm<GameFormData>({
+  } = useForm<GameFormData>({
     defaultValues: {
       title: initialData?.title || '',
       description: initialData?.description || '',
@@ -48,7 +46,7 @@ export const GameForm = ({
         type: 'date',
         value: initialData?.releaseDate || ''
       },
-      consoleIds: initialData?.consoleIds || [],
+      platformIds: initialData?.platformIds || [],
       publisher: initialData?.publisher || '',
       developer: initialData?.developer || '',
       coverImage: initialData?.coverImage || '',
@@ -134,14 +132,14 @@ export const GameForm = ({
 
           <GridItem>
             <Controller
-              name="consoleIds"
+              name="platformIds"
               control={control}
-              rules={{ required: 'Au moins une console est requise' }}
+              rules={{ required: 'Au moins une plateforme est requise' }}
               render={({ field }) => (
-                <ConsoleSelect
+                <PlatformSelect
                   value={field.value}
                   onChange={field.onChange}
-                  error={errors.consoleIds?.message}
+                  error={errors.platformIds?.message}
                 />
               )}
             />
