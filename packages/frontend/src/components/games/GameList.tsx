@@ -162,10 +162,6 @@ export const GameList = ({
                 <CheckboxGroup 
                   value={platformFilters} 
                   onChange={(value) => {
-                    console.log('Platform selection changed:');
-                    console.log('- Previously selected:', platformFilters);
-                    console.log('- Newly selected:', value);
-                    console.log('- Available platforms:', platforms?.map(p => ({ id: p.id, name: p.name })));
                     setPlatformFilters(value as string[]);
                   }}
                 >

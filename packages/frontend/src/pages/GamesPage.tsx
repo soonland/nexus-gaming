@@ -94,6 +94,7 @@ export const GamesPage = ({ isAdmin = false }: GamesPageProps) => {
                 game={selectedGame}
                 isAdmin={isAdmin}
                 onUpdate={handleGameUpdate}
+                onClose={onClose}
               />
             )}
           </ModalBody>

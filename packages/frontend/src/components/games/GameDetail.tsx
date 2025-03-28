@@ -11,8 +11,8 @@ import {
   useToast,
   useColorModeValue,
 } from '@chakra-ui/react';
-import { StarIcon, EditIcon } from '@chakra-ui/icons';
-import { useState } from 'react';
+import { StarIcon, EditIcon, CloseIcon } from '@chakra-ui/icons';
+import { useState, useEffect } from 'react';
 import { GameWithDetails, GameFormData } from '../../types/game';
 import { GameForm } from './GameForm';
 
@@ -20,13 +20,29 @@ interface GameDetailProps {
   game: GameWithDetails;
   isAdmin?: boolean;
   onUpdate?: (data: GameFormData) => Promise<void>;
+  onClose?: () => void;
 }
 
-export const GameDetail = ({ game, isAdmin = false, onUpdate }: GameDetailProps) => {
+export const GameDetail = ({ game, isAdmin = false, onUpdate, onClose }: GameDetailProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const toast = useToast();
+
+  useEffect(() => {
+    const handleEsc = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && onClose) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => {
+      window.removeEventListener('keydown', handleEsc);
+    };
+  }, [onClose]);
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
+  const descriptionBg = useColorModeValue('gray.50', 'gray.900');
+  const ratingBorderColor = useColorModeValue('yellow.200', 'yellow.700');
+  const ratingBg = useColorModeValue('yellow.50', 'yellow.900');
 
   const handleUpdate = async (data: GameFormData) => {
     try {
@@ -71,21 +87,49 @@ export const GameDetail = ({ game, isAdmin = false, onUpdate }: GameDetailProps)
 
   return (
     <Box>
-      <Box
-        position="relative"
-        height="400px"
-        bgImage={`url(${game.coverImage || '/placeholder-game.jpg'})`}
-        bgSize="cover"
-        bgPosition="center"
-      >
+      <Box position="relative" height="500px">
+        {onClose && (
+          <IconButton
+            aria-label="Fermer"
+            icon={<CloseIcon />}
+            position="absolute"
+            right={4}
+            top={4}
+            zIndex={3}
+            bg="blackAlpha.800"
+            color="white"
+            _hover={{ bg: 'blackAlpha.900' }}
+            onClick={onClose}
+          />
+        )}
+        <Box
+          position="absolute"
+          top={0}
+          left={0}
+          right={0}
+          bottom={0}
+          bgImage={`url(${game.coverImage || '/images/placeholder-game.png'})`}
+          bgSize="cover"
+          bgPosition="center"
+          _before={{
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.8) 70%)',
+            zIndex: 1
+          }}
+        />
         <Box
           position="absolute"
           bottom={0}
           left={0}
           right={0}
-          bg="rgba(0, 0, 0, 0.7)"
-          p={6}
+          p={8}
           color="white"
+          zIndex={2}
         >
           <Container maxW="container.lg">
             <Stack spacing={4}>
@@ -96,15 +140,21 @@ export const GameDetail = ({ game, isAdmin = false, onUpdate }: GameDetailProps)
                     aria-label="Modifier"
                     icon={<EditIcon />}
                     onClick={() => setIsEditing(true)}
+                    variant="ghost"
+                    colorScheme="whiteAlpha"
+                    size="lg"
+                    _hover={{ bg: 'whiteAlpha.300' }}
                   />
                 )}
               </HStack>
-              <HStack spacing={4}>
-                <Text>{game.developer}</Text>
-                <Text>•</Text>
-                <Text>{game.publisher}</Text>
-                <Text>•</Text>
-                <Text>{game.releaseDate ? new Date(game.releaseDate).toLocaleDateString() : 'N/A'}</Text>
+              <HStack spacing={4} opacity={0.9}>
+                <Text fontWeight="medium">{game.developer}</Text>
+                <Text color="whiteAlpha.700">•</Text>
+                <Text fontWeight="medium">{game.publisher}</Text>
+                <Text color="whiteAlpha.700">•</Text>
+                <Text fontWeight="medium">
+                  {game.releaseDate ? new Date(game.releaseDate).toLocaleDateString() : 'N/A'}
+                </Text>
               </HStack>
             </Stack>
           </Container>
@@ -113,8 +163,12 @@ export const GameDetail = ({ game, isAdmin = false, onUpdate }: GameDetailProps)
 
       <Container maxW="container.lg" py={8}>
         <Stack spacing={8}>
-          <Box>
-            <HStack spacing={2} mb={4}>
+          <Box
+            p={6}
+            bg={descriptionBg}
+            borderRadius="xl"
+          >
+            <HStack spacing={2} mb={6} flexWrap="wrap" gap={2}>
               {game.platforms.map((platform) => (
                 <Badge
                   key={platform.id}
@@ -122,6 +176,9 @@ export const GameDetail = ({ game, isAdmin = false, onUpdate }: GameDetailProps)
                   borderRadius="full"
                   px={3}
                   py={1}
+                  textTransform="uppercase"
+                  letterSpacing="wider"
+                  fontSize="xs"
                 >
                   {platform.name}
                 </Badge>
@@ -129,41 +186,76 @@ export const GameDetail = ({ game, isAdmin = false, onUpdate }: GameDetailProps)
             </HStack>
 
             {game.averageRating !== null && game.averageRating !== undefined && (
-              <HStack spacing={2} mb={4}>
-                <Icon as={StarIcon} color="yellow.400" />
-                <Text fontWeight="bold">{game.averageRating.toFixed(1)}</Text>
-                <Text color="gray.500">
-                  ({game.reviews.length} avis)
-                </Text>
-              </HStack>
+              <Box
+                mb={6}
+                p={4}
+                borderWidth="1px"
+                borderRadius="lg"
+                borderColor={ratingBorderColor}
+                bg={ratingBg}
+                display="inline-block"
+              >
+                <HStack spacing={3}>
+                  <HStack spacing={1}>
+                    {[...Array(5)].map((_, i) => (
+                      <Icon
+                        key={i}
+                        as={StarIcon}
+                        color={i < Math.round(game.averageRating ?? 0) ? 'yellow.400' : 'gray.300'}
+                        w={5}
+                        h={5}
+                      />
+                    ))}
+                  </HStack>
+                  <Text fontSize="lg" fontWeight="bold">{(game.averageRating ?? 0).toFixed(1)}</Text>
+                  <Text color="gray.500">
+                    ({game.reviews.length} avis)
+                  </Text>
+                </HStack>
+              </Box>
             )}
 
-            <Text fontSize="lg" whiteSpace="pre-wrap">
+            <Text fontSize="lg" whiteSpace="pre-wrap" lineHeight="tall">
               {game.description}
             </Text>
           </Box>
 
           {game?.reviews?.length > 0 && (
             <Box>
-              <Heading size="md" mb={4}>
+              <Heading size="lg" mb={6}>
                 Avis
               </Heading>
               <Stack spacing={4}>
                 {game.reviews.map((review) => (
                   <Box
                     key={review.id}
-                    p={4}
+                    p={6}
                     borderWidth="1px"
-                    borderRadius="lg"
+                    borderRadius="xl"
                     bg={bgColor}
                     borderColor={borderColor}
+                    transition="all 0.2s"
+                    _hover={{
+                      transform: 'translateY(-2px)',
+                      boxShadow: 'lg',
+                    }}
                   >
-                    <HStack spacing={2} mb={2}>
-                      <Icon as={StarIcon} color="yellow.400" />
-                      <Text fontWeight="bold">{review.rating.toFixed(1)}</Text>
+                    <HStack spacing={2} mb={3}>
+                      <HStack spacing={1}>
+                        {[...Array(5)].map((_, i) => (
+                          <Icon
+                            key={i}
+                            as={StarIcon}
+                            color={i < Math.round(review.rating ?? 0) ? 'yellow.400' : 'gray.300'}
+                            w={4}
+                            h={4}
+                          />
+                        ))}
+                      </HStack>
+                      <Text fontWeight="bold" ml={2}>{review.rating.toFixed(1)}</Text>
                       <Text color="gray.500">• {review.user.username}</Text>
                     </HStack>
-                    <Text>{review.content}</Text>
+                    <Text lineHeight="tall">{review.content}</Text>
                   </Box>
                 ))}
               </Stack>
@@ -172,26 +264,37 @@ export const GameDetail = ({ game, isAdmin = false, onUpdate }: GameDetailProps)
 
           {game?.articles?.length > 0 && (
             <Box>
-              <Heading size="md" mb={4}>
+              <Heading size="lg" mb={6}>
                 Articles
               </Heading>
               <Stack spacing={4}>
                 {game.articles.map(({ article }) => (
                   <Box
                     key={article.id}
-                    p={4}
+                    p={6}
                     borderWidth="1px"
-                    borderRadius="lg"
+                    borderRadius="xl"
                     bg={bgColor}
                     borderColor={borderColor}
+                    transition="all 0.2s"
+                    _hover={{
+                      transform: 'translateY(-2px)',
+                      boxShadow: 'lg',
+                      cursor: 'pointer'
+                    }}
                   >
-                    <HStack justify="space-between">
-                      <Text fontWeight="bold">{article.title}</Text>
-                      <Text color="gray.500">
-                        par {article.user.username} •{' '}
-                        {article.publishedAt ? new Date(article.publishedAt).toLocaleDateString() : 'N/A'}
-                      </Text>
-                    </HStack>
+                    <Stack spacing={3}>
+                      <Heading size="md">{article.title}</Heading>
+                      <HStack spacing={2}>
+                        <Text fontWeight="medium" color="gray.500">
+                          {article.user.username}
+                        </Text>
+                        <Text color="gray.500">•</Text>
+                        <Text color="gray.500">
+                          {article.publishedAt ? new Date(article.publishedAt).toLocaleDateString() : 'N/A'}
+                        </Text>
+                      </HStack>
+                    </Stack>
                   </Box>
                 ))}
               </Stack>
