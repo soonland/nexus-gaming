@@ -5,7 +5,15 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
-      "source": "/api/:path*",
+      "source": "/api/documentation",
+      "destination": "/api"
+    },
+    {
+      "source": "/api/documentation/:path*",
+      "destination": "/api"
+    },
+    {
+      "source": "/:path*",
       "destination": "/api"
     }
   ],

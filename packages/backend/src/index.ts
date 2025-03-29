@@ -64,8 +64,42 @@ export async function createServer(): Promise<FastifyServerInstance> {
     secret: process.env.JWT_SECRET || 'your-super-secret-key-change-in-production',
   })
 
+  // Configure Swagger Documentation
+  await server.register(swagger, {
+    swagger: {
+      info: {
+        title: 'Nexus Gaming API',
+        description: 'API pour gérer les jeux vidéo, critiques et articles',
+        version: '1.0.0'
+      },
+      tags: [
+        { name: 'auth', description: 'Authentification et gestion des utilisateurs' },
+        { name: 'games', description: 'Gestion des jeux vidéo' },
+        { name: 'articles', description: 'Gestion des articles' },
+        { name: 'reviews', description: 'Gestion des critiques' },
+        { name: 'platforms', description: 'Gestion des plateformes de jeu' }
+      ],
+      securityDefinitions: {
+        bearerAuth: {
+          type: 'apiKey',
+          name: 'Authorization',
+          in: 'header'
+        }
+      }
+    }
+  })
+
   // Register custom plugins first
   await server.register(prisma)
+
+  // Register Swagger UI
+  await server.register(swaggerUi, {
+    routePrefix: '/documentation',
+    uiConfig: {
+      docExpansion: 'list',
+      deepLinking: true
+    }
+  })
 
   // Register routes after plugins
   await configureRoutes(server)
