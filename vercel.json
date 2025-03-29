@@ -2,7 +2,7 @@
   "buildCommand": "turbo build",
   "installCommand": "npm install",
   "framework": null,
-  "outputDirectory": "packages/frontend/dist",
+  "outputDirectory": "dist",
   "rewrites": [
     {
       "source": "/api/:path*",
