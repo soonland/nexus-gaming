@@ -1,6 +1,5 @@
 {
   "buildCommand": "turbo build",
-  "ignoreCommand": "turbo lint",
   "installCommand": "npm install",
   "framework": null,
   "outputDirectory": "packages/frontend/dist",
