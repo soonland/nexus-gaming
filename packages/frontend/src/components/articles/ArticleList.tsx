@@ -35,7 +35,17 @@ export const ArticleList = () => {
   return (
     <Grid templateColumns="repeat(auto-fill, minmax(300px, 1fr))" gap={6}>
       {articles.map((article) => (
-        <LinkBox as={Card} key={article.id} maxW="md" cursor="pointer">
+        <LinkBox 
+          as={Card} 
+          key={article.id} 
+          maxW="md" 
+          cursor="pointer"
+          transition="all 0.2s"
+          _hover={{
+            transform: 'translateY(-2px)',
+            boxShadow: 'lg',
+          }}
+        >
           <CardBody>
             {article.games[0]?.game.coverImage && (
               <Image

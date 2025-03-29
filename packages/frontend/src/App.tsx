@@ -9,6 +9,7 @@ import { LoginPage } from '@/pages/LoginPage'
 import { ArticlesPage } from '@/pages/ArticlesPage'
 import { ArticleDetail } from '@/components/articles/ArticleDetail'
 import { AdminRoute } from '@/components/admin/AdminRoute'
+import { AdminDashboard } from '@/pages/admin/AdminDashboard'
 import { AdminGameListPage } from '@/pages/admin/GameListPage'
 import { AdminGameFormPage } from '@/pages/admin/GameFormPage'
 import { AdminPlatformListPage } from '@/pages/admin/PlatformListPage'
@@ -32,6 +33,7 @@ export default function App() {
           
           {/* Admin Routes */}
           <Route element={<AdminRoute />}>
+            <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/games" element={<AdminGameListPage />} />
             <Route path="/admin/games/new" element={<AdminGameFormPage />} />
             <Route path="/admin/games/:id/edit" element={<AdminGameFormPage />} />

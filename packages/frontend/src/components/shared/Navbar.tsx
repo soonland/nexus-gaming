@@ -46,36 +46,14 @@ export function Navbar() {
               user ? (
                 <>
                   {user.role === 'ADMIN' && (
-                    <Menu>
-                      <MenuButton
-                        as={Button}
-                        rightIcon={<ChevronDownIcon />}
-                        colorScheme="purple"
-                        size="sm"
-                      >
-                        Administration
-                      </MenuButton>
-                      <MenuList>
-                        <MenuItem as={RouterLink} to="/admin/games">
-                          Liste des jeux
-                        </MenuItem>
-                        <MenuItem as={RouterLink} to="/admin/games/new">
-                          Créer un jeu
-                        </MenuItem>
-                        <MenuItem as={RouterLink} to="/admin/platforms">
-                          Plateformes
-                        </MenuItem>
-                        <MenuItem as={RouterLink} to="/admin/platforms/new">
-                          Créer une plateforme
-                        </MenuItem>
-                        <MenuItem as={RouterLink} to="/admin/articles">
-                          Articles
-                        </MenuItem>
-                        <MenuItem as={RouterLink} to="/admin/articles/new">
-                          Créer un article
-                        </MenuItem>
-                      </MenuList>
-                    </Menu>
+                    <Button
+                      as={RouterLink}
+                      to="/admin"
+                      colorScheme="purple"
+                      size="sm"
+                    >
+                      Administration
+                    </Button>
                   )}
                   <Menu>
                     <MenuButton
