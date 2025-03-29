@@ -21,7 +21,7 @@ import {
 import { AddIcon } from '@chakra-ui/icons';
 import { useState, useEffect } from 'react';
 import { useGames } from '../../hooks/useGames';
-import { GameList } from './GameList';
+import { GameSelectorList } from './GameSelectorList';
 
 interface GameSelectorProps {
   selectedGames: string[];
@@ -82,15 +82,14 @@ export const GameSelector = ({ selectedGames, onChange }: GameSelectorProps) => 
         </Wrap>
       </VStack>
 
-      <Modal isOpen={isOpen} onClose={handleClose} size="4xl">
+      <Modal isOpen={isOpen} onClose={handleClose} size="lg">
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Sélectionner des jeux</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <GameList
+            <GameSelectorList
               games={games}
-              selectionMode={true}
               selectedGames={tempSelectedGames}
               onGameSelect={handleGameToggle}
             />
