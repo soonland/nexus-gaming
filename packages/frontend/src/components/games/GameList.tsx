@@ -6,13 +6,6 @@ import {
   InputLeftElement,
   Stack,
   Select,
-  useDisclosure,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalCloseButton,
   Text,
   Spinner,
   Center,
@@ -24,19 +17,21 @@ import {
   Wrap,
   WrapItem,
   useColorModeValue,
+  Button,
 } from '@chakra-ui/react';
 import { SearchIcon } from '@chakra-ui/icons';
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GameCard } from './GameCard';
-import { GameForm } from './GameForm';
-import { Game, GameFormData } from '../../types/game';
+import { Game } from '../../types/game';
 import { usePlatforms } from '@/hooks/usePlatforms';
 
 interface GameListProps {
   games?: Game[];
   isLoading?: boolean;
-  onGameCreate?: (data: GameFormData) => Promise<void>;
+  selectionMode?: boolean;
+  selectedGames?: string[];
+  onGameSelect?: (gameId: string) => void;
 }
 
 const SORT_OPTIONS = [
@@ -51,10 +46,11 @@ const SORT_OPTIONS = [
 export const GameList = ({
   games,
   isLoading = false,
-  onGameCreate,
+  selectionMode = false,
+  selectedGames = [],
+  onGameSelect,
 }: GameListProps) => {
   const navigate = useNavigate();
-  const { isOpen, onClose } = useDisclosure();
   const [searchTerm, setSearchTerm] = useState('');
   const [platformFilters, setPlatformFilters] = useState<string[]>([]); 
   const [sortOption, setSortOption] = useState('title-asc');
@@ -78,16 +74,6 @@ export const GameList = ({
 
       const matchesPlatform = platformFilters.length === 0 ||
         game.platforms.some(platform => platformFilters.includes(platform.id));
-      
-      if (platformFilters.length > 0) {
-        console.log(`\nFiltering game "${game.title}"`);
-        console.log('- Game platforms:', JSON.stringify(game.platforms));
-        console.log('- Current platform filters:', platformFilters);
-        console.log('- Any matching platform?', matchesPlatform);
-        if (!matchesPlatform) {
-          console.log('  → Game filtered out: no matching platforms');
-        }
-      }
 
       const matchesYear = !releaseYearFilter || 
         (game.releaseDate && game.releaseDate.startsWith(releaseYearFilter));
@@ -95,7 +81,6 @@ export const GameList = ({
       return matchesSearch && matchesPlatform && matchesYear;
     });
 
-    // Sort the filtered results
     result.sort((a, b) => {
       switch (sortOption) {
         case 'title-asc':
@@ -124,6 +109,14 @@ export const GameList = ({
     return result;
   }, [games, searchTerm, platformFilters, sortOption, releaseYearFilter]);
 
+  const handleGameClick = (game: Game) => {
+    if (selectionMode && onGameSelect) {
+      onGameSelect(game.id);
+    } else {
+      navigate(`/games/${game.id}`);
+    }
+  };
+
   return (
     <Container maxW="container.xl" py={8}>
       <Stack spacing={6}>
@@ -148,7 +141,7 @@ export const GameList = ({
                 borderWidth="1px" 
                 borderRadius="md" 
                 borderColor={borderColor}
-                p={1}
+                p={3}
               >
                 <CheckboxGroup 
                   value={platformFilters} 
@@ -156,7 +149,7 @@ export const GameList = ({
                     setPlatformFilters(value as string[]);
                   }}
                 >
-                  <Wrap>
+                  <Wrap spacing={3}>
                     {platforms?.map((platform) => (
                       <WrapItem key={platform.id}>
                         <Checkbox
@@ -224,11 +217,29 @@ export const GameList = ({
         ) : (filteredAndSortedGames?.length ?? 0) > 0 ? (
           <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
             {filteredAndSortedGames.map((game) => (
-              <GameCard
-                key={game.id}
-                game={game}
-                onClick={() => navigate(`/games/${game.id}`)}
-              />
+              <Box key={game.id} position="relative">
+                {selectionMode && (
+                  <Button
+                    position="absolute"
+                    top={2}
+                    right={2}
+                    zIndex={2}
+                    size="sm"
+                    colorScheme={selectedGames.includes(game.id) ? "blue" : "gray"}
+                    variant={selectedGames.includes(game.id) ? "solid" : "outline"}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (onGameSelect) onGameSelect(game.id);
+                    }}
+                  >
+                    {selectedGames.includes(game.id) ? "Sélectionné" : "Sélectionner"}
+                  </Button>
+                )}
+                <GameCard
+                  game={game}
+                  onClick={() => handleGameClick(game)}
+                />
+              </Box>
             ))}
           </SimpleGrid>
         ) : (
@@ -239,25 +250,6 @@ export const GameList = ({
           </Center>
         )}
       </Stack>
-
-      <Modal isOpen={isOpen} onClose={onClose} size="xl">
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Ajouter un nouveau jeu</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody pb={6}>
-            <GameForm
-              onSubmit={async (data) => {
-                if (onGameCreate) {
-                  await onGameCreate(data);
-                  onClose();
-                }
-              }}
-              onCancel={onClose}
-            />
-          </ModalBody>
-        </ModalContent>
-      </Modal>
     </Container>
   );
 };

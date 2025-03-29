@@ -7,11 +7,9 @@ import {
   Input,
   Textarea,
   VStack,
-  Select,
   useToast,
 } from '@chakra-ui/react'
-import { useGames } from '../../hooks/useGames'
-import { Game } from '../../types/game'
+import { GameSelector } from '../games/GameSelector'
 
 interface ArticleFormProps {
   initialData?: {
@@ -33,7 +31,6 @@ export const ArticleForm = ({ initialData, onSubmit }: ArticleFormProps) => {
     initialData?.gameIds ?? []
   )
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const { games } = useGames()
   const toast = useToast()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -62,11 +59,8 @@ export const ArticleForm = ({ initialData, onSubmit }: ArticleFormProps) => {
     }
   }
 
-  const handleGameSelection = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedOptions = Array.from(e.target.selectedOptions).map(
-      (option) => option.value
-    )
-    setSelectedGames(selectedOptions)
+  const handleGameSelection = (gameIds: string[]) => {
+    setSelectedGames(gameIds)
   }
 
   return (
@@ -93,18 +87,10 @@ export const ArticleForm = ({ initialData, onSubmit }: ArticleFormProps) => {
 
         <FormControl>
           <FormLabel>Jeux associés</FormLabel>
-          <Select
-            multiple
-            height="200px"
-            value={selectedGames}
+          <GameSelector
+            selectedGames={selectedGames}
             onChange={handleGameSelection}
-          >
-            {games?.map((game: Game) => (
-              <option key={game.id} value={game.id}>
-                {game.title}
-              </option>
-            ))}
-          </Select>
+          />
         </FormControl>
 
         <Button
