@@ -1,0 +1,12 @@
+{
+  "projects": {
+    "backend": {
+      "src": "backend",
+      "buildCommand": "npm install && npm run build",
+      "outputDirectory": "backend/dist",
+      "routes": [
+        { "src": "/(.*)", "dest": "/backend/src/index.ts" }
+      ]
+    }
+  }
+}
