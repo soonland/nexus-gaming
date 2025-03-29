@@ -25,9 +25,14 @@ interface ArticleFormProps {
     gameIds: string[]
     categoryId?: string
   }) => Promise<void>
+  showSuccessMessage?: boolean
 }
 
-export const ArticleForm = ({ initialData, onSubmit }: ArticleFormProps) => {
+export const ArticleForm = ({ 
+  initialData, 
+  onSubmit,
+  showSuccessMessage = false 
+}: ArticleFormProps) => {
   const [title, setTitle] = useState(initialData?.title ?? '')
   const [content, setContent] = useState(initialData?.content ?? '')
   const [selectedGames, setSelectedGames] = useState<string[]>(
@@ -50,11 +55,13 @@ export const ArticleForm = ({ initialData, onSubmit }: ArticleFormProps) => {
         gameIds: selectedGames,
         categoryId: selectedCategory || undefined,
       })
-      toast({
-        title: 'Succès',
-        description: 'Article enregistré avec succès',
-        status: 'success',
-      })
+      if (showSuccessMessage) {
+        toast({
+          title: 'Succès',
+          description: 'Article enregistré avec succès',
+          status: 'success',
+        })
+      }
     } catch (error) {
       toast({
         title: 'Erreur',

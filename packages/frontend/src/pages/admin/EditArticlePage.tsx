@@ -80,6 +80,7 @@ export const EditArticlePage = () => {
               gameIds: article.games.map((g) => g.game.id),
             }}
             onSubmit={handleSubmit}
+            showSuccessMessage={false}
           />
         </Box>
       </Container>
