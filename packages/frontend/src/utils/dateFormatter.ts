@@ -3,6 +3,11 @@ import 'dayjs/locale/fr';
 
 dayjs.locale('fr');
 
+export const formatPlatformReleaseDate = (date: string | null): string => {
+  if (!date) return 'N/A';
+  return dayjs(date).format('D MMMM YYYY');
+};
+
 export const formatGameReleaseDate = (date: string | undefined): string => {
   if (!date) return 'Date non définie';
   

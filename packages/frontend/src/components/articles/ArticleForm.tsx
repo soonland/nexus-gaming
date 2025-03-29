@@ -114,7 +114,7 @@ export const ArticleForm = ({
 
         <Button
           type="submit"
-          colorScheme="blue"
+          colorScheme="green"
           isLoading={isSubmitting}
           loadingText="Enregistrement..."
         >

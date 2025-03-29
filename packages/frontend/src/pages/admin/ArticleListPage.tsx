@@ -118,6 +118,7 @@ export const ArticleListPage = () => {
                         aria-label="Modifier"
                         icon={<EditIcon />}
                         size="sm"
+                        colorScheme="blue"
                         onClick={() => navigate(`/admin/articles/${article.id}/edit`)}
                       />
                       <IconButton

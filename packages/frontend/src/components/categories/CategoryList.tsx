@@ -21,10 +21,12 @@ import {
   useDisclosure,
   useToast,
 } from '@chakra-ui/react'
-import { DeleteIcon, EditIcon } from '@chakra-ui/icons'
+import { DeleteIcon, EditIcon, AddIcon } from '@chakra-ui/icons'
 import { Category } from '../../types/category'
 import { createCategory, deleteCategory, getCategories, updateCategory } from '../../services/api/categories'
 import { CategoryForm } from './CategoryForm'
+import { formatPlatformReleaseDate } from '../../utils/dateFormatter'
+import Swal from 'sweetalert2'
 
 export const CategoryList = () => {
   const [categories, setCategories] = useState<Category[]>([])
@@ -58,21 +60,32 @@ export const CategoryList = () => {
   }
 
   const handleDelete = async (categoryId: string) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer cette catégorie ?')) {
+    const result = await Swal.fire({
+      title: 'Êtes-vous sûr(e) ?',
+      text: 'Cette action est irréversible !',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#DD6B20',
+      cancelButtonColor: '#A0AEC0',
+      confirmButtonText: 'Oui, supprimer',
+      cancelButtonText: 'Annuler'
+    });
+
+    if (result.isConfirmed) {
       try {
-        await deleteCategory(categoryId)
-        await fetchCategories()
+        await deleteCategory(categoryId);
+        await fetchCategories();
         toast({
           title: 'Succès',
           description: 'Catégorie supprimée avec succès',
           status: 'success',
-        })
+        });
       } catch (error) {
         toast({
           title: 'Erreur',
           description: 'Impossible de supprimer la catégorie',
           status: 'error',
-        })
+        });
       }
     }
   }
@@ -94,7 +107,11 @@ export const CategoryList = () => {
     <Box>
       <Flex justifyContent="space-between" alignItems="center" mb={4}>
         <Heading size="md">Catégories</Heading>
-        <Button colorScheme="blue" onClick={handleAddNew}>
+        <Button
+          colorScheme="orange"
+          leftIcon={<AddIcon />}
+          onClick={handleAddNew}
+        >
           Ajouter une catégorie
         </Button>
       </Flex>
@@ -111,13 +128,14 @@ export const CategoryList = () => {
           {categories.map((category) => (
             <Tr key={category.id}>
               <Td>{category.name}</Td>
-              <Td>{new Date(category.createdAt).toLocaleDateString()}</Td>
+              <Td>{formatPlatformReleaseDate(category.createdAt)}</Td>
               <Td>
                 <IconButton
                   aria-label="Modifier"
                   icon={<EditIcon />}
                   size="sm"
                   mr={2}
+                  colorScheme="blue"
                   onClick={() => handleEdit(category)}
                 />
                 <IconButton

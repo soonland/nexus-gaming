@@ -113,7 +113,7 @@ export const AdminPlatformFormPage = () => {
                 onChange={(e) =>
                   setFormData((prev) => ({
                     ...prev,
-                    releaseDate: e.target.value ? new Date(e.target.value).toISOString() : null,
+                    releaseDate: e.target.value || null,
                   }))
                 }
               />

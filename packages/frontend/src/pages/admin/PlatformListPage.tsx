@@ -21,6 +21,7 @@ import { Link as RouterLink } from 'react-router-dom'
 import { usePlatforms } from '@/hooks/usePlatforms'
 import { useState, useMemo } from 'react'
 import Swal from 'sweetalert2'
+import { formatPlatformReleaseDate } from '@/utils/dateFormatter'
 
 export const AdminPlatformListPage = () => {
   const { platforms, deletePlatform } = usePlatforms()
@@ -122,11 +123,7 @@ export const AdminPlatformListPage = () => {
               <Tr key={platform.id}>
                 <Td>{platform.name}</Td>
                 <Td>{platform.manufacturer}</Td>
-                <Td>
-                  {platform.releaseDate 
-                    ? new Date(platform.releaseDate).toLocaleDateString() 
-                    : 'N/A'}
-                </Td>
+                <Td>{formatPlatformReleaseDate(platform.releaseDate)}</Td>
                 <Td>{platform.games?.length || 0}</Td>
                 <Td>
                   <HStack spacing={2}>

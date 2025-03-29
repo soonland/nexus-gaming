@@ -56,7 +56,7 @@ export const CategoryForm = ({ initialData, onSubmit }: CategoryFormProps) => {
 
         <Button
           type="submit"
-          colorScheme="blue"
+          colorScheme="orange"
           isLoading={isSubmitting}
           loadingText="Enregistrement..."
         >

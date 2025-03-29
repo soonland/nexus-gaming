@@ -7,10 +7,7 @@ import { Platform, Prisma } from '@prisma/client'
 const platformSchema = Type.Object({
   name: Type.String(),
   manufacturer: Type.String(),
-  releaseDate: Type.Optional(Type.String({ 
-    pattern: '^(\d{4}-(0[1-9]|1[0-2])-([0-2][0-9]|3[01])|\d{4}-(0[1-9]|1[0-2])|\d{4}-Q[1-4])$',
-    description: 'Format: YYYY-MM-DD pour une date précise, YYYY-MM pour un mois, YYYY-QN pour un trimestre'
-  }))
+  releaseDate: Type.Optional(Type.String())
 })
 
 interface PlatformWithGames extends Platform {
@@ -137,7 +134,7 @@ export async function platformRoutes(server: FastifyServerInstance) {
         manufacturer: string
         releaseDate?: string
       }
-
+      console.log('Platform data:', platformData)
       try {
         const platform = await server.prisma.platform.create({
           data: {
