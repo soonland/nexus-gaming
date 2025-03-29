@@ -12,6 +12,10 @@ interface Article {
     id: string
     username: string
   }
+  category?: {
+    id: string
+    name: string
+  }
   games: {
     game: {
       id: string
@@ -71,6 +75,12 @@ export const ArticleDetail = () => {
           <Text>Par {article.user.username}</Text>
           <Text>•</Text>
           <Text>{new Date(article.publishedAt).toLocaleDateString()}</Text>
+          {article.category && (
+            <>
+              <Text>•</Text>
+              <Text>Catégorie: {article.category.name}</Text>
+            </>
+          )}
         </HStack>
 
         {article.games.length > 0 && (

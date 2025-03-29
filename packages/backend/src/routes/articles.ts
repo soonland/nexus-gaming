@@ -7,6 +7,7 @@ const articleSchema = Type.Object({
   title: Type.String(),
   content: Type.String(),
   gameIds: Type.Array(Type.String()),
+  categoryId: Type.Optional(Type.String()),
 })
 
 export async function articleRoutes(server: FastifyServerInstance) {
@@ -38,32 +39,33 @@ export async function articleRoutes(server: FastifyServerInstance) {
     async handler(request: FastifyRequest, reply: FastifyReply) {
       const articles = await server.prisma.article.findMany({
         include: {
-        user: {
-          select: {
-            id: true,
-            username: true,
+          user: {
+            select: {
+              id: true,
+              username: true,
+            },
           },
-        },
-        games: {
-          include: {
-            game: {
-              select: {
-                id: true,
-                title: true,
-                coverImage: true,
+          category: true,
+          games: {
+            include: {
+              game: {
+                select: {
+                  id: true,
+                  title: true,
+                  coverImage: true,
+                },
               },
             },
           },
         },
-      },
-      orderBy: {
-        publishedAt: 'desc',
-      },
-    })
+        orderBy: {
+          publishedAt: 'desc',
+        },
+      })
 
-    return reply.send(articles)
-  },
-})
+      return reply.send(articles)
+    },
+  })
 
   // Get article by ID
   server.get('/:id', {
@@ -109,6 +111,7 @@ export async function articleRoutes(server: FastifyServerInstance) {
             username: true,
           },
         },
+        category: true,
         games: {
           include: {
             game: true,
@@ -169,6 +172,7 @@ export async function articleRoutes(server: FastifyServerInstance) {
         data: {
           ...articleData,
           userId,
+          categoryId: articleData.categoryId || null,
           games: {
             create: gameIds.map((gameId: string) => ({
               game: {
@@ -276,6 +280,7 @@ export async function articleRoutes(server: FastifyServerInstance) {
           where: { id },
           data: {
             ...articleData,
+            categoryId: articleData.categoryId ?? undefined,
             ...(gameIds && {
               games: {
                 create: gameIds.map((gameId: string) => ({

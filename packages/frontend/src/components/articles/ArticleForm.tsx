@@ -10,17 +10,20 @@ import {
   useToast,
 } from '@chakra-ui/react'
 import { GameSelector } from '../games/GameSelector'
+import { CategorySelect } from '../categories/CategorySelect'
 
 interface ArticleFormProps {
   initialData?: {
     title: string
     content: string
     gameIds: string[]
+    categoryId?: string
   }
   onSubmit: (data: {
     title: string
     content: string
     gameIds: string[]
+    categoryId?: string
   }) => Promise<void>
 }
 
@@ -29,6 +32,9 @@ export const ArticleForm = ({ initialData, onSubmit }: ArticleFormProps) => {
   const [content, setContent] = useState(initialData?.content ?? '')
   const [selectedGames, setSelectedGames] = useState<string[]>(
     initialData?.gameIds ?? []
+  )
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(
+    initialData?.categoryId || null
   )
   const [isSubmitting, setIsSubmitting] = useState(false)
   const toast = useToast()
@@ -42,6 +48,7 @@ export const ArticleForm = ({ initialData, onSubmit }: ArticleFormProps) => {
         title,
         content,
         gameIds: selectedGames,
+        categoryId: selectedCategory || undefined,
       })
       toast({
         title: 'Succès',
@@ -84,6 +91,11 @@ export const ArticleForm = ({ initialData, onSubmit }: ArticleFormProps) => {
             minHeight="200px"
           />
         </FormControl>
+
+        <CategorySelect
+          value={selectedCategory || undefined}
+          onChange={setSelectedCategory}
+        />
 
         <FormControl>
           <FormLabel>Jeux associés</FormLabel>

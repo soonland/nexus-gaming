@@ -9,12 +9,14 @@ import {
   StarIcon,
   EditIcon,
   SettingsIcon,
+  ViewIcon,
 } from '@chakra-ui/icons';
 import { useEffect, useState } from 'react';
 import { DashboardCard } from '../../components/admin/DashboardCard';
 import { useGames } from '../../hooks/useGames';
 import { usePlatforms } from '../../hooks/usePlatforms';
 import { getArticles } from '../../services/api/articles';
+import { getCategories } from '../../services/api/categories';
 
 interface DashboardStats {
   games: {
@@ -30,6 +32,10 @@ interface DashboardStats {
     draft: number;
     latest?: string;
   };
+  categories: {
+    total: number;
+    latest?: string;
+  };
 }
 
 export const AdminDashboard = () => {
@@ -37,6 +43,7 @@ export const AdminDashboard = () => {
     games: { total: 0 },
     platforms: { total: 0 },
     articles: { total: 0, draft: 0 },
+    categories: { total: 0 },
   });
   const toast = useToast();
   const { games } = useGames();
@@ -45,10 +52,14 @@ export const AdminDashboard = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const articlesResponse = await getArticles();
+        const [articlesResponse, categories] = await Promise.all([
+          getArticles(),
+          getCategories()
+        ]);
+        
         const articles = articlesResponse.data;
 
-        setStats({
+        const newStats = {
           games: {
             total: games?.length ?? 0,
             latest: games?.[0]?.title,
@@ -58,11 +69,17 @@ export const AdminDashboard = () => {
             latest: platforms?.[0]?.name,
           },
           articles: {
-            total: articles.length,
-            draft: articles.filter(a => !a.publishedAt).length,
-            latest: articles[0]?.title,
+            total: articles?.length ?? 0,
+            draft: articles?.filter((a: { publishedAt: string }) => !a.publishedAt)?.length ?? 0,
+            latest: articles?.[0]?.title,
           },
-        });
+          categories: {
+            total: categories.length,
+            latest: categories[0]?.name ?? undefined,
+          },
+        };
+
+        setStats(newStats);
       } catch (error) {
         toast({
           title: 'Erreur',
@@ -124,6 +141,19 @@ export const AdminDashboard = () => {
             { label: 'Rédiger', to: '/admin/articles/new', primary: true },
           ]}
           notifications={stats.articles.draft}
+        />
+
+        <DashboardCard
+          title="Catégories"
+          icon={ViewIcon}
+          color="orange"
+          stats={{
+            main: stats.categories.total.toString(),
+            sub: stats.categories.latest ? `Dernière : ${stats.categories.latest}` : 'Aucune catégorie',
+          }}
+          actions={[
+            { label: 'Gérer', to: '/admin/categories' },
+          ]}
         />
       </SimpleGrid>
     </Container>

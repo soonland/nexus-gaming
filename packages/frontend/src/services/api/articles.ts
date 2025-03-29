@@ -1,5 +1,7 @@
 import { api } from './client'
 
+import { Category } from '../../types/category'
+
 interface Article {
   id: string
   title: string
@@ -9,6 +11,7 @@ interface Article {
     id: string
     username: string
   }
+  category?: Category
   games: {
     game: {
       id: string
@@ -22,6 +25,7 @@ export interface ArticleFormData {
   title: string
   content: string
   gameIds: string[]
+  categoryId?: string
 }
 
 export const getArticles = () => {
