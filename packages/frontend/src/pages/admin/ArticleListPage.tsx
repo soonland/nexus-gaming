@@ -17,7 +17,7 @@ import { AdminGuard } from '../../components/admin/AdminGuard'
 import { useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { deleteArticle, getArticles } from '../../services/api/articles'
-import { EditIcon, DeleteIcon } from '@chakra-ui/icons'
+import { EditIcon, DeleteIcon, AddIcon } from '@chakra-ui/icons'
 
 interface Article {
   id: string
@@ -81,6 +81,7 @@ export const ArticleListPage = () => {
           <Heading size="lg">Articles</Heading>
           <Button
             colorScheme="blue"
+            leftIcon={<AddIcon />}
             onClick={() => navigate('/admin/articles/new')}
           >
             Nouvel article

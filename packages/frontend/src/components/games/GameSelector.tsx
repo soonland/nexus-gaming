@@ -18,8 +18,8 @@ import {
   Wrap,
   WrapItem,
 } from '@chakra-ui/react';
+import { AddIcon } from '@chakra-ui/icons';
 import { useState, useEffect } from 'react';
-import { Game } from '../../types/game';
 import { useGames } from '../../hooks/useGames';
 import { GameList } from './GameList';
 
@@ -66,7 +66,7 @@ export const GameSelector = ({ selectedGames, onChange }: GameSelectorProps) => 
   return (
     <Box>
       <VStack align="stretch" spacing={3}>
-        <Button size="sm" onClick={onOpen} colorScheme="blue" variant="outline">
+        <Button size="sm" onClick={onOpen} colorScheme="blue" variant="outline" leftIcon={<AddIcon />}>
           Sélectionner des jeux
         </Button>
 
