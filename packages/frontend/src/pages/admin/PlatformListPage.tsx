@@ -80,7 +80,7 @@ export const AdminPlatformListPage = () => {
           <Button
             as={RouterLink}
             to="/admin/platforms/new"
-            colorScheme="blue"
+            colorScheme="purple"
             leftIcon={<AddIcon />}
           >
             Ajouter une plateforme

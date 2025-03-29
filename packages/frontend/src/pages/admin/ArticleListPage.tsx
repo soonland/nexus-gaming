@@ -80,7 +80,7 @@ export const ArticleListPage = () => {
         <HStack justify="space-between" mb={8}>
           <Heading size="lg">Articles</Heading>
           <Button
-            colorScheme="blue"
+            colorScheme="green"
             leftIcon={<AddIcon />}
             onClick={() => navigate('/admin/articles/new')}
           >
