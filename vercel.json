@@ -6,15 +6,15 @@
   "rewrites": [
     {
       "source": "/api/documentation",
-      "destination": "/api"
+      "destination": "/"
     },
     {
       "source": "/api/documentation/:path*",
-      "destination": "/api"
+      "destination": "/"
     },
     {
-      "source": "/:path*",
-      "destination": "/api"
+      "source": "/api/:path*",
+      "destination": "/"
     }
   ],
   "builds": [
