@@ -9,19 +9,22 @@ import categoryRoutes from './categories'
 import companyRoutes from './companies'
 
 export async function configureRoutes(server: FastifyServerInstance) {
-  // Health check route
-  server.get('/health', async () => {
-    return { status: 'ok' }
-  })
+  // Configurer le préfixe global /api
+  await server.register(async function (fastify) {
+    // Health check route
+    fastify.get('/health', async () => {
+      return { status: 'ok' }
+    })
 
-  // Register route groups
-  server.register(authRoutes, { prefix: '/auth' })
-  server.register(gameRoutes, { prefix: '/games' })
-  server.register(reviewRoutes, { prefix: '/reviews' })
-  server.register(articleRoutes, { prefix: '/articles' })
-  server.register(platformRoutes, { prefix: '/platforms' })
-  server.register(categoryRoutes, { prefix: '/categories' })
-  server.register(companyRoutes, { prefix: '/companies' })
+    // Register route groups
+    await fastify.register(authRoutes, { prefix: '/auth' })
+    await fastify.register(gameRoutes, { prefix: '/games' })
+    await fastify.register(reviewRoutes, { prefix: '/reviews' })
+    await fastify.register(articleRoutes, { prefix: '/articles' })
+    await fastify.register(platformRoutes, { prefix: '/platforms' })
+    await fastify.register(categoryRoutes, { prefix: '/categories' })
+    await fastify.register(companyRoutes, { prefix: '/companies' })
+  }, { prefix: '/api' })
 }
 
 // Types for route handlers

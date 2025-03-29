@@ -2,32 +2,37 @@
   "buildCommand": "turbo build",
   "installCommand": "npm install",
   "framework": null,
-  "outputDirectory": "dist",
-  "rewrites": [
-    {
-      "source": "/api/documentation",
-      "destination": "/"
-    },
-    {
-      "source": "/api/documentation/:path*",
-      "destination": "/"
-    },
-    {
-      "source": "/api/:path*",
-      "destination": "/"
-    }
-  ],
+  "outputDirectory": "packages/frontend/dist",
   "builds": [
     {
       "src": "packages/backend/api/index.ts",
-      "use": "@vercel/node"
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": [
+          "packages/backend/dist/**",
+          "packages/backend/prisma/**"
+        ]
+      }
     },
     {
       "src": "packages/frontend/package.json",
       "use": "@vercel/static-build",
       "config": {
-        "zeroConfig": true
+        "distDir": "dist"
       }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api"
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ],
   "headers": [
