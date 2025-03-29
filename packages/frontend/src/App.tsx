@@ -18,6 +18,7 @@ import { ArticleFormPage } from '@/pages/admin/ArticleFormPage'
 import { ArticleListPage } from '@/pages/admin/ArticleListPage'
 import { EditArticlePage } from '@/pages/admin/EditArticlePage'
 import { CategoryListPage } from '@/pages/admin/CategoryListPage'
+import { CompanyListPage } from '@/pages/admin/CompanyListPage'
 
 export default function App() {
   return (
@@ -48,6 +49,7 @@ export default function App() {
             <Route path="/admin/articles/:id/edit" element={<EditArticlePage />} />
             
             <Route path="/admin/categories" element={<CategoryListPage />} />
+            <Route path="/admin/companies" element={<CompanyListPage />} />
           </Route>
         </Routes>
       </Container>

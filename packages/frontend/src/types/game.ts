@@ -8,8 +8,14 @@ export interface Game {
     name: string;
     manufacturer: string;
   }[];
-  publisher: string;
-  developer: string;
+  publisher: {
+    id: string;
+    name: string;
+  };
+  developer: {
+    id: string;
+    name: string;
+  };
   coverImage?: string;
   createdAt: string;
   updatedAt: string;
@@ -21,8 +27,8 @@ export interface GameFormData {
   description: string;
   releaseDate?: string;
   platformIds: string[];
-  publisher: string;
-  developer: string;
+  publisherId: string;
+  developerId: string;
   coverImage?: string;
 }
 

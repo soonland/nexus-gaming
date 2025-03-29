@@ -69,8 +69,8 @@ export const GameList = ({
   const filteredAndSortedGames = useMemo(() => {
     const result = (games ?? []).filter((game) => {
       const matchesSearch = (game.title ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-        game.developer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        game.publisher.toLowerCase().includes(searchTerm.toLowerCase());
+        game.developer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        game.publisher.name.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesPlatform = platformFilters.length === 0 ||
         game.platforms.some(platform => platformFilters.includes(platform.id));

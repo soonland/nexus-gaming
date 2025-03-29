@@ -72,7 +72,7 @@ export const GameCard = ({ game, onClick }: GameCardProps) => {
           </Text>
 
           <Text fontSize="sm" color="gray.500">
-            {game.developer} • {game.publisher}
+            {game.developer.name} • {game.publisher.name}
           </Text>
 
           <Text fontSize="sm" color="gray.500">

@@ -10,6 +10,7 @@ async function main() {
   await prisma.review.deleteMany();
   await prisma.game.deleteMany();
   await prisma.platform.deleteMany();
+  await prisma.company.deleteMany();
   await prisma.user.deleteMany();
 
   // Create users
@@ -86,6 +87,109 @@ async function main() {
 
   const [switch_, ps5, xbox, pc] = platforms;
 
+  // Create companies
+  const companies = await Promise.all([
+    prisma.company.create({
+      data: {
+        name: 'Nintendo EPD',
+        isDeveloper: true,
+        isPublisher: false,
+      },
+    }),
+    prisma.company.create({
+      data: {
+        name: 'Nintendo',
+        isDeveloper: false,
+        isPublisher: true,
+      },
+    }),
+    prisma.company.create({
+      data: {
+        name: 'CD Projekt RED',
+        isDeveloper: true,
+        isPublisher: false,
+      },
+    }),
+    prisma.company.create({
+      data: {
+        name: 'CD Projekt',
+        isDeveloper: false,
+        isPublisher: true,
+      },
+    }),
+    prisma.company.create({
+      data: {
+        name: 'FromSoftware',
+        isDeveloper: true,
+        isPublisher: false,
+      },
+    }),
+    prisma.company.create({
+      data: {
+        name: 'Bandai Namco',
+        isDeveloper: false,
+        isPublisher: true,
+      },
+    }),
+    prisma.company.create({
+      data: {
+        name: 'ConcernedApe',
+        isDeveloper: true,
+        isPublisher: true,
+      },
+    }),
+    prisma.company.create({
+      data: {
+        name: 'Santa Monica Studio',
+        isDeveloper: true,
+        isPublisher: false,
+      },
+    }),
+    prisma.company.create({
+      data: {
+        name: 'Sony Interactive Entertainment',
+        isDeveloper: false,
+        isPublisher: true,
+      },
+    }),
+    prisma.company.create({
+      data: {
+        name: 'Supergiant Games',
+        isDeveloper: true,
+        isPublisher: true,
+      },
+    }),
+    prisma.company.create({
+      data: {
+        name: 'InnerSloth',
+        isDeveloper: true,
+        isPublisher: true,
+      },
+    }),
+    prisma.company.create({
+      data: {
+        name: 'Larian Studios',
+        isDeveloper: true,
+        isPublisher: true,
+      },
+    }),
+  ]);
+
+  const [
+    nintendoEPD,
+    nintendo,
+    cdProjektRed,
+    cdProjekt,
+    fromSoftware,
+    bandaiNamco,
+    concernedApe,
+    santaMonicaStudio,
+    sonyIE,
+    supergiantGames,
+    innerSloth,
+    larianStudios,
+  ] = companies;
+
   // Create games
   const games = await Promise.all([
     prisma.game.create({
@@ -93,8 +197,8 @@ async function main() {
         title: 'The Legend of Zelda: Tears of the Kingdom',
         description: 'Suite très attendue de Breath of the Wild, offrant une nouvelle aventure épique dans le royaume d\'Hyrule avec de nouvelles mécaniques de gameplay innovantes.',
         releaseDate: '2023-Q2', // Format trimestre
-        publisher: 'Nintendo',
-        developer: 'Nintendo EPD',
+        publisherId: nintendo.id,
+        developerId: nintendoEPD.id,
         platforms: {
           connect: [{ id: switch_.id }],
         },
@@ -105,8 +209,8 @@ async function main() {
         title: 'Cyberpunk 2077',
         description: 'RPG en monde ouvert se déroulant dans Night City, une mégalopole obsédée par le pouvoir, le glamour et les modifications corporelles.',
         releaseDate: '2020-12', // Format mois
-        publisher: 'CD Projekt',
-        developer: 'CD Projekt RED',
+        publisherId: cdProjekt.id,
+        developerId: cdProjektRed.id,
         platforms: {
           connect: [{ id: pc.id }, { id: ps5.id }, { id: xbox.id }],
         },
@@ -117,8 +221,8 @@ async function main() {
         title: 'Elden Ring',
         description: 'Action-RPG en monde ouvert développé par FromSoftware en collaboration avec George R. R. Martin.',
         releaseDate: '2022-02-25', // Format date précise
-        publisher: 'Bandai Namco',
-        developer: 'FromSoftware',
+        publisherId: bandaiNamco.id,
+        developerId: fromSoftware.id,
         platforms: {
           connect: [{ id: pc.id }, { id: ps5.id }, { id: xbox.id }],
         },
@@ -129,8 +233,8 @@ async function main() {
         title: 'Stardew Valley',
         description: 'Jeu de simulation de vie agricole où vous héritez de l\'ancienne ferme de votre grand-père.',
         releaseDate: '2016-02-26',
-        publisher: 'ConcernedApe',
-        developer: 'ConcernedApe',
+        publisherId: concernedApe.id,
+        developerId: concernedApe.id,
         platforms: {
           connect: [{ id: pc.id }, { id: switch_.id }, { id: ps5.id }, { id: xbox.id }],
         },
@@ -141,8 +245,8 @@ async function main() {
         title: 'God of War Ragnarök',
         description: 'Suite de God of War (2018), suivant Kratos et son fils Atreus dans leur voyage à travers les neuf royaumes.',
         releaseDate: '2022-11-09',
-        publisher: 'Sony Interactive Entertainment',
-        developer: 'Santa Monica Studio',
+        publisherId: sonyIE.id,
+        developerId: santaMonicaStudio.id,
         platforms: {
           connect: [{ id: ps5.id }],
         },
@@ -153,8 +257,8 @@ async function main() {
         title: 'Hades',
         description: 'Rogue-like d\'action où vous incarnez le prince des Enfers tentant de s\'échapper du royaume des morts.',
         releaseDate: '2020-09-17',
-        publisher: 'Supergiant Games',
-        developer: 'Supergiant Games',
+        publisherId: supergiantGames.id,
+        developerId: supergiantGames.id,
         platforms: {
           connect: [{ id: pc.id }, { id: switch_.id }, { id: ps5.id }, { id: xbox.id }],
         },
@@ -165,8 +269,8 @@ async function main() {
         title: 'Among Us',
         description: 'Jeu multijoueur de déduction sociale se déroulant dans l\'espace.',
         releaseDate: '2018-06-15',
-        publisher: 'InnerSloth',
-        developer: 'InnerSloth',
+        publisherId: innerSloth.id,
+        developerId: innerSloth.id,
         platforms: {
           connect: [{ id: pc.id }, { id: switch_.id }, { id: ps5.id }, { id: xbox.id }],
         },
@@ -177,8 +281,8 @@ async function main() {
         title: 'Baldur\'s Gate 3',
         description: 'RPG épique basé sur Dungeons & Dragons, développé par les créateurs de Divinity: Original Sin.',
         releaseDate: '2023-08-03',
-        publisher: 'Larian Studios',
-        developer: 'Larian Studios',
+        publisherId: larianStudios.id,
+        developerId: larianStudios.id,
         platforms: {
           connect: [{ id: pc.id }, { id: ps5.id }],
         },

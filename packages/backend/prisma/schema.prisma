@@ -29,13 +29,26 @@ model Platform {
   updatedAt    DateTime  @updatedAt
 }
 
+model Company {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  isDeveloper Boolean   @default(false)
+  isPublisher Boolean   @default(false)
+  gamesAsDev  Game[]    @relation("developer")
+  gamesAsPub  Game[]    @relation("publisher")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
 model Game {
   id          String       @id @default(uuid())
   title       String
   description String
   releaseDate String?
-  publisher   String
-  developer   String
+  developerId String
+  publisherId String
+  developer   Company      @relation("developer", fields: [developerId], references: [id])
+  publisher   Company      @relation("publisher", fields: [publisherId], references: [id])
   coverImage  String?
   platforms   Platform[]
   reviews     Review[]

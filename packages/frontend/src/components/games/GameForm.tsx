@@ -13,6 +13,7 @@ import {
   useColorModeValue,
 } from '@chakra-ui/react';
 import { PlatformSelect } from '../platforms';
+import { CompanySelect } from '../companies/CompanySelect';
 import { useForm, Controller } from 'react-hook-form';
 import { GameFormData } from '../../types/game';
 import { ReleaseDateSelector } from './ReleaseDateSelector';
@@ -44,8 +45,8 @@ export const GameForm = ({
       description: initialData?.description || '',
       releaseDate: initialData?.releaseDate,
       platformIds: initialData?.platformIds || [],
-      publisher: initialData?.publisher || '',
-      developer: initialData?.developer || '',
+      publisherId: initialData?.publisherId || '',
+      developerId: initialData?.developerId || '',
       coverImage: initialData?.coverImage || '',
     },
   });
@@ -77,31 +78,39 @@ export const GameForm = ({
           </GridItem>
 
           <GridItem>
-            <FormControl isRequired isInvalid={!!errors.developer}>
-              <FormLabel>Développeur</FormLabel>
-              <Input
-                {...register('developer', {
-                  required: 'Le développeur est requis',
-                })}
-              />
-              <FormErrorMessage>
-                {errors.developer && errors.developer.message}
-              </FormErrorMessage>
-            </FormControl>
+            <Controller
+              name="developerId"
+              control={control}
+              rules={{ required: 'Le développeur est requis' }}
+              render={({ field }) => (
+                <CompanySelect
+                  label="Développeur"
+                  type="developer"
+                  value={field.value}
+                  onChange={field.onChange}
+                  error={errors.developerId?.message}
+                  isRequired
+                />
+              )}
+            />
           </GridItem>
 
           <GridItem>
-            <FormControl isRequired isInvalid={!!errors.publisher}>
-              <FormLabel>Éditeur</FormLabel>
-              <Input
-                {...register('publisher', {
-                  required: "L'éditeur est requis",
-                })}
-              />
-              <FormErrorMessage>
-                {errors.publisher && errors.publisher.message}
-              </FormErrorMessage>
-            </FormControl>
+            <Controller
+              name="publisherId"
+              control={control}
+              rules={{ required: "L'éditeur est requis" }}
+              render={({ field }) => (
+                <CompanySelect
+                  label="Éditeur"
+                  type="publisher"
+                  value={field.value}
+                  onChange={field.onChange}
+                  error={errors.publisherId?.message}
+                  isRequired
+                />
+              )}
+            />
           </GridItem>
 
           <GridItem colSpan={2}>

@@ -9,6 +9,8 @@ import { Game } from '@/types/game'
 const transformGameToFormData = (game: Game): GameFormData => ({
   ...game,
   platformIds: game.platforms.map((platform) => platform.id),
+  developerId: game.developer.id,
+  publisherId: game.publisher.id,
 });
 
 export const AdminGameFormPage = () => {

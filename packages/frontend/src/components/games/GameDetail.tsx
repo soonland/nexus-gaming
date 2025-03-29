@@ -72,8 +72,8 @@ export const GameDetail = ({ game, isAdmin = false, onUpdate, onClose }: GameDet
             description: game?.description ?? '',
             releaseDate: game?.releaseDate,
             platformIds: game?.platforms.map((platform) => platform.id) ?? [],
-            publisher: game?.publisher,
-            developer: game?.developer,
+            developerId: game?.developer.id,
+            publisherId: game?.publisher.id,
             coverImage: game?.coverImage ?? '',
           }}
           onSubmit={handleUpdate}
@@ -122,9 +122,9 @@ export const GameDetail = ({ game, isAdmin = false, onUpdate, onClose }: GameDet
         </Flex>
 
         <HStack spacing={4} color="gray.500">
-          <Text>{game.developer}</Text>
+          <Text>{game.developer.name}</Text>
           <Text>•</Text>
-          <Text>{game.publisher}</Text>
+          <Text>{game.publisher.name}</Text>
           <Text>•</Text>
           <Text>
             {game.releaseDate ? new Date(game.releaseDate).toLocaleDateString() : 'N/A'}

@@ -6,6 +6,7 @@ import { reviewRoutes } from './reviews'
 import { articleRoutes } from './articles'
 import { platformRoutes } from './platforms'
 import categoryRoutes from './categories'
+import companyRoutes from './companies'
 
 export async function configureRoutes(server: FastifyServerInstance) {
   // Health check route
@@ -20,6 +21,7 @@ export async function configureRoutes(server: FastifyServerInstance) {
   server.register(articleRoutes, { prefix: '/articles' })
   server.register(platformRoutes, { prefix: '/platforms' })
   server.register(categoryRoutes, { prefix: '/categories' })
+  server.register(companyRoutes, { prefix: '/companies' })
 }
 
 // Types for route handlers

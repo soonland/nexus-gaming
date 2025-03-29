@@ -49,7 +49,9 @@ export const AdminGameListPage = () => {
     return games?.filter(game => {
       const matchesSearch = searchTerm === '' || 
         (game.title?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        game.description.toLowerCase().includes(searchTerm.toLowerCase()))
+         game.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+         game.developer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+         game.publisher.name.toLowerCase().includes(searchTerm.toLowerCase()))
 
       const matchesConsole = selectedConsole === 'Toutes' || 
         game.platforms.some(console => console.id === selectedConsole)
@@ -117,7 +119,7 @@ export const AdminGameListPage = () => {
               <SearchIcon color="gray.300" />
             </InputLeftElement>
             <Input
-              placeholder="Rechercher par titre ou description..."
+              placeholder="Rechercher par titre, description, développeur ou éditeur..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -176,8 +178,8 @@ export const AdminGameListPage = () => {
           {filteredGames?.map((game) => (
             <Tr key={game.id}>
               <Td>{game.title}</Td>
-              <Td>{game.developer}</Td>
-              <Td>{game.publisher}</Td>
+              <Td>{game.developer.name}</Td>
+              <Td>{game.publisher.name}</Td>
               <Td>{game.platforms.map(c => c.name).join(', ')}</Td>
               <Td>
                 {formatGameReleaseDate(game.releaseDate)}

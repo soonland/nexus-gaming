@@ -13,6 +13,14 @@ type GameWithRelations = Game & {
     createdAt: Date
     updatedAt: Date
   }[]
+  developer: {
+    id: string
+    name: string
+  }
+  publisher: {
+    id: string
+    name: string
+  }
   reviews?: {
     rating: number
   }[]
@@ -23,8 +31,8 @@ const gameSchema = Type.Object({
   description: Type.String(),
   releaseDate: Type.Optional(Type.String()),
   platformIds: Type.Array(Type.String()),
-  publisher: Type.String(),
-  developer: Type.String(),
+  publisherId: Type.String(),
+  developerId: Type.String(),
   coverImage: Type.Optional(Type.String()),
 })
 
@@ -52,8 +60,14 @@ export async function gameRoutes(server: FastifyServerInstance) {
             manufacturer: Type.String(),
             releaseDate: Type.Union([Type.String(), Type.Null()])
           })),
-          publisher: Type.String(),
-          developer: Type.String(),
+          developer: Type.Object({
+            id: Type.String(),
+            name: Type.String(),
+          }),
+          publisher: Type.Object({
+            id: Type.String(),
+            name: Type.String(),
+          }),
           coverImage: Type.Optional(Type.String()),
           createdAt: Type.String(),
           updatedAt: Type.String(),
@@ -65,6 +79,8 @@ export async function gameRoutes(server: FastifyServerInstance) {
       const games = await server.prisma.game.findMany({
         include: {
           platforms: true,
+          developer: true,
+          publisher: true,
           reviews: {
             select: {
               rating: true,
@@ -116,8 +132,14 @@ export async function gameRoutes(server: FastifyServerInstance) {
             manufacturer: Type.String(),
             releaseDate: Type.Union([Type.String(), Type.Null()])
           })),
-          publisher: Type.String(),
-          developer: Type.String(),
+          developer: Type.Object({
+            id: Type.String(),
+            name: Type.String(),
+          }),
+          publisher: Type.Object({
+            id: Type.String(),
+            name: Type.String(),
+          }),
           coverImage: Type.Optional(Type.String()),
           createdAt: Type.String(),
           updatedAt: Type.String(),
@@ -133,7 +155,9 @@ export async function gameRoutes(server: FastifyServerInstance) {
       const game = await server.prisma.game.findUnique({
         where: { id },
         include: {
-          platforms: true
+          platforms: true,
+          developer: true,
+          publisher: true,
         },
       }) as GameWithRelations | null
 
@@ -171,8 +195,14 @@ export async function gameRoutes(server: FastifyServerInstance) {
             manufacturer: Type.String(),
             releaseDate: Type.Union([Type.String(), Type.Null()])
           })),
-          publisher: Type.String(),
-          developer: Type.String(),
+          developer: Type.Object({
+            id: Type.String(),
+            name: Type.String(),
+          }),
+          publisher: Type.Object({
+            id: Type.String(),
+            name: Type.String(),
+          }),
           coverImage: Type.Optional(Type.String()),
           createdAt: Type.String(),
           updatedAt: Type.String()
@@ -189,17 +219,25 @@ export async function gameRoutes(server: FastifyServerInstance) {
         })
       }
 
-      const { platformIds, ...rest } = request.body as any
+      const { platformIds, developerId, publisherId, ...rest } = request.body as any
 
       const game = await server.prisma.game.create({
         data: {
           ...rest,
+          developer: {
+            connect: { id: developerId }
+          },
+          publisher: {
+            connect: { id: publisherId }
+          },
           platforms: {
             connect: platformIds.map((id: string) => ({ id }))
           }
         },
         include: {
-          platforms: true
+          platforms: true,
+          developer: true,
+          publisher: true,
         }
       }) as GameWithRelations
 
@@ -236,8 +274,14 @@ export async function gameRoutes(server: FastifyServerInstance) {
             manufacturer: Type.String(),
             releaseDate: Type.Union([Type.String(), Type.Null()])
           })),
-          publisher: Type.String(),
-          developer: Type.String(),
+          developer: Type.Object({
+            id: Type.String(),
+            name: Type.String(),
+          }),
+          publisher: Type.Object({
+            id: Type.String(),
+            name: Type.String(),
+          }),
           coverImage: Type.Optional(Type.String()),
           createdAt: Type.String(),
           updatedAt: Type.String()
@@ -258,13 +302,23 @@ export async function gameRoutes(server: FastifyServerInstance) {
       }
 
       const { id } = request.params as { id: string }
-      const { platformIds, ...rest } = request.body as any
+      const { platformIds, developerId, publisherId, ...rest } = request.body as any
 
       try {
         const game = await server.prisma.game.update({
           where: { id },
           data: {
             ...rest,
+            ...(developerId && {
+              developer: {
+                connect: { id: developerId }
+              }
+            }),
+            ...(publisherId && {
+              publisher: {
+                connect: { id: publisherId }
+              }
+            }),
             ...(platformIds && {
               platforms: {
                 set: platformIds.map((id: string) => ({ id }))
@@ -272,7 +326,9 @@ export async function gameRoutes(server: FastifyServerInstance) {
             })
           },
           include: {
-            platforms: true
+            platforms: true,
+            developer: true,
+            publisher: true,
           }
         }) as GameWithRelations
 

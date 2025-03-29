@@ -10,6 +10,7 @@ import {
   EditIcon,
   SettingsIcon,
   ViewIcon,
+  HamburgerIcon,
 } from '@chakra-ui/icons';
 import { useEffect, useState } from 'react';
 import { DashboardCard } from '../../components/admin/DashboardCard';
@@ -17,6 +18,7 @@ import { useGames } from '../../hooks/useGames';
 import { usePlatforms } from '../../hooks/usePlatforms';
 import { getArticles } from '../../services/api/articles';
 import { getCategories } from '../../services/api/categories';
+import { getCompanies } from '../../services/api/companies';
 
 interface DashboardStats {
   games: {
@@ -36,6 +38,10 @@ interface DashboardStats {
     total: number;
     latest?: string;
   };
+  companies: {
+    total: number;
+    latest?: string;
+  };
 }
 
 export const AdminDashboard = () => {
@@ -44,6 +50,7 @@ export const AdminDashboard = () => {
     platforms: { total: 0 },
     articles: { total: 0, draft: 0 },
     categories: { total: 0 },
+    companies: { total: 0 },
   });
   const toast = useToast();
   const { games } = useGames();
@@ -52,9 +59,10 @@ export const AdminDashboard = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const [articlesResponse, categories] = await Promise.all([
+        const [articlesResponse, categories, companies] = await Promise.all([
           getArticles(),
-          getCategories()
+          getCategories(),
+          getCompanies()
         ]);
         
         const articles = articlesResponse.data;
@@ -76,6 +84,10 @@ export const AdminDashboard = () => {
           categories: {
             total: categories.length,
             latest: categories[0]?.name ?? undefined,
+          },
+          companies: {
+            total: companies.length,
+            latest: companies[0]?.name ?? undefined,
           },
         };
 
@@ -153,6 +165,19 @@ export const AdminDashboard = () => {
           }}
           actions={[
             { label: 'Gérer', to: '/admin/categories' },
+          ]}
+        />
+
+        <DashboardCard
+          title="Sociétés"
+          icon={HamburgerIcon}
+          color="teal"
+          stats={{
+            main: stats.companies.total.toString(),
+            sub: stats.companies.latest ? `Dernière : ${stats.companies.latest}` : 'Aucune société',
+          }}
+          actions={[
+            { label: 'Gérer', to: '/admin/companies' },
           ]}
         />
       </SimpleGrid>
