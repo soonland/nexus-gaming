@@ -1,39 +1,8 @@
 {
-  "buildCommand": "turbo build",
-  "installCommand": "npm install",
-  "framework": null,
-  "outputDirectory": "dist",
-  "builds": [
+  "rewrites": [
     {
-      "src": "packages/backend/api/index.ts",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": [
-          "packages/backend/dist/**",
-          "packages/backend/prisma/**",
-          "packages/backend/node_modules/**"
-        ]
-      }
-    },
-    {
-      "src": "packages/frontend/package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist"
-      }
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "packages/backend/api/index.ts"
-    },
-    {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/(.*)",
+      "destination": "/api"
     }
   ]
 }
