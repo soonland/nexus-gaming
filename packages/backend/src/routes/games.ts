@@ -44,7 +44,7 @@ const formatDates = (game: GameWithRelations) => ({
 
 export async function gameRoutes(server: FastifyServerInstance) {
   // Get all games
-  server.get('/games', {
+  server.get('/', {
     schema: {
       tags: ['games'],
       description: 'Liste tous les jeux avec leur note moyenne',
@@ -113,7 +113,7 @@ export async function gameRoutes(server: FastifyServerInstance) {
   })
 
   // Get game by ID
-  server.get('/games/:id', {
+  server.get('/:id', {
     schema: {
       tags: ['games'],
       description: 'Obtenir les détails d\'un jeu spécifique',
