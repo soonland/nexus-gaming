@@ -10,7 +10,8 @@
     "lint": "turbo run lint",
     "test": "turbo run test",
     "sync:check": "syncpack list-mismatches",
-    "sync:fix": "syncpack fix-mismatches"
+    "sync:fix": "syncpack fix-mismatches",
+    "check:deployment": "./scripts/check-deployment.sh"
   },
   "syncpack": {
     "source": [
