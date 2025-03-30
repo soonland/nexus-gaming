@@ -3,7 +3,7 @@
   "version": 2,
   "functions": {
     "api/index.ts": {
-      "runtime": "vercel-node@22.x"
+      "runtime": "vercel/node"
     }
   }
 }
