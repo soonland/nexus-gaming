@@ -1,50 +1,47 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
-  "builds": [
-    {
-      "src": "api/**/*.ts",
-      "use": "@vercel/node"
+  "functions": {
+    "api/**/*.ts": {
+      "runtime": "@vercel/node@3.0.0"
     }
-  ],
-  "routes": [
+  },
+  "rewrites": [
     {
-      "src": "^/$",
-      "dest": "api/route.ts"
+      "source": "^/$",
+      "destination": "api/route.ts"
     },
     {
-      "src": "/api/health",
-      "dest": "api/health/route.ts"
+      "source": "/api/health",
+      "destination": "api/health/route.ts"
     },
     {
-      "src": "/api/auth/.*",
-      "dest": "api/auth/[...route].ts"
+      "source": "/api/auth/:path*",
+      "destination": "api/auth/[...route].ts"
     },
     {
-      "src": "/api/games/.*",
-      "dest": "api/games/[...route].ts"
+      "source": "/api/games/:path*",
+      "destination": "api/games/[...route].ts"
     },
     {
-      "src": "/api/articles/.*",
-      "dest": "api/articles/[...route].ts"
+      "source": "/api/articles/:path*",
+      "destination": "api/articles/[...route].ts"
     },
     {
-      "src": "/api/reviews/.*",
-      "dest": "api/reviews/[...route].ts"
+      "source": "/api/reviews/:path*",
+      "destination": "api/reviews/[...route].ts"
     },
     {
-      "src": "/api/platforms/.*",
-      "dest": "api/platforms/[...route].ts"
+      "source": "/api/platforms/:path*",
+      "destination": "api/platforms/[...route].ts"
     },
     {
-      "src": "/api/categories/.*",
-      "dest": "api/categories/[...route].ts"
+      "source": "/api/categories/:path*",
+      "destination": "api/categories/[...route].ts"
     },
     {
-      "src": "/api/companies/.*",
-      "dest": "api/companies/[...route].ts"
+      "source": "/api/companies/:path*",
+      "destination": "api/companies/[...route].ts"
     }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  }
+  ]
 }
