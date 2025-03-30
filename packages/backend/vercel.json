@@ -2,8 +2,8 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
   "functions": {
-    "api/index.ts": {
-      "runtime": "vercel/node"
+    "api/route.ts": {
+      "runtime": "node@22.14.0"
     }
   }
 }
