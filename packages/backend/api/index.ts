@@ -4,7 +4,7 @@ const app = Fastify({
   logger: true,
 })
 
-app.get('/', async (req, reply) => {
+app.get('/api', async (req, reply) => {
   return reply.status(200).type('text/html').send(html)
 })
 
