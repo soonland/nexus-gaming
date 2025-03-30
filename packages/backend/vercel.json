@@ -3,7 +3,7 @@
   "version": 2,
   "functions": {
     "api/**/*.ts": {
-      "runtime": "nodejs22.x"
+      "runtime": "node@22"
     }
   },
   "rewrites": [
