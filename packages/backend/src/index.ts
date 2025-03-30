@@ -10,13 +10,9 @@ import { prisma } from './plugins/prisma'
 import { configureRoutes } from './routes'
 
 export async function createServer(): Promise<FastifyServerInstance> {
-  const server: FastifyServerInstance = fastify({
-    logger: {
-      transport: {
-        target: '@fastify/one-line-logger'
-      }
-    }
-  }).withTypeProvider<TypeBoxTypeProvider>()
+const server = fastify({
+  logger: true
+}).withTypeProvider<TypeBoxTypeProvider>()
 
   // Add JWT verification decorator
   server.decorate('authenticate', async function(request: any, reply: any) {

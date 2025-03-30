@@ -15,7 +15,6 @@
     "@fastify/auth": "^4.6.0",
     "@fastify/cors": "^9.0.0",
     "@fastify/jwt": "^8.0.0",
-    "@fastify/one-line-logger": "^2.0.2",
     "@fastify/swagger": "^8.15.0",
     "@fastify/swagger-ui": "^1.10.2",
     "@fastify/type-provider-typebox": "^5.1.0",

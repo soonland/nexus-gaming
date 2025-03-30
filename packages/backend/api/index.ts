@@ -7,11 +7,7 @@ import prisma from '../src/lib/prismaClient'
 
 // Create Fastify instance
 const app = fastify({
-  logger: {
-    transport: {
-      target: '@fastify/one-line-logger'
-    }
-  }
+  logger: true
 }).withTypeProvider<TypeBoxTypeProvider>()
 
 // Add Prisma to Fastify instance
