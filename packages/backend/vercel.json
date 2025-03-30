@@ -1,14 +1,9 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
-  "rewrites": [
-    {
-      "source": "^/$",
-      "destination": "api/route.ts"
-    },
-    {
-      "source": "/health",
-      "destination": "api/health/route.ts"
+  "functions": {
+    "api/index.ts": {
+      "runtime": "vercel-node@22.x"
     }
-  ]
+  }
 }
