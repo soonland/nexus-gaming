@@ -1,106 +1,66 @@
-import fastify from 'fastify'
-import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
-import cors from '@fastify/cors'
-import jwt from '@fastify/jwt'
-import { configureRoutes } from '../src/routes'
-import prisma from '../src/lib/prismaClient'
+import Fastify from 'fastify'
 
-// Create Fastify instance
-const app = fastify({
-  logger: true
-}).withTypeProvider<TypeBoxTypeProvider>()
-
-// Add Prisma to Fastify instance
-app.decorate('prisma', prisma)
-
-// Add JWT verification decorator
-app.decorate('authenticate', async function(request: any, reply: any) {
-  try {
-    await request.jwtVerify()
-    const user = await prisma.user.findUnique({
-      where: { id: request.user.id },
-      select: { id: true, role: true, email: true }
-    })
-    
-    if (!user) {
-      return reply.status(401).send({
-        message: 'Session invalide. Veuillez vous reconnecter.'
-      })
-    }
-    
-    request.user = user
-  } catch (err) {
-    app.log.error('Authentication error:', err)
-    return reply.status(401).send({
-      message: 'Session invalide. Veuillez vous reconnecter.'
-    })
-  }
+const app = Fastify({
+  logger: true,
 })
 
-// Register plugins
-app.register(cors, {
-  origin: (origin, cb) => {
-    const allowedOrigins = [
-      process.env.FRONTEND_URL || 'http://localhost:5173',
-      'https://nexus-gaming.vercel.app'
-    ]
-    if (!origin || allowedOrigins.includes(origin)) {
-      cb(null, true)
-      return
-    }
-    cb(new Error('Not allowed'), false)
-  },
-  credentials: true,
+app.get('/api', async (req, reply) => {
+  return reply.status(200).type('text/html').send(html)
 })
 
-app.register(jwt, {
-  secret: process.env.JWT_SECRET || 'your-super-secret-key-change-in-production',
-})
-
-// Register routes
-app.register(configureRoutes)
-
-// Serverless handler
 export default async function handler(req: any, reply: any) {
   await app.ready()
   app.server.emit('request', req, reply)
 }
 
-// Error handling for serverless environment
-app.setErrorHandler(async (error, request, reply) => {
-  app.log.error(error)
-  
-  // Handle Prisma errors
-  if (error.name === 'PrismaClientKnownRequestError') {
-    return reply.status(400).send({
-      error: 'Database Error',
-      message: 'Une erreur est survenue lors de l\'accès aux données'
-    })
-  }
-  
-  // Handle JWT errors
-  if (error.name === 'JsonWebTokenError') {
-    return reply.status(401).send({
-      error: 'Authentication Error',
-      message: 'Session invalide. Veuillez vous reconnecter.'
-    })
-  }
+const html = `
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@exampledev/new.css@1.1.2/new.min.css"
+    />
+    <title>Vercel + Fastify Hello World</title>
+    <meta
+      name="description"
+      content="This is a starter template for Vercel + Fastify."
+    />
+  </head>
+  <body>
+    <h1>Vercel + Fastify Hello World</h1>
+    <p>
+      This is a starter template for Vercel + Fastify. Requests are
+      rewritten from <code>/*</code> to <code>/api/*</code>, which runs
+      as a Vercel Function.
+    </p>
+    <p>
+        For example, here is the boilerplate code for this route:
+    </p>
+    <pre>
+<code>import Fastify from 'fastify'
 
-  // Default error response
-  return reply.status(500).send({
-    error: 'Internal Server Error',
-    message: 'Une erreur inattendue est survenue'
-  })
+const app = Fastify({
+  logger: true,
 })
 
-// Cleanup function for serverless environment
-const cleanup = async () => {
-  try {
-    await prisma.$disconnect()
-  } catch (e) {
-    console.error('Error during cleanup:', e)
-  }
-}
+app.get('/', async (req, res) => {
+  return res.status(200).type('text/html').send(html)
+})
 
-app.addHook('onClose', cleanup)
-process.on('beforeExit', cleanup)
+export default async function handler(req: any, res: any) {
+  await app.ready()
+  app.server.emit('request', req, res)
+}</code>
+    </pre>
+    <p>
+    <p>
+      <a href="https://vercel.com/templates/other/fastify-serverless-function">
+      Deploy your own
+      </a>
+      to get started.
+  </body>
+</html>
+`
