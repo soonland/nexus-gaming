@@ -10,7 +10,8 @@
       "config": {
         "includeFiles": [
           "packages/backend/dist/**",
-          "packages/backend/prisma/**"
+          "packages/backend/prisma/**",
+          "packages/backend/node_modules/**"
         ]
       }
     },
@@ -25,7 +26,7 @@
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/api"
+      "dest": "packages/backend/api/index.ts"
     },
     {
       "handle": "filesystem"

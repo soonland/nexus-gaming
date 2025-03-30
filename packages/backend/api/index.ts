@@ -1,24 +1,22 @@
 import { createServer } from '../src'
 import { FastifyRequest, FastifyReply } from 'fastify'
+import { FastifyServerInstance } from '../src/types/server'
 
-let app: Awaited<ReturnType<typeof createServer>>
+let app: FastifyServerInstance | null = null
 
-async function handler(req: FastifyRequest['raw'], res: FastifyReply['raw']) {
+export default async function handler(req: FastifyRequest['raw'], reply: FastifyReply['raw']) {
   try {
     if (!app) {
       app = await createServer()
-      await app.ready()
     }
-
-    app.server.emit('request', req, res)
+    await app.ready()
+    return app.server.emit('request', req, reply)
   } catch (error: any) {
     console.error('Serverless handler error:', error)
-    res.statusCode = 500
-    res.end(JSON.stringify({ 
+    reply.statusCode = 500
+    reply.end(JSON.stringify({ 
       error: 'Internal Server Error',
       message: process.env.NODE_ENV === 'development' ? error?.message : undefined 
     }))
   }
 }
-
-export default handler
