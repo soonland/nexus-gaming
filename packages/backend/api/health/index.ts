@@ -5,7 +5,7 @@ import { createServer } from '../server'
 const app = createServer()
 
 // Add health check route
-app.get('/', async () => {
+app.get('/api/health', async () => {
   return { status: 'ok' }
 })
 
