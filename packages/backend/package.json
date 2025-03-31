@@ -5,7 +5,6 @@
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "start": "node dist/index.js",
-    "vercel-build": "prisma generate && tsc",
     "build": "prisma generate && tsc",
     "test": "jest",
     "prisma:generate": "prisma generate",
