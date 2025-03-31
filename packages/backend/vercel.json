@@ -1,0 +1,50 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/**/*.ts",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "^/$",
+      "dest": "api/route.ts"
+    },
+    {
+      "src": "/api/health",
+      "dest": "api/health/route.ts"
+    },
+    {
+      "src": "/api/auth/.*",
+      "dest": "api/auth/[...route].ts"
+    },
+    {
+      "src": "/api/games/.*",
+      "dest": "api/games/[id].ts"
+    },
+    {
+      "src": "/api/articles/.*",
+      "dest": "api/articles/[...route].ts"
+    },
+    {
+      "src": "/api/reviews/.*",
+      "dest": "api/reviews/[...route].ts"
+    },
+    {
+      "src": "/api/platforms/.*",
+      "dest": "api/platforms/[...route].ts"
+    },
+    {
+      "src": "/api/categories/.*",
+      "dest": "api/categories/[...route].ts"
+    },
+    {
+      "src": "/api/companies/.*",
+      "dest": "api/companies/[...route].ts"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
+}
