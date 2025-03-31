@@ -44,7 +44,7 @@ const formatDates = (game: GameWithRelations) => ({
 
 export async function gameRoutes(server: FastifyServerInstance) {
   // Get all games
-  server.get('/', {
+  server.get('/games', {
     schema: {
       tags: ['games'],
       description: 'Liste tous les jeux avec leur note moyenne',
@@ -113,7 +113,7 @@ export async function gameRoutes(server: FastifyServerInstance) {
   })
 
   // Get game by ID
-  server.get('/:id', {
+  server.get('/games/:id', {
     schema: {
       tags: ['games'],
       description: 'Obtenir les détails d\'un jeu spécifique',
@@ -176,7 +176,7 @@ export async function gameRoutes(server: FastifyServerInstance) {
   })
 
   // Create game (admin only)
-  server.post('/', {
+  server.post('/games', {
     onRequest: [server.authenticate],
     schema: {
       tags: ['games'],
@@ -252,7 +252,7 @@ export async function gameRoutes(server: FastifyServerInstance) {
   })
 
   // Update game (admin only)
-  server.patch('/:id', {
+  server.patch('/games/:id', {
     onRequest: [server.authenticate],
     schema: {
       tags: ['games'],
@@ -349,7 +349,7 @@ export async function gameRoutes(server: FastifyServerInstance) {
   })
 
   // Delete game (admin only)
-  server.delete('/:id', {
+  server.delete('/games/:id', {
     onRequest: [server.authenticate],
     schema: {
       tags: ['games'],
