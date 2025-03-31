@@ -59,7 +59,7 @@ const html = `<!DOCTYPE html>
 </html>`
 
 // Add root route
-app.get('/docs', async (_request: FastifyRequest, reply: FastifyReply) => {
+app.get('/', async (_request: FastifyRequest, reply: FastifyReply) => {
   return reply.type('text/html').send(html)
 })
 
