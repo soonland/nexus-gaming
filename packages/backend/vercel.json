@@ -13,7 +13,7 @@
     },
     {
       "src": "/api/health",
-      "dest": "api/health/route.ts"
+      "dest": "api/health/index.ts"
     },
     {
       "src": "/api/auth/.*",
