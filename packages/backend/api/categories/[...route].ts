@@ -1,6 +1,6 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
 import { createServer } from '../server'
-import categoryRoutes from '../../src/routes/categories'
+import { categoryRoutes } from '../../src/routes/categories'
 
 // Create server instance
 const app = createServer()

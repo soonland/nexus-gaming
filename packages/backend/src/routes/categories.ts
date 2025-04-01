@@ -1,101 +1,82 @@
-import { FastifyPluginAsync } from 'fastify'
-import { z } from 'zod'
+import { FastifyServerInstance } from '../types/server'
+import { Type } from '@sinclair/typebox'
+import { 
+  categorySchema,
+  getAllCategories,
+  createCategory,
+  updateCategory,
+  deleteCategory
+} from '../handlers/categories'
 
-const categoryRoutes: FastifyPluginAsync = async (fastify) => {
+export async function categoryRoutes(server: FastifyServerInstance) {
   // Get all categories
-  fastify.get('/', async () => {
-    return await fastify.prisma.category.findMany({
-      orderBy: {
-        name: 'asc',
-      },
-    })
+  server.get('/api/categories', {
+    schema: {
+      tags: ['categories'],
+      description: 'Liste toutes les catégories',
+      response: {
+        200: Type.Array(Type.Object({
+          id: Type.String(),
+          name: Type.String()
+        }))
+      }
+    },
+    handler: (request, reply) => getAllCategories(server, request, reply)
   })
 
   // Create a new category
-  fastify.post(
-    '/',
-    {
-      schema: {
-        body: {
-          type: 'object',
-          required: ['name'],
-          properties: {
-            name: { type: 'string', minLength: 1 }
-          }
-        }
-      },
+  server.post('/api/categories', {
+    schema: {
+      tags: ['categories'],
+      description: 'Créer une nouvelle catégorie',
+      body: categorySchema,
+      response: {
+        201: Type.Object({
+          id: Type.String(),
+          name: Type.String()
+        })
+      }
     },
-    async (request) => {
-      const { name } = request.body as { name: string }
-      return await fastify.prisma.category.create({
-        data: {
-          name,
-        },
-      })
-    }
-  )
+    handler: (request, reply) => createCategory(server, request, reply)
+  })
 
   // Update a category
-  fastify.put(
-    '/:id',
-    {
-      schema: {
-        params: {
-          type: 'object',
-          required: ['id'],
-          properties: {
-            id: { type: 'string', format: 'uuid' }
-          }
-        },
-        body: {
-          type: 'object',
-          required: ['name'],
-          properties: {
-            name: { type: 'string', minLength: 1 }
-          }
-        }
-      },
+  server.put('/api/categories/:id', {
+    schema: {
+      tags: ['categories'],
+      description: 'Modifier une catégorie existante',
+      params: Type.Object({
+        id: Type.String({ format: 'uuid' })
+      }),
+      body: categorySchema,
+      response: {
+        200: Type.Object({
+          id: Type.String(),
+          name: Type.String()
+        }),
+        404: Type.Object({
+          message: Type.String()
+        })
+      }
     },
-    async (request) => {
-      const { id } = request.params as { id: string }
-      const { name } = request.body as { name: string }
-
-      return await fastify.prisma.category.update({
-        where: { id },
-        data: { name },
-      })
-    }
-  )
+    handler: (request, reply) => updateCategory(server, request, reply)
+  })
 
   // Delete a category
-  fastify.delete(
-    '/:id',
-    {
-      schema: {
-        params: {
-          type: 'object',
-          required: ['id'],
-          properties: {
-            id: { type: 'string', format: 'uuid' }
-          }
-        }
-      },
+  server.delete('/api/categories/:id', {
+    schema: {
+      tags: ['categories'],
+      description: 'Supprimer une catégorie',
+      params: Type.Object({
+        id: Type.String({ format: 'uuid' })
+      }),
+      response: {
+        204: Type.Null(),
+        404: Type.Object({
+          message: Type.String()
+        })
+      }
     },
-    async (request) => {
-      const { id } = request.params as { id: string }
-
-      // First, update all articles that use this category to have no category
-      await fastify.prisma.article.updateMany({
-        where: { categoryId: id },
-        data: { categoryId: null },
-      })
-
-      // Then delete the category
-      return await fastify.prisma.category.delete({
-        where: { id },
-      })
-    }
-  )
+    handler: (request, reply) => deleteCategory(server, request, reply)
+  })
 }
-
-export default categoryRoutes
