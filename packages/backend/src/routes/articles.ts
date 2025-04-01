@@ -11,7 +11,7 @@ import {
 
 export async function articleRoutes(server: FastifyServerInstance) {
   // Get all articles
-  server.get('/', {
+  server.get('/api/articles', {
     schema: {
       tags: ['articles'],
       description: 'Liste tous les articles',
@@ -39,7 +39,7 @@ export async function articleRoutes(server: FastifyServerInstance) {
   })
 
   // Get article by ID
-  server.get('/:id', {
+  server.get('/api/articles/:id', {
     schema: {
       tags: ['articles'],
       description: 'Obtenir les détails d\'un article spécifique',
@@ -74,7 +74,7 @@ export async function articleRoutes(server: FastifyServerInstance) {
   })
 
   // Create article - Admin only
-  server.post('/', {
+  server.post('/api/articles/', {
     onRequest: [server.authenticate],
     schema: {
       tags: ['articles'],
@@ -107,7 +107,7 @@ export async function articleRoutes(server: FastifyServerInstance) {
   })
 
   // Update article - Admin only
-  server.patch('/:id', {
+  server.patch('/api/articles/:id', {
     onRequest: [server.authenticate],
     schema: {
       tags: ['articles'],
@@ -146,7 +146,7 @@ export async function articleRoutes(server: FastifyServerInstance) {
   })
 
   // Delete article - Admin only
-  server.delete('/:id', {
+  server.delete('/api/articles/:id', {
     onRequest: [server.authenticate],
     schema: {
       tags: ['articles'],
