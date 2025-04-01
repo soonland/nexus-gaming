@@ -20,6 +20,10 @@
       "dest": "api/auth/[...route].ts"
     },
     {
+      "src": "/api/games",
+      "dest": "api/games/idnex.ts"
+    },
+    {
       "src": "/api/games/.*",
       "dest": "api/games/[id].ts"
     },
