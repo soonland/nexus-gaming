@@ -21,7 +21,7 @@
     },
     {
       "src": "/api/games",
-      "dest": "api/games/idnex.ts"
+      "dest": "api/games/index.ts"
     },
     {
       "src": "/api/games/.*",
@@ -29,7 +29,7 @@
     },
     {
       "src": "/api/articles/.*",
-      "dest": "api/articles/[...route].ts"
+      "dest": "api/articles/index.ts"
     },
     {
       "src": "/api/reviews/.*",
