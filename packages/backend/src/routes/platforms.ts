@@ -1,31 +1,17 @@
-import { FastifyReply, FastifyRequest } from 'fastify'
-import { Type } from '@sinclair/typebox'
 import { FastifyServerInstance } from '../types/server'
-import { AuthenticatedRequest } from '../types/auth'
-import { Platform, Prisma } from '@prisma/client'
-
-const platformSchema = Type.Object({
-  name: Type.String(),
-  manufacturer: Type.String(),
-  releaseDate: Type.Optional(Type.String())
-})
-
-interface PlatformWithGames extends Platform {
-  games?: {
-    id: string
-    title: string
-  }[]
-}
-
-const formatPlatformDates = (platform: Platform) => ({
-  ...platform,
-  createdAt: platform.createdAt.toISOString(),
-  updatedAt: platform.updatedAt.toISOString()
-})
+import { Type } from '@sinclair/typebox'
+import {
+  platformSchema,
+  getAllPlatforms,
+  getPlatformById,
+  createPlatform,
+  updatePlatform,
+  deletePlatform
+} from '../handlers/platforms'
 
 export async function platformRoutes(server: FastifyServerInstance) {
   // Get all platforms
-  server.get('/', {
+  server.get('/api/platforms', {
     schema: {
       tags: ['platforms'],
       description: 'Liste toutes les plateformes',
@@ -40,16 +26,11 @@ export async function platformRoutes(server: FastifyServerInstance) {
         }))
       }
     },
-    handler: async (request: FastifyRequest, reply: FastifyReply) => {
-      const platforms = await server.prisma.platform.findMany({
-        orderBy: { name: 'asc' }
-      })
-      return reply.send(platforms.map(formatPlatformDates))
-    }
+    handler: (request, reply) => getAllPlatforms(server, request, reply)
   })
 
   // Get platform by ID
-  server.get('/:id', {
+  server.get('/api/platforms/:id', {
     schema: {
       tags: ['platforms'],
       description: 'Obtenir les détails d\'une plateforme spécifique',
@@ -74,31 +55,11 @@ export async function platformRoutes(server: FastifyServerInstance) {
         })
       }
     },
-    handler: async (request: FastifyRequest, reply: FastifyReply) => {
-      const { id } = request.params as { id: string }
-
-      const platform = await server.prisma.platform.findUnique({
-        where: { id },
-        include: {
-          games: {
-            select: {
-              id: true,
-              title: true
-            }
-          }
-        }
-      }) as PlatformWithGames | null
-
-      if (!platform) {
-        return reply.status(404).send({ message: 'Plateforme non trouvée' })
-      }
-
-      return reply.send(formatPlatformDates(platform))
-    }
+    handler: (request, reply) => getPlatformById(server, request, reply)
   })
 
   // Create platform (admin only)
-  server.post('/', {
+  server.post('/api/platforms', {
     onRequest: [server.authenticate],
     schema: {
       tags: ['platforms'],
@@ -122,42 +83,11 @@ export async function platformRoutes(server: FastifyServerInstance) {
         })
       }
     },
-    handler: async (request: AuthenticatedRequest, reply: FastifyReply) => {
-      if (request.user.role !== 'ADMIN') {
-        return reply.status(403).send({
-          message: 'Action non autorisée'
-        })
-      }
-
-      const platformData = request.body as {
-        name: string
-        manufacturer: string
-        releaseDate?: string
-      }
-      console.log('Platform data:', platformData)
-      try {
-        const platform = await server.prisma.platform.create({
-          data: {
-            name: platformData.name,
-            manufacturer: platformData.manufacturer,
-            releaseDate: platformData.releaseDate
-          }
-        })
-
-        return reply.status(201).send(formatPlatformDates(platform))
-      } catch (error) {
-        if (error instanceof Prisma.PrismaClientKnownRequestError) {
-          if (error.code === 'P2002') {
-            return reply.status(400).send({ message: 'Le nom de la plateforme doit être unique' })
-          }
-        }
-        throw error
-      }
-    }
+    handler: (request, reply) => createPlatform(server, request, reply)
   })
 
   // Update platform (admin only)
-  server.patch('/:id', {
+  server.patch('/api/platforms/:id', {
     onRequest: [server.authenticate],
     schema: {
       tags: ['platforms'],
@@ -187,46 +117,11 @@ export async function platformRoutes(server: FastifyServerInstance) {
         })
       }
     },
-    handler: async (request: AuthenticatedRequest, reply: FastifyReply) => {
-      if (request.user.role !== 'ADMIN') {
-        return reply.status(403).send({
-          message: 'Action non autorisée'
-        })
-      }
-
-      const { id } = request.params as { id: string }
-      const platformData = request.body as Partial<{
-        name: string
-        manufacturer: string
-        releaseDate?: string
-      }>
-
-      try {
-        const platform = await server.prisma.platform.update({
-          where: { id },
-          data: {
-            ...platformData,
-            releaseDate: platformData.releaseDate
-          }
-        })
-
-        return reply.send(formatPlatformDates(platform))
-      } catch (error) {
-        if (error instanceof Prisma.PrismaClientKnownRequestError) {
-          if (error.code === 'P2025') {
-            return reply.status(404).send({ message: 'Plateforme non trouvée' })
-          }
-          if (error.code === 'P2002') {
-            return reply.status(400).send({ message: 'Le nom de la plateforme doit être unique' })
-          }
-        }
-        throw error
-      }
-    }
+    handler: (request, reply) => updatePlatform(server, request, reply)
   })
 
   // Delete platform (admin only)
-  server.delete('/:id', {
+  server.delete('/api/platforms/:id', {
     onRequest: [server.authenticate],
     schema: {
       tags: ['platforms'],
@@ -245,26 +140,6 @@ export async function platformRoutes(server: FastifyServerInstance) {
         })
       }
     },
-    handler: async (request: AuthenticatedRequest, reply: FastifyReply) => {
-      if (request.user.role !== 'ADMIN') {
-        return reply.status(403).send({
-          message: 'Action non autorisée'
-        })
-      }
-
-      const { id } = request.params as { id: string }
-
-      try {
-        await server.prisma.platform.delete({
-          where: { id }
-        })
-        return reply.status(204).send()
-      } catch (error) {
-        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
-          return reply.status(404).send({ message: 'Plateforme non trouvée' })
-        }
-        throw error
-      }
-    }
+    handler: (request, reply) => deletePlatform(server, request, reply)
   })
 }
