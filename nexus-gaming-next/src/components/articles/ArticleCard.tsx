@@ -15,7 +15,7 @@ import {
   Icon,
   useColorModeValue,
 } from '@chakra-ui/react'
-import { BsCalendar4, BsController } from 'react-icons/bs'
+import { BsCalendar4 } from 'react-icons/bs'
 import { FaUser } from 'react-icons/fa'
 import Link from 'next/link'
 import { Article, User, Category, Game } from '@prisma/client'
@@ -90,41 +90,27 @@ export function ArticleCard({ article }: ArticleCardProps) {
           )}
         </Box>
       <CardBody>
-        <Stack spacing={2}>
-          <Stack spacing={3}>
-            <Heading size="md" noOfLines={2}>
-              {article.title}
-            </Heading>
-            <Text fontSize="sm" color="gray.600" noOfLines={3}>
-              {article.content}
-            </Text>
-            <Stack spacing={2} fontSize="sm">
-              <HStack color="gray.500" spacing={4}>
-                <HStack>
-                  <Icon as={FaUser} />
-                  <Text>{article.user.username}</Text>
-                </HStack>
-                <HStack>
-                  <Icon as={BsCalendar4} />
-                  <DateDisplay 
-                    date={article.publishedAt} 
-                    format="relative"
-                    tooltipFormat="calendar"
-                  />
-                </HStack>
-              </HStack>
-              {article.games.length > 0 && (
-                <HStack color="gray.500">
-                  <Icon as={BsController} />
-                  <Text>
-                    {article.games.length === 1
-                      ? '1 jeu mentionné'
-                      : `${article.games.length} jeux mentionnés`}
-                  </Text>
-                </HStack>
-              )}
-            </Stack>
-          </Stack>
+        <Stack spacing={3}>
+          <Heading size="md" noOfLines={2}>
+            {article.title}
+          </Heading>
+          <Text fontSize="sm" color="gray.600" noOfLines={3}>
+            {article.content}
+          </Text>
+          <HStack color="gray.500" spacing={4} fontSize="sm">
+            <HStack>
+              <Icon as={FaUser} />
+              <Text>{article.user.username}</Text>
+            </HStack>
+            <HStack>
+              <Icon as={BsCalendar4} />
+              <DateDisplay 
+                date={article.publishedAt} 
+                format="relative"
+                tooltipFormat="calendar"
+              />
+            </HStack>
+          </HStack>
         </Stack>
       </CardBody>
     </Card>

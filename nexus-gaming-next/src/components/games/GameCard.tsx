@@ -14,9 +14,9 @@ import {
   Icon,
   Wrap,
   WrapItem,
+  Divider,
   useColorModeValue,
 } from '@chakra-ui/react'
-import { FaBuilding } from 'react-icons/fa'
 import { BsCalendar4 } from 'react-icons/bs'
 import Link from 'next/link'
 import { DateDisplay } from '@/components/common/DateDisplay'
@@ -34,6 +34,7 @@ interface GameCardProps {
 
 export function GameCard({ game }: GameCardProps) {
   const bgColor = useColorModeValue('white', 'gray.800')
+  const dateColor = useColorModeValue('blue.600', 'blue.300')
   const overlayGradient = useColorModeValue(
     'linear(to-t, blackAlpha.600, blackAlpha.300)',
     'linear(to-t, blackAlpha.700, blackAlpha.400)'
@@ -90,55 +91,45 @@ export function GameCard({ game }: GameCardProps) {
             </Text>
           </Stack>
 
-          {/* Métadonnées */}
-          <Stack spacing={2} fontSize="sm">
-            <HStack color="gray.500" spacing={4}>
-              <HStack>
-                <Icon as={FaBuilding} />
-                <Text>{game.developer?.name}</Text>
-              </HStack>
-              {game.releaseDate && (
-                <HStack>
-                  <Icon as={BsCalendar4} />
-                  <DateDisplay 
-                    date={game.releaseDate}
-                    format="calendar"
-                    tooltipFormat="long"
-                  />
-                </HStack>
-              )}
+          {/* Date de sortie */}
+          {game.releaseDate && (
+            <HStack color={dateColor}>
+              <Icon as={BsCalendar4} />
+              <DateDisplay 
+                date={game.releaseDate}
+                format="calendar"
+                tooltipFormat="long"
+                color={dateColor}
+              />
             </HStack>
-            <HStack color="gray.500">
-              <Icon as={FaBuilding} />
-              <Text>
-                {game.publisher?.name || 'Éditeur inconnu'}
-              </Text>
-            </HStack>
-          </Stack>
+          )}
 
           {/* Plateformes */}
           {game.platforms.length > 0 && (
-            <Wrap spacing={2}>
-              {game.platforms.map((platform) => (
-                <WrapItem key={platform.name}>
-                  <Badge
-                    px={2}
-                    py={1}
-                    borderRadius="full"
-                    fontSize="xs"
-                    colorScheme="blue"
-                    variant="subtle"
-                    _hover={{
-                      bg: 'blue.100',
-                      transform: 'scale(1.05)',
-                    }}
-                    transition="all 0.2s"
-                  >
-                    {platform.name}
-                  </Badge>
-                </WrapItem>
-              ))}
-            </Wrap>
+            <>
+              <Divider />
+              <Wrap spacing={2}>
+                {game.platforms.map((platform) => (
+                  <WrapItem key={platform.name}>
+                    <Badge
+                      px={2}
+                      py={1}
+                      borderRadius="full"
+                      fontSize="xs"
+                      colorScheme="blue"
+                      variant="subtle"
+                      _hover={{
+                        bg: 'blue.100',
+                        transform: 'scale(1.05)',
+                      }}
+                      transition="all 0.2s"
+                    >
+                      {platform.name}
+                    </Badge>
+                  </WrapItem>
+                ))}
+              </Wrap>
+            </>
           )}
         </Stack>
       </CardBody>
