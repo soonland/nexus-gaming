@@ -9,9 +9,17 @@ import {
   Image,
   Stack,
   Text,
+  Badge,
+  HStack,
+  Icon,
+  Wrap,
+  WrapItem,
   useColorModeValue,
 } from '@chakra-ui/react'
+import { FaBuilding } from 'react-icons/fa'
+import { BsCalendar4 } from 'react-icons/bs'
 import Link from 'next/link'
+import { DateDisplay } from '@/components/common/DateDisplay'
 import type { Game } from '@prisma/client'
 
 type GameWithRelations = Game & {
@@ -26,15 +34,15 @@ interface GameCardProps {
 
 export function GameCard({ game }: GameCardProps) {
   const bgColor = useColorModeValue('white', 'gray.800')
+  const overlayGradient = useColorModeValue(
+    'linear(to-t, blackAlpha.600, blackAlpha.300)',
+    'linear(to-t, blackAlpha.700, blackAlpha.400)'
+  )
 
   if (!game) {
     console.warn('GameCard rendered without game data')
     return null
   }
-
-  const platformsText = game.platforms?.length 
-    ? game.platforms.map(p => p.name).join(', ')
-    : 'Plateformes non spécifiées'
 
   return (
     <Card
@@ -46,34 +54,94 @@ export function GameCard({ game }: GameCardProps) {
       _hover={{ transform: 'translateY(-4px)', textDecoration: 'none' }}
       overflow="hidden"
     >
-        <Box position="relative" height="200px">
-          <Image
-            src={game.coverImage || '/images/placeholder-game.png'}
-            alt={game.title}
-            height={200}
-            width="100%"
-            objectFit="cover"
-            onError={(e) => {
-              const img = e.target as HTMLImageElement
-              img.src = '/images/placeholder-game.png'
-            }}
-          />
-        </Box>
-        <CardBody>
+      {/* Image avec overlay */}
+      <Box position="relative" height="200px" overflow="hidden">
+        <Box
+          position="absolute"
+          top={0}
+          left={0}
+          right={0}
+          bottom={0}
+          bgGradient={overlayGradient}
+          zIndex={1}
+        />
+        <Image
+          src={game.coverImage || '/images/placeholder-game.png'}
+          alt={game.title}
+          height="100%"
+          width="100%"
+          objectFit="cover"
+          onError={(e) => {
+            const img = e.target as HTMLImageElement
+            img.src = '/images/placeholder-game.png'
+          }}
+        />
+      </Box>
+
+      <CardBody>
+        <Stack spacing={4}>
+          {/* Titre et description */}
           <Stack spacing={2}>
             <Heading size="md" noOfLines={2}>
               {game.title}
             </Heading>
-            <Text fontSize="sm" color="gray.500">
-              {game.developer?.name || 'Développeur inconnu'}
+            <Text fontSize="sm" color="gray.600" noOfLines={3}>
+              {game.description}
             </Text>
-            <Box>
-              <Text fontSize="sm" color="gray.500">
-                {platformsText}
-              </Text>
-            </Box>
           </Stack>
-        </CardBody>
+
+          {/* Métadonnées */}
+          <Stack spacing={2} fontSize="sm">
+            <HStack color="gray.500" spacing={4}>
+              <HStack>
+                <Icon as={FaBuilding} />
+                <Text>{game.developer?.name}</Text>
+              </HStack>
+              {game.releaseDate && (
+                <HStack>
+                  <Icon as={BsCalendar4} />
+                  <DateDisplay 
+                    date={game.releaseDate}
+                    format="calendar"
+                    tooltipFormat="long"
+                  />
+                </HStack>
+              )}
+            </HStack>
+            <HStack color="gray.500">
+              <Icon as={FaBuilding} />
+              <Text>
+                {game.publisher?.name || 'Éditeur inconnu'}
+              </Text>
+            </HStack>
+          </Stack>
+
+          {/* Plateformes */}
+          {game.platforms.length > 0 && (
+            <Wrap spacing={2}>
+              {game.platforms.map((platform) => (
+                <WrapItem key={platform.name}>
+                  <Badge
+                    px={2}
+                    py={1}
+                    borderRadius="full"
+                    fontSize="xs"
+                    colorScheme="blue"
+                    variant="subtle"
+                    _hover={{
+                      bg: 'blue.100',
+                      transform: 'scale(1.05)',
+                    }}
+                    transition="all 0.2s"
+                  >
+                    {platform.name}
+                  </Badge>
+                </WrapItem>
+              ))}
+            </Wrap>
+          )}
+        </Stack>
+      </CardBody>
     </Card>
   )
 }

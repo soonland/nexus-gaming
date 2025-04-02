@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import '@/lib/dayjs'
 import { CacheProvider } from '@chakra-ui/next-js'
 import { ChakraProvider } from '@chakra-ui/react'
 import { QueryProvider } from '@/providers/QueryProvider'
