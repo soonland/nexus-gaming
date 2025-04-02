@@ -12,12 +12,12 @@ import {
   IconButton,
   useDisclosure,
   HStack,
-  Link as ChakraLink,
   Menu,
   MenuButton,
   MenuList,
   MenuItem,
-  Text,
+  MenuGroup,
+  MenuDivider,
 } from '@chakra-ui/react'
 import { 
   HamburgerIcon, 
@@ -25,6 +25,11 @@ import {
   MoonIcon, 
   SunIcon,
   ChevronDownIcon,
+  ViewIcon,
+  EditIcon,
+  SettingsIcon,
+  StarIcon,
+  AddIcon,
 } from '@chakra-ui/icons'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -88,6 +93,54 @@ export function Navbar() {
             </HStack>
           </HStack>
           <Stack direction="row" spacing={4} align="center">
+            {user?.role === 'ADMIN' && (
+              <Menu>
+                <MenuButton
+                  as={Button}
+                  rightIcon={<ChevronDownIcon />}
+                  colorScheme="purple"
+                  variant="solid"
+                >
+                  Administration
+                </MenuButton>
+                <MenuList>
+                  <MenuItem as={Link} href="/admin" icon={<ViewIcon />}>
+                    Dashboard
+                  </MenuItem>
+                  <MenuDivider />
+                  <MenuGroup title="Jeux">
+                    <MenuItem as={Link} href="/admin/games" icon={<StarIcon />}>
+                      Liste des jeux
+                    </MenuItem>
+                    <MenuItem as={Link} href="/admin/games/new" icon={<AddIcon />}>
+                      Ajouter un jeu
+                    </MenuItem>
+                  </MenuGroup>
+                  <MenuDivider />
+                  <MenuGroup title="Articles">
+                    <MenuItem as={Link} href="/admin/articles" icon={<EditIcon />}>
+                      Liste des articles
+                    </MenuItem>
+                    <MenuItem as={Link} href="/admin/articles/new" icon={<AddIcon />}>
+                      Nouvel article
+                    </MenuItem>
+                  </MenuGroup>
+                  <MenuDivider />
+                  <MenuGroup title="Configuration">
+                    <MenuItem as={Link} href="/admin/platforms" icon={<SettingsIcon />}>
+                      Plateformes
+                    </MenuItem>
+                    <MenuItem as={Link} href="/admin/categories" icon={<ViewIcon />}>
+                      Catégories
+                    </MenuItem>
+                    <MenuItem as={Link} href="/admin/companies" icon={<HamburgerIcon />}>
+                      Sociétés
+                    </MenuItem>
+                  </MenuGroup>
+                </MenuList>
+              </Menu>
+            )}
+
             <Button onClick={toggleColorMode}>
               {colorMode === 'light' ? <MoonIcon /> : <SunIcon />}
             </Button>
@@ -102,16 +155,11 @@ export function Navbar() {
                   {user.username}
                 </MenuButton>
                 <MenuList>
-                  {user.role === 'ADMIN' && (
-                    <MenuItem as="a" href="/admin">
-                      Administration
-                    </MenuItem>
-                  )}
                   <MenuItem onClick={logout}>Se déconnecter</MenuItem>
                 </MenuList>
               </Menu>
             ) : (
-              <Button as="a" href="/login" colorScheme="blue">
+              <Button as={Link} href="/login" colorScheme="blue">
                 Se connecter
               </Button>
             )}
