@@ -3,168 +3,107 @@
 import React from 'react'
 import {
   Box,
-  Flex,
   Button,
-  Stack,
-  useColorMode,
-  useColorModeValue,
   Container,
-  IconButton,
-  useDisclosure,
   HStack,
   Menu,
   MenuButton,
   MenuList,
   MenuItem,
-  MenuGroup,
-  MenuDivider,
+  IconButton,
+  useColorMode,
+  useColorModeValue,
 } from '@chakra-ui/react'
-import { 
-  HamburgerIcon, 
-  CloseIcon, 
-  MoonIcon, 
-  SunIcon,
-  ChevronDownIcon,
-  ViewIcon,
-  EditIcon,
-  SettingsIcon,
-  StarIcon,
-  AddIcon,
-} from '@chakra-ui/icons'
+import { FiMenu, FiMoon, FiSun } from 'react-icons/fi'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
-
-const NAV_ITEMS = [
-  { label: 'Games', href: '/games' },
-  { label: 'Articles', href: '/articles' },
-]
+import { Role } from '@prisma/client'
 
 export function Navbar() {
-  const { colorMode, toggleColorMode } = useColorMode()
-  const { isOpen, onToggle } = useDisclosure()
-  const pathname = usePathname()
   const { user, logout } = useAuth()
-  
-  // Extract all color mode values
+  const { toggleColorMode, colorMode } = useColorMode()
   const bgColor = useColorModeValue('white', 'gray.800')
-  const hoverBgColor = useColorModeValue('gray.200', 'gray.700')
-  const activeBgColor = useColorModeValue('gray.200', 'gray.700')
+  const borderColor = useColorModeValue('gray.200', 'gray.700')
+
+  const isAdmin = user?.role === Role.ADMIN
 
   return (
-    <Box bg={bgColor} px={4} shadow="sm">
+    <Box
+      as="nav"
+      py={4}
+      bg={bgColor}
+      borderBottom="1px"
+      borderColor={borderColor}
+      position="sticky"
+      top={0}
+      zIndex={100}
+    >
       <Container maxW="container.xl">
-        <Flex h={16} alignItems="center" justifyContent="space-between">
-          <IconButton
-            size="md"
-            icon={isOpen ? <CloseIcon /> : <HamburgerIcon />}
-            aria-label="Open Menu"
-            display={{ md: 'none' }}
-            onClick={onToggle}
-          />
-          <HStack spacing={8} alignItems="center">
-            <Box
-              as={Link}
-              href="/"
-              fontWeight="bold"
-              fontSize="xl"
-              _hover={{ textDecoration: 'none' }}
-            >
-              Nexus Gaming
-            </Box>
-            <HStack as="nav" spacing={4} display={{ base: 'none', md: 'flex' }}>
-              {NAV_ITEMS.map((item) => (
-                <Box
-                  key={item.label}
-                  as={Link}
-                  href={item.href}
-                  px={2}
-                  py={1}
-                  rounded="md"
-                  _hover={{
-                    textDecoration: 'none',
-                    bg: hoverBgColor,
-                  }}
-                  bg={pathname === item.href ? activeBgColor : 'transparent'}
-                >
-                  {item.label}
-                </Box>
-              ))}
-            </HStack>
+        <HStack justify="space-between">
+          {/* Navigation principale */}
+          <HStack spacing={8}>
+            <Button as={Link} href="/" variant="ghost">
+              Accueil
+            </Button>
+            <Button as={Link} href="/articles" variant="ghost">
+              Articles
+            </Button>
+            <Button as={Link} href="/games" variant="ghost">
+              Jeux
+            </Button>
           </HStack>
-          <Stack direction="row" spacing={4} align="center">
-            {user?.role === 'ADMIN' && (
+
+          {/* Menu de droite */}
+          <HStack>
+            {/* Menu admin */}
+            {isAdmin && (
               <Menu>
                 <MenuButton
-                  as={Button}
-                  rightIcon={<ChevronDownIcon />}
-                  colorScheme="purple"
-                  variant="solid"
-                >
-                  Administration
-                </MenuButton>
+                  as={IconButton}
+                  icon={<FiMenu />}
+                  variant="ghost"
+                  aria-label="Menu d'administration"
+                />
                 <MenuList>
-                  <MenuItem as={Link} href="/admin" icon={<ViewIcon />}>
-                    Dashboard
+                  <MenuItem as={Link} href="/admin/articles">
+                    Articles
                   </MenuItem>
-                  <MenuDivider />
-                  <MenuGroup title="Jeux">
-                    <MenuItem as={Link} href="/admin/games" icon={<StarIcon />}>
-                      Liste des jeux
-                    </MenuItem>
-                    <MenuItem as={Link} href="/admin/games/new" icon={<AddIcon />}>
-                      Ajouter un jeu
-                    </MenuItem>
-                  </MenuGroup>
-                  <MenuDivider />
-                  <MenuGroup title="Articles">
-                    <MenuItem as={Link} href="/admin/articles" icon={<EditIcon />}>
-                      Liste des articles
-                    </MenuItem>
-                    <MenuItem as={Link} href="/admin/articles/new" icon={<AddIcon />}>
-                      Nouvel article
-                    </MenuItem>
-                  </MenuGroup>
-                  <MenuDivider />
-                  <MenuGroup title="Configuration">
-                    <MenuItem as={Link} href="/admin/platforms" icon={<SettingsIcon />}>
-                      Plateformes
-                    </MenuItem>
-                    <MenuItem as={Link} href="/admin/categories" icon={<ViewIcon />}>
-                      Catégories
-                    </MenuItem>
-                    <MenuItem as={Link} href="/admin/companies" icon={<HamburgerIcon />}>
-                      Sociétés
-                    </MenuItem>
-                  </MenuGroup>
+                  <MenuItem as={Link} href="/admin/categories">
+                    Catégories
+                  </MenuItem>
+                  <MenuItem as={Link} href="/admin/games">
+                    Jeux
+                  </MenuItem>
+                  <MenuItem as={Link} href="/admin/platforms">
+                    Plateformes
+                  </MenuItem>
+                  <MenuItem as={Link} href="/admin/companies">
+                    Entreprises
+                  </MenuItem>
                 </MenuList>
               </Menu>
             )}
 
-            <Button onClick={toggleColorMode}>
-              {colorMode === 'light' ? <MoonIcon /> : <SunIcon />}
-            </Button>
+            {/* Bouton pour basculer le thème */}
+            <IconButton
+              icon={colorMode === 'light' ? <FiMoon /> : <FiSun />}
+              onClick={toggleColorMode}
+              variant="ghost"
+              aria-label="Toggle color mode"
+            />
 
+            {/* Boutons de connexion/déconnexion */}
             {user ? (
-              <Menu>
-                <MenuButton
-                  as={Button}
-                  rightIcon={<ChevronDownIcon />}
-                  variant="ghost"
-                >
-                  {user.username}
-                </MenuButton>
-                <MenuList>
-                  <MenuItem onClick={logout}>Se déconnecter</MenuItem>
-                </MenuList>
-              </Menu>
+              <Button onClick={logout} variant="ghost">
+                Déconnexion
+              </Button>
             ) : (
-              <Button as={Link} href="/login" colorScheme="blue">
-                Se connecter
+              <Button as={Link} href="/login" variant="ghost">
+                Connexion
               </Button>
             )}
-          </Stack>
-        </Flex>
+          </HStack>
+        </HStack>
       </Container>
     </Box>
   )
