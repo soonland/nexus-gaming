@@ -20,13 +20,7 @@ import {
 import { BsCalendar4 } from 'react-icons/bs'
 import Link from 'next/link'
 import { DateDisplay } from '@/components/common/DateDisplay'
-import type { Game } from '@prisma/client'
-
-type GameWithRelations = Game & {
-  platforms: { name: string }[]
-  developer: { name: string }
-  publisher: { name: string }
-}
+import { GameWithRelations } from '@/types/game'
 
 interface GameCardProps {
   game: GameWithRelations

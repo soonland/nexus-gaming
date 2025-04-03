@@ -25,13 +25,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { GameCard } from '@/components/games/GameCard'
 import { DateDisplay } from '@/components/common/DateDisplay'
 import { useArticle } from '@/hooks/useArticle'
-import type { Game } from '@prisma/client'
-
-type CompleteGame = Game & {
-  platforms: { name: string }[]
-  developer: { name: string }
-  publisher: { name: string }
-}
+import type { GameWithRelations } from '@/types/game'
 
 export default function ArticlePage() {
   const params = useParams()
@@ -155,15 +149,17 @@ export default function ArticlePage() {
               </HStack>
               <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
                 {article.games.map((gameDetails) => {
-                  const game: CompleteGame = {
+                  const game: GameWithRelations = {
                     ...gameDetails,
-                    createdAt: new Date(),
-                    updatedAt: new Date(),
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
                     description: '',
                     releaseDate: null,
                     developerId: '',
                     publisherId: '',
-                    platforms: []
+                    platforms: [],
+                    developer: { name: '' },
+                    publisher: { name: '' }
                   }
                   return <GameCard key={game.id} game={game} />
                 })}

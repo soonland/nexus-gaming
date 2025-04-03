@@ -3,77 +3,27 @@ import prisma from '@/lib/prisma'
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
+
     const game = await prisma.game.findUnique({
-      where: {
-        id: params.id,
-      },
+      where: { id },
       include: {
         platforms: {
           select: {
-            id: true,
             name: true,
-            manufacturer: true,
-            releaseDate: true,
           },
         },
         developer: {
           select: {
-            id: true,
             name: true,
           },
         },
         publisher: {
           select: {
-            id: true,
             name: true,
-          },
-        },
-        articles: {
-          select: {
-            article: {
-              select: {
-                id: true,
-                title: true,
-                content: true,
-                publishedAt: true,
-                category: {
-                  select: {
-                    name: true,
-                  },
-                },
-                user: {
-                  select: {
-                    username: true,
-                  },
-                },
-              },
-            },
-          },
-          take: 3,
-          orderBy: {
-            article: {
-              publishedAt: 'desc',
-            },
-          },
-        },
-        reviews: {
-          select: {
-            id: true,
-            rating: true,
-            content: true,
-            createdAt: true,
-            user: {
-              select: {
-                username: true,
-              },
-            },
-          },
-          take: 5,
-          orderBy: {
-            createdAt: 'desc',
           },
         },
       },
@@ -86,23 +36,83 @@ export async function GET(
       )
     }
 
-    // Transform the data to flatten the articles structure
-    const transformedGame = {
-      ...game,
-      articles: game.articles.map(a => a.article),
-    }
-
-    return NextResponse.json(transformedGame)
+    return NextResponse.json(game)
   } catch (error) {
     console.error('Error fetching game:', error)
-    
-    const isPrismaError = error instanceof Error && 'code' in error
-    const errorMessage = isPrismaError 
-      ? 'Database error occurred'
-      : 'Internal server error'
-
     return NextResponse.json(
-      { error: errorMessage },
+      { error: 'Error fetching game' },
+      { status: 500 }
+    )
+  }
+}
+
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params
+    const body = await request.json()
+    const { title, description, releaseDate, developerId, publisherId, coverImage, platformIds } = body
+
+    const game = await prisma.game.update({
+      where: { id },
+      data: {
+        title,
+        description,
+        releaseDate,
+        developerId,
+        publisherId,
+        coverImage,
+        platforms: {
+          set: platformIds.map((id: string) => ({ id })),
+        },
+      },
+      include: {
+        platforms: {
+          select: {
+            name: true,
+          },
+        },
+        developer: {
+          select: {
+            name: true,
+          },
+        },
+        publisher: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    })
+
+    return NextResponse.json(game)
+  } catch (error) {
+    console.error('Error updating game:', error)
+    return NextResponse.json(
+      { error: 'Error updating game' },
+      { status: 500 }
+    )
+  }
+}
+
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params
+
+    await prisma.game.delete({
+      where: { id },
+    })
+
+    return new NextResponse(null, { status: 204 })
+  } catch (error) {
+    console.error('Error deleting game:', error)
+    return NextResponse.json(
+      { error: 'Error deleting game' },
       { status: 500 }
     )
   }

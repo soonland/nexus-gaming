@@ -19,25 +19,17 @@ export async function GET(
     const company = await prisma.company.findUnique({
       where: { id },
       include: {
-        _count: {
-          select: {
-            gamesAsDev: true,
-            gamesAsPub: true,
-          },
-        },
         gamesAsDev: {
           select: {
             id: true,
             title: true,
           },
-          take: 5,
         },
         gamesAsPub: {
           select: {
             id: true,
             title: true,
           },
-          take: 5,
         },
       },
     })
@@ -69,23 +61,9 @@ export async function PATCH(
     const body = await request.json()
     const { name, isDeveloper, isPublisher } = body
 
-    if (!id) {
-      return NextResponse.json(
-        { error: 'Company ID is required' },
-        { status: 400 }
-      )
-    }
-
     if (!name) {
       return NextResponse.json(
         { error: 'Name is required' },
-        { status: 400 }
-      )
-    }
-
-    if (!isDeveloper && !isPublisher) {
-      return NextResponse.json(
-        { error: 'Company must be either developer or publisher' },
         { status: 400 }
       )
     }
@@ -94,8 +72,8 @@ export async function PATCH(
       where: { id },
       data: {
         name,
-        isDeveloper,
-        isPublisher,
+        isDeveloper: isDeveloper ?? false,
+        isPublisher: isPublisher ?? false,
       },
     })
 
@@ -116,13 +94,6 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params
-
-    if (!id) {
-      return NextResponse.json(
-        { error: 'Company ID is required' },
-        { status: 400 }
-      )
-    }
 
     await prisma.company.delete({
       where: { id },

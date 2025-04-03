@@ -10,17 +10,17 @@ import {
   AlertIcon,
 } from '@chakra-ui/react'
 import { ArticleCard } from '@/components/articles/ArticleCard'
-import { useArticles } from '@/hooks/useArticles'
+import { useArticles, type ArticleWithRelations } from '@/hooks/useArticles'
 
 export default function ArticlesPage() {
-  const { data: articles, isLoading, error } = useArticles()
+  const { articles, isLoading, error } = useArticles()
 
   if (error) {
     return (
       <Container maxW="container.xl" py={8}>
         <Alert status="error">
           <AlertIcon />
-          Error loading articles
+          {error instanceof Error ? error.message : 'Error loading articles'}
         </Alert>
       </Container>
     )
@@ -34,7 +34,7 @@ export default function ArticlesPage() {
       <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
         {isLoading
           ? [...Array(6)].map((_, i) => <Skeleton key={i} height="400px" />)
-          : articles?.map((article) => (
+          : articles?.map((article: ArticleWithRelations) => (
               <ArticleCard key={article.id} article={article} />
             ))}
       </SimpleGrid>

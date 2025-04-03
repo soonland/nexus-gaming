@@ -23,6 +23,19 @@ export async function GET(
           select: {
             id: true,
             title: true,
+            releaseDate: true,
+            developer: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+            publisher: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
           },
         },
       },

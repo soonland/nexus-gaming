@@ -13,7 +13,7 @@ import { GameCard } from '@/components/games/GameCard'
 import { useGames } from '@/hooks/useGames'
 
 export default function GamesPage() {
-  const { data: games, isLoading, error } = useGames()
+  const { games, isLoading, error } = useGames()
 
   if (error) {
     return (

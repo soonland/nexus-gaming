@@ -1,19 +1,15 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
+import { getCurrentUser } from '@/lib/jwt'
 
+// GET - Liste des articles
 export async function GET() {
-  console.log('GET /api/articles - Fetching articles...')
-  
   try {
     const articles = await prisma.article.findMany({
       include: {
-        user: {
-          select: {
-            username: true,
-          },
-        },
         category: {
           select: {
+            id: true,
             name: true,
           },
         },
@@ -23,40 +19,109 @@ export async function GET() {
               select: {
                 id: true,
                 title: true,
-                coverImage: true,
               },
             },
           },
         },
+        user: {
+          select: {
+            id: true,
+            username: true,
+          },
+        },
       },
       orderBy: {
-        publishedAt: 'desc',
+        createdAt: 'desc',
       },
     })
 
-    // Transform the data to flatten the games structure
-    const transformedArticles = articles.map(article => ({
+    const formattedArticles = articles.map(article => ({
       ...article,
       games: article.games.map(g => g.game),
     }))
 
-    console.log(`GET /api/articles - Found ${articles.length} articles`)
-    
-    if (!articles.length) {
-      console.warn('GET /api/articles - No articles found in database')
-    }
-
-    return NextResponse.json(transformedArticles)
+    return NextResponse.json(formattedArticles)
   } catch (error) {
     console.error('Error fetching articles:', error)
-    
-    const isPrismaError = error instanceof Error && 'code' in error
-    const errorMessage = isPrismaError 
-      ? 'Database error occurred'
-      : 'Internal server error'
-
     return NextResponse.json(
-      { error: errorMessage },
+      { error: 'Error fetching articles' },
+      { status: 500 }
+    )
+  }
+}
+
+// POST - Créer un article
+export async function POST(request: Request) {
+  try {
+    const user = await getCurrentUser()
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Not authenticated' },
+        { status: 401 }
+      )
+    }
+
+    const body = await request.json()
+    const { title, content, categoryId, gameIds } = body
+
+    if (!title || !content) {
+      return NextResponse.json(
+        { error: 'Title and content are required' },
+        { status: 400 }
+      )
+    }
+
+    const article = await prisma.article.create({
+      data: {
+        title,
+        content,
+        categoryId: categoryId || null,
+        userId: user.id,
+        games: {
+          create: gameIds.map((gameId: string) => ({
+            game: {
+              connect: { id: gameId },
+            },
+          })),
+        },
+      },
+      include: {
+        category: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        games: {
+          select: {
+            game: {
+              select: {
+                id: true,
+                title: true,
+              },
+            },
+          },
+        },
+        user: {
+          select: {
+            id: true,
+            username: true,
+          },
+        },
+      },
+    })
+
+    const formattedArticle = {
+      ...article,
+      games: article.games.map(g => g.game),
+    }
+
+    return NextResponse.json(formattedArticle, { status: 201 })
+  } catch (error) {
+    console.error('Error creating article:', error)
+    return NextResponse.json(
+      { error: 'Error creating article' },
       { status: 500 }
     )
   }
