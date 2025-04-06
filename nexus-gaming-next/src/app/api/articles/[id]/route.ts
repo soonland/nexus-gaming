@@ -1,46 +1,40 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
-import { getCurrentUser } from '@/lib/jwt'
-import { cookies } from 'next/headers'
+import type { ArticleForm, ArticleData } from '@/types'
 
-// GET - Détails d'un article
 export async function GET(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params
-
-    if (!id) {
-      return NextResponse.json(
-        { error: 'Article ID is required' },
-        { status: 400 }
-      )
-    }
-
     const article = await prisma.article.findUnique({
       where: { id },
-      include: {
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        status: true,
+        publishedAt: true,
+        createdAt: true,
+        updatedAt: true,
         category: {
           select: {
             id: true,
             name: true,
           },
         },
-        games: {
-          select: {
-            game: {
-              select: {
-                id: true,
-                title: true,
-              },
-            },
-          },
-        },
         user: {
           select: {
             id: true,
             username: true,
+          },
+        },
+        games: {
+          select: {
+            id: true,
+            title: true,
+            coverImage: true,
           },
         },
       },
@@ -55,7 +49,9 @@ export async function GET(
 
     const formattedArticle = {
       ...article,
-      games: article.games.map(g => g.game),
+      createdAt: new Date(article.createdAt),
+      updatedAt: new Date(article.updatedAt),
+      publishedAt: article.publishedAt ? new Date(article.publishedAt) : null
     }
 
     return NextResponse.json(formattedArticle)
@@ -68,87 +64,40 @@ export async function GET(
   }
 }
 
-// PATCH - Mettre à jour un article
 export async function PATCH(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params
-    const user = await getCurrentUser()
+    const data = (await request.json()) as ArticleForm
+    const { gameIds = [] } = data
 
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Not authenticated' },
-        { status: 401 }
-      )
-    }
-
-    const body = await request.json()
-    const { title, content, categoryId, gameIds } = body
-
-    if (!title || !content) {
-      return NextResponse.json(
-        { error: 'Title and content are required' },
-        { status: 400 }
-      )
-    }
-
-    // Vérifier que l'article existe et appartient à l'utilisateur
-    const existingArticle = await prisma.article.findUnique({
-      where: { id },
-      select: { userId: true },
-    })
-
-    if (!existingArticle) {
-      return NextResponse.json(
-        { error: 'Article not found' },
-        { status: 404 }
-      )
-    }
-
-    if (existingArticle.userId !== user.id) {
-      return NextResponse.json(
-        { error: 'Not authorized' },
-        { status: 403 }
-      )
-    }
-
-    // Supprimer les relations existantes avec les jeux
-    await prisma.articleGame.deleteMany({
-      where: { articleId: id },
-    })
-
-    // Mettre à jour l'article avec les nouvelles relations
     const article = await prisma.article.update({
       where: { id },
       data: {
-        title,
-        content,
-        categoryId: categoryId || null,
+        title: data.title,
+        content: data.content,
+        categoryId: data.categoryId,
+        status: data.status,
+        publishedAt: data.publishedAt ? new Date(data.publishedAt) : null,
         games: {
-          create: gameIds.map((gameId: string) => ({
-            game: {
-              connect: { id: gameId },
-            },
-          })),
+          set: [], // Disconnect all games first
+          connect: gameIds.map((gameId) => ({ id: gameId })),
         },
       },
-      include: {
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        status: true,
+        publishedAt: true,
+        createdAt: true,
+        updatedAt: true,
         category: {
           select: {
             id: true,
             name: true,
-          },
-        },
-        games: {
-          select: {
-            game: {
-              select: {
-                id: true,
-                title: true,
-              },
-            },
           },
         },
         user: {
@@ -157,12 +106,21 @@ export async function PATCH(
             username: true,
           },
         },
+        games: {
+          select: {
+            id: true,
+            title: true,
+            coverImage: true,
+          },
+        },
       },
     })
 
     const formattedArticle = {
       ...article,
-      games: article.games.map(g => g.game),
+      createdAt: new Date(article.createdAt),
+      updatedAt: new Date(article.updatedAt),
+      publishedAt: article.publishedAt ? new Date(article.publishedAt) : null
     }
 
     return NextResponse.json(formattedArticle)
@@ -175,42 +133,12 @@ export async function PATCH(
   }
 }
 
-// DELETE - Supprimer un article
 export async function DELETE(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params
-    const user = await getCurrentUser()
-
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Not authenticated' },
-        { status: 401 }
-      )
-    }
-
-    // Vérifier que l'article existe et appartient à l'utilisateur
-    const article = await prisma.article.findUnique({
-      where: { id },
-      select: { userId: true },
-    })
-
-    if (!article) {
-      return NextResponse.json(
-        { error: 'Article not found' },
-        { status: 404 }
-      )
-    }
-
-    if (article.userId !== user.id) {
-      return NextResponse.json(
-        { error: 'Not authorized' },
-        { status: 403 }
-      )
-    }
-
     await prisma.article.delete({
       where: { id },
     })

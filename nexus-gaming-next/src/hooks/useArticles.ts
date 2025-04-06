@@ -1,21 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
-import { Article as PrismaArticle, User, Category, Game } from '@prisma/client'
+import type { ArticleData, ArticleForm } from '@/types'
 
-export type ArticleWithRelations = Omit<PrismaArticle, 'userId' | 'categoryId'> & {
-  user: Pick<User, 'username'>
-  category: Pick<Category, 'id' | 'name'> | null
-  games: Pick<Game, 'id' | 'title' | 'coverImage'>[]
-}
-
-export interface ArticleFormData {
-  title: string
-  content: string
-  categoryId?: string
-  gameIds: string[]
-}
-
-// Hook principal pour la gestion des articles
 export function useArticles() {
   const queryClient = useQueryClient()
 
@@ -23,7 +9,7 @@ export function useArticles() {
     data: articles,
     isLoading,
     error,
-  } = useQuery<ArticleWithRelations[]>({
+  } = useQuery<ArticleData[]>({
     queryKey: ['articles'],
     queryFn: async () => {
       const response = await axios.get('/api/articles')
@@ -32,7 +18,7 @@ export function useArticles() {
   })
 
   const createArticle = useMutation({
-    mutationFn: async (data: ArticleFormData) => {
+    mutationFn: async (data: ArticleForm) => {
       const response = await axios.post('/api/articles', data)
       return response.data
     },
@@ -42,13 +28,7 @@ export function useArticles() {
   })
 
   const updateArticle = useMutation({
-    mutationFn: async ({
-      id,
-      data,
-    }: {
-      id: string
-      data: ArticleFormData
-    }) => {
+    mutationFn: async ({ id, data }: { id: string; data: ArticleForm }) => {
       const response = await axios.patch(`/api/articles/${id}`, data)
       return response.data
     },
@@ -68,20 +48,29 @@ export function useArticles() {
 
   return {
     articles,
-    error,
     isLoading,
-    createArticle: createArticle.mutate,
-    updateArticle: updateArticle.mutate,
-    deleteArticle: deleteArticle.mutate,
+    error,
+    createArticle: async (data: ArticleForm) => {
+      return createArticle.mutateAsync(data)
+    },
+    updateArticle: async (id: string, data: ArticleForm) => {
+      return updateArticle.mutateAsync({ id, data })
+    },
+    deleteArticle: async (id: string) => {
+      return deleteArticle.mutateAsync(id)
+    },
     isCreating: createArticle.isPending,
     isUpdating: updateArticle.isPending,
     isDeleting: deleteArticle.isPending,
   }
 }
 
-// Hook pour les détails d'un article
 export function useArticle(id: string) {
-  const { data: article, isLoading } = useQuery<ArticleWithRelations>({
+  const {
+    data: article,
+    isLoading,
+    error,
+  } = useQuery<ArticleData>({
     queryKey: ['article', id],
     queryFn: async () => {
       const response = await axios.get(`/api/articles/${id}`)
@@ -93,5 +82,6 @@ export function useArticle(id: string) {
   return {
     article,
     isLoading,
+    error,
   }
 }

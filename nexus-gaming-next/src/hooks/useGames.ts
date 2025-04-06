@@ -1,19 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
-import { Game as PrismaGame } from '@prisma/client'
-import { GameWithRelations } from '@/types/game'
+import type { GameData, GameForm } from '@/types'
 
-interface GameFormData {
-  title: string
-  description: string
-  releaseDate?: string
-  developerId: string
-  publisherId: string
-  coverImage?: string
-  platformIds: string[]
-}
-
-// Hook principal pour la gestion des jeux
 export function useGames() {
   const queryClient = useQueryClient()
 
@@ -21,7 +9,7 @@ export function useGames() {
     data: games,
     isLoading,
     error,
-  } = useQuery<GameWithRelations[]>({
+  } = useQuery<GameData[]>({
     queryKey: ['games'],
     queryFn: async () => {
       const response = await axios.get('/api/games')
@@ -30,7 +18,7 @@ export function useGames() {
   })
 
   const createGame = useMutation({
-    mutationFn: async (data: GameFormData) => {
+    mutationFn: async (data: GameForm) => {
       const response = await axios.post('/api/games', data)
       return response.data
     },
@@ -40,13 +28,7 @@ export function useGames() {
   })
 
   const updateGame = useMutation({
-    mutationFn: async ({
-      id,
-      data,
-    }: {
-      id: string
-      data: GameFormData
-    }) => {
+    mutationFn: async ({ id, data }: { id: string; data: GameForm }) => {
       const response = await axios.patch(`/api/games/${id}`, data)
       return response.data
     },
@@ -66,24 +48,29 @@ export function useGames() {
 
   return {
     games,
-    error,
     isLoading,
-    createGame: createGame.mutate,
-    updateGame: updateGame.mutate,
-    deleteGame: deleteGame.mutate,
+    error,
+    createGame: async (data: GameForm) => {
+      return createGame.mutateAsync(data)
+    },
+    updateGame: async (id: string, data: GameForm) => {
+      return updateGame.mutateAsync({ id, data })
+    },
+    deleteGame: async (id: string) => {
+      return deleteGame.mutateAsync(id)
+    },
     isCreating: createGame.isPending,
     isUpdating: updateGame.isPending,
     isDeleting: deleteGame.isPending,
   }
 }
 
-// Hook pour les détails d'un jeu
 export function useGame(id: string) {
   const {
     data: game,
     isLoading,
     error,
-  } = useQuery<GameWithRelations>({
+  } = useQuery<GameData>({
     queryKey: ['game', id],
     queryFn: async () => {
       const response = await axios.get(`/api/games/${id}`)

@@ -18,16 +18,10 @@ import {
 import { BsCalendar4 } from 'react-icons/bs'
 import { FaUser } from 'react-icons/fa'
 import Link from 'next/link'
-import { Article, User, Category, Game } from '@prisma/client'
-
-type ArticleWithRelations = Omit<Article, 'userId' | 'categoryId'> & {
-  user: Pick<User, 'username'>
-  category: Pick<Category, 'name'> | null
-  games: Pick<Game, 'id' | 'title' | 'coverImage'>[]
-}
+import type { ArticleData } from '@/types'
 
 interface ArticleCardProps {
-  article: ArticleWithRelations
+  article: ArticleData & { publishedAt: Date }
 }
 
 export function ArticleCard({ article }: ArticleCardProps) {

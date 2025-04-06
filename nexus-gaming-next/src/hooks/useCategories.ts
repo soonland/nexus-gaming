@@ -1,16 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
-import { Category } from '@prisma/client'
-
-interface CategoryWithCount extends Omit<Category, 'createdAt' | 'updatedAt'> {
-  articleCount: number
-  createdAt: string
-  updatedAt: string
-}
-
-interface CategoryFormData {
-  name: string
-}
+import type { Category } from '@prisma/client'
+import type { CategoryData, CategoryForm } from '@/types'
 
 // Hook principal pour la gestion des catégories
 export function useCategories() {
@@ -20,7 +11,7 @@ export function useCategories() {
     data: categories,
     isLoading,
     error,
-  } = useQuery<CategoryWithCount[]>({
+  } = useQuery<CategoryData[]>({
     queryKey: ['categories'],
     queryFn: async () => {
       const response = await axios.get('/api/categories')
@@ -29,7 +20,7 @@ export function useCategories() {
   })
 
   const createCategory = useMutation({
-    mutationFn: async (data: CategoryFormData) => {
+    mutationFn: async (data: CategoryForm) => {
       const response = await axios.post('/api/categories', data)
       return response.data
     },
@@ -44,7 +35,7 @@ export function useCategories() {
       data,
     }: {
       id: string
-      data: CategoryFormData
+      data: CategoryForm
     }) => {
       const response = await axios.patch(`/api/categories/${id}`, data)
       return response.data

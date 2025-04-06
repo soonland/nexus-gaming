@@ -2,52 +2,57 @@
 
 import React from 'react'
 import {
+  Box,
   Container,
   VStack,
   Skeleton,
-  FormControl,
-  FormLabel,
-  Box,
-  useColorModeValue,
+  Stack,
 } from '@chakra-ui/react'
 
 export default function ArticleFormLoading() {
-  const borderColor = useColorModeValue('gray.200', 'gray.700')
-
   return (
     <Container maxW="container.lg" py={8}>
-      <Box borderWidth="1px" borderColor={borderColor} rounded="lg" p={6}>
-        <VStack spacing={6}>
-          <Skeleton height="36px" width="300px" />
+      <VStack spacing={8} align="stretch">
+        <Skeleton height="36px" width="300px" />
 
-          <FormControl>
-            <FormLabel>Titre</FormLabel>
+        <Stack spacing={6}>
+          {/* Titre */}
+          <Stack>
+            <Skeleton height="20px" width="100px" />
             <Skeleton height="40px" />
-          </FormControl>
+          </Stack>
 
-          <FormControl>
-            <FormLabel>Catégorie</FormLabel>
-            <Skeleton height="40px" />
-          </FormControl>
-
-          <FormControl>
-            <FormLabel>Contenu</FormLabel>
+          {/* Contenu */}
+          <Stack>
+            <Skeleton height="20px" width="100px" />
             <Skeleton height="300px" />
-          </FormControl>
+          </Stack>
 
-          <FormControl>
-            <FormLabel>Jeux associés</FormLabel>
-            <VStack align="stretch" spacing={2}>
-              <Skeleton height="40px" width="200px" />
-              <Skeleton height="60px" />
-            </VStack>
-          </FormControl>
+          {/* Catégorie */}
+          <Stack>
+            <Skeleton height="20px" width="100px" />
+            <Skeleton height="40px" />
+          </Stack>
 
-          <VStack spacing={4} alignSelf="flex-end">
-            <Skeleton height="40px" width="200px" />
-          </VStack>
-        </VStack>
-      </Box>
+          {/* Jeux associés */}
+          <Stack>
+            <Skeleton height="20px" width="100px" />
+            <Stack spacing={2}>
+              <Skeleton height="40px" />
+              <Skeleton height="100px" />
+            </Stack>
+          </Stack>
+
+          {/* Switch de publication */}
+          <Skeleton height="24px" width="200px" />
+
+          {/* Boutons */}
+          <Stack direction="row" justify="flex-end" spacing={4} pt={4}>
+            <Skeleton height="40px" width="100px" />
+            <Skeleton height="40px" width="120px" />
+          </Stack>
+        </Stack>
+      </VStack>
     </Container>
   )
 }

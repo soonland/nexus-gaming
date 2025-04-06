@@ -10,11 +10,12 @@ import {
   AlertIcon,
 } from '@chakra-ui/react'
 import { ArticleCard } from '@/components/articles/ArticleCard'
-import { useArticles, type ArticleWithRelations } from '@/hooks/useArticles'
+import { useArticles } from '@/hooks/useArticles'
+import type { ArticleData } from '@/types'
 
 export default function ArticlesPage() {
   const { articles, isLoading, error } = useArticles()
-
+  
   if (error) {
     return (
       <Container maxW="container.xl" py={8}>
@@ -34,7 +35,9 @@ export default function ArticlesPage() {
       <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
         {isLoading
           ? [...Array(6)].map((_, i) => <Skeleton key={i} height="400px" />)
-          : articles?.map((article: ArticleWithRelations) => (
+          : articles
+              ?.filter((article): article is ArticleData & { publishedAt: Date } => article.publishedAt !== null)
+              .map((article) => (
               <ArticleCard key={article.id} article={article} />
             ))}
       </SimpleGrid>

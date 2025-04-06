@@ -4,27 +4,26 @@ import React from 'react'
 import {
   Box,
   Container,
-  Heading,
   Text,
   Stack,
   SimpleGrid,
   HStack,
-  Badge,
   Icon,
   Button,
   Alert,
   AlertIcon,
   Skeleton,
-  Image,
   Divider,
   useColorModeValue,
+  Heading
 } from '@chakra-ui/react'
+import { Hero } from '@/components/common/Hero'
 import { FaUser, FaBuilding, FaGamepad } from 'react-icons/fa'
 import { BsCalendar4, BsArrowLeft } from 'react-icons/bs'
 import { useParams, useRouter } from 'next/navigation'
 import { ArticlePreview } from '@/components/articles/ArticlePreview'
 import { DateDisplay } from '@/components/common/DateDisplay'
-import { useGame } from '@/hooks/useGame'
+import { useGame, type RelatedArticle } from '@/hooks/useGame'
 
 export default function GamePage() {
   const params = useParams()
@@ -64,55 +63,23 @@ export default function GamePage() {
 
   return (
     <Box>
-      {/* Hero Section */}
-      <Box
-        position="relative"
-        height={{ base: '300px', md: '400px' }}
-        overflow="hidden"
-        mb={8}
-      >
-        <Box
-          position="absolute"
-          top={0}
-          left={0}
-          right={0}
-          bottom={0}
-          bgGradient="linear(to-t, blackAlpha.800, blackAlpha.400)"
-          zIndex={1}
-        />
-        <Image
-          src={game.coverImage || '/images/placeholder-game.png'}
-          alt={game.title}
-          width="100%"
-          height="100%"
-          objectFit="cover"
-        />
-        <Container maxW="container.xl" position="relative" zIndex={2} height="100%">
-          <Stack
-            spacing={4}
-            position="absolute"
-            bottom={8}
-            left={0}
-            right={0}
-            color="white"
-          >
-            <HStack wrap="wrap" spacing={2}>
-              {game.platforms.map((platform) => (
-                <Badge key={platform.id} colorScheme="blue">
-                  {platform.name}
-                </Badge>
-              ))}
-            </HStack>
-            <Heading size="2xl">{game.title}</Heading>
-            {game.releaseDate && (
-              <HStack>
-                <Icon as={BsCalendar4} />
-                <Text>Release: {game.releaseDate}</Text>
-              </HStack>
-            )}
-          </Stack>
-        </Container>
-      </Box>
+      <Hero
+        title={game.title}
+        image={game.coverImage || undefined}
+        badges={game.platforms.map(platform => ({
+          id: platform.id,
+          label: platform.name,
+          colorScheme: 'blue'
+        }))}
+        metadata={game.releaseDate && (
+          <HStack>
+            <Icon as={BsCalendar4} />
+            <Text>
+              Release: <DateDisplay date={game.releaseDate} format="long" />
+            </Text>
+          </HStack>
+        )}
+      />
 
       {/* Content Section */}
       <Container maxW="container.xl" py={8}>
@@ -169,7 +136,9 @@ export default function GamePage() {
                 <Heading size="md">Articles liés</Heading>
               </HStack>
               <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
-                {game.articles.map((article) => (
+                {game.articles
+                  .filter((article): article is RelatedArticle & { publishedAt: Date } => article.publishedAt !== null && article.user !== null)
+                  .map((article) => (
                   <ArticlePreview key={article.id} article={article} />
                 ))}
               </SimpleGrid>

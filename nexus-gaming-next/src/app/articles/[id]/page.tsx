@@ -4,10 +4,8 @@ import React from 'react'
 import {
   Box,
   Container,
-  Heading,
   Text,
   Stack,
-  Badge,
   HStack,
   Icon,
   SimpleGrid,
@@ -15,9 +13,10 @@ import {
   Alert,
   AlertIcon,
   Skeleton,
-  Image,
   useColorModeValue,
+  Heading
 } from '@chakra-ui/react'
+import { Hero } from '@/components/common/Hero'
 import { FaUser } from 'react-icons/fa'
 import { BsController, BsArrowLeft } from 'react-icons/bs'
 import Link from 'next/link'
@@ -25,7 +24,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { GameCard } from '@/components/games/GameCard'
 import { DateDisplay } from '@/components/common/DateDisplay'
 import { useArticle } from '@/hooks/useArticle'
-import type { GameWithRelations } from '@/types/game'
+import type { GameData } from '@/types'
 
 export default function ArticlePage() {
   const params = useParams()
@@ -67,54 +66,27 @@ export default function ArticlePage() {
 
   return (
     <Box>
-      {/* Hero Section */}
-      <Box
-        position="relative"
-        height={{ base: '300px', md: '400px' }}
-        overflow="hidden"
-        mb={8}
-      >
-        <Box
-          position="absolute"
-          top={0}
-          left={0}
-          right={0}
-          bottom={0}
-          bgGradient="linear(to-t, blackAlpha.800, blackAlpha.400)"
-          zIndex={1}
-        />
-        <Image
-          src={article.games[0]?.coverImage || '/images/placeholder-game.png'}
-          alt={article.title}
-          width="100%"
-          height="100%"
-          objectFit="cover"
-        />
-        <Container maxW="container.xl" position="relative" zIndex={2} height="100%">
-          <Stack
-            spacing={4}
-            position="absolute"
-            bottom={8}
-            left={0}
-            right={0}
-            color="white"
-          >
-            {article.category && (
-              <Badge colorScheme="blue" alignSelf="flex-start">
-                {article.category.name}
-              </Badge>
-            )}
-            <Heading size="2xl">{article.title}</Heading>
-            <HStack spacing={6}>
-              <HStack>
-                <Icon as={FaUser} />
-                <Text>{article.user.username}</Text>
-              </HStack>
-              <DateDisplay date={article.publishedAt} color="white" />
+      <Hero
+        title={article.title}
+        image={article.games[0]?.coverImage || undefined}
+        badges={article.category ? [{
+          id: crypto.randomUUID(), // Use random ID since category doesn't have id in type
+          label: article.category.name,
+          colorScheme: 'blue'
+        }] : []}
+        metadata={
+          <HStack spacing={6}>
+            <HStack>
+              <Icon as={FaUser} />
+              <Text>{article.user.username}</Text>
             </HStack>
-          </Stack>
-        </Container>
-      </Box>
+            <DateDisplay 
+              date={article.publishedAt ? new Date(article.publishedAt) : new Date()}
+              color="white" 
+            />
+          </HStack>
+        }
+      />
 
       {/* Content Section */}
       <Container maxW="container.xl" py={8}>
@@ -149,17 +121,36 @@ export default function ArticlePage() {
               </HStack>
               <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
                 {article.games.map((gameDetails) => {
-                  const game: GameWithRelations = {
+                  const game: Partial<GameData> = {
                     ...gameDetails,
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString(),
-                    description: '',
-                    releaseDate: null,
-                    developerId: '',
-                    publisherId: '',
                     platforms: [],
-                    developer: { name: '' },
-                    publisher: { name: '' }
+                    articles: [],
+                    developer: {
+                      id: '',
+                      name: '',
+                      isDeveloper: true,
+                      isPublisher: false,
+                      createdAt: new Date(),
+                      updatedAt: new Date(),
+                      _count: {
+                        gamesAsDev: 0,
+                        gamesAsPub: 0
+                      }
+                    },
+                    publisher: {
+                      id: '',
+                      name: '',
+                      isDeveloper: false,
+                      isPublisher: true,
+                      createdAt: new Date(),
+                      updatedAt: new Date(),
+                      _count: {
+                        gamesAsDev: 0,
+                        gamesAsPub: 0
+                      }
+                    },
+                    releaseDate: null,
+                    description: ''
                   }
                   return <GameCard key={game.id} game={game} />
                 })}

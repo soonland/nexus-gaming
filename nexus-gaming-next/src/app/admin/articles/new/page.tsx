@@ -1,17 +1,15 @@
 'use client'
 
 import React from 'react'
-import { useRouter } from 'next/navigation'
-import { useArticles, type ArticleFormData } from '@/hooks/useArticles'
-import ArticleForm from '@/app/admin/articles/_components/ArticleForm'
+import ArticleForm from '../_components/ArticleForm'
+import { useArticles } from '@/hooks/useArticles'
+import type { ArticleForm as IArticleForm } from '@/types'
 
 export default function NewArticlePage() {
   const { createArticle, isCreating } = useArticles()
-  const router = useRouter()
 
-  const handleSubmit = async (data: ArticleFormData) => {
+  const handleSubmit = async (data: IArticleForm) => {
     await createArticle(data)
-    router.push('/admin/articles')
   }
 
   return (

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
+import type { PlatformForm } from '@/types'
 
 // GET - Détails d'une plateforme
 export async function GET(
@@ -18,24 +19,19 @@ export async function GET(
 
     const platform = await prisma.platform.findUnique({
       where: { id },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        manufacturer: true,
+        releaseDate: true,
+        createdAt: true,
+        updatedAt: true,
         games: {
           select: {
             id: true,
             title: true,
+            coverImage: true,
             releaseDate: true,
-            developer: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-            publisher: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
           },
         },
       },
@@ -48,7 +44,18 @@ export async function GET(
       )
     }
 
-    return NextResponse.json(platform)
+    const formattedPlatform = {
+      ...platform,
+      createdAt: new Date(platform.createdAt),
+      updatedAt: new Date(platform.updatedAt),
+      releaseDate: platform.releaseDate ? new Date(platform.releaseDate) : null,
+      games: platform.games.map(game => ({
+        ...game,
+        releaseDate: game.releaseDate ? new Date(game.releaseDate) : null
+      }))
+    }
+
+    return NextResponse.json(formattedPlatform)
   } catch (error) {
     console.error('Error fetching platform:', error)
     return NextResponse.json(
@@ -65,7 +72,7 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params
-    const body = await request.json()
+    const body = await request.json() as PlatformForm
     const { name, manufacturer, releaseDate } = body
 
     if (!id) {
@@ -87,11 +94,38 @@ export async function PATCH(
       data: {
         name,
         manufacturer,
-        releaseDate,
+        releaseDate: releaseDate ? new Date(releaseDate) : null,
+      },
+      select: {
+        id: true,
+        name: true,
+        manufacturer: true,
+        releaseDate: true,
+        createdAt: true,
+        updatedAt: true,
+        games: {
+          select: {
+            id: true,
+            title: true,
+            coverImage: true,
+            releaseDate: true,
+          },
+        },
       },
     })
 
-    return NextResponse.json(platform)
+    const formattedPlatform = {
+      ...platform,
+      createdAt: new Date(platform.createdAt),
+      updatedAt: new Date(platform.updatedAt),
+      releaseDate: platform.releaseDate ? new Date(platform.releaseDate) : null,
+      games: platform.games.map(game => ({
+        ...game,
+        releaseDate: game.releaseDate ? new Date(game.releaseDate) : null
+      }))
+    }
+
+    return NextResponse.json(formattedPlatform)
   } catch (error) {
     console.error('Error updating platform:', error)
     return NextResponse.json(

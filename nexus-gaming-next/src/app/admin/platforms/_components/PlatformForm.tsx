@@ -15,15 +15,11 @@ import {
 } from '@chakra-ui/react'
 import { useRouter } from 'next/navigation'
 
-interface PlatformFormData {
-  name: string
-  manufacturer: string
-  releaseDate: string | null
-}
+import type { PlatformForm as IPlatformForm } from '@/types'
 
 interface PlatformFormProps {
-  initialData?: PlatformFormData
-  onSubmit: (data: PlatformFormData) => Promise<void>
+  initialData?: IPlatformForm
+  onSubmit: (data: IPlatformForm) => Promise<void>
   isLoading?: boolean
   mode: 'create' | 'edit'
 }
@@ -34,7 +30,7 @@ export default function PlatformForm({
   isLoading,
   mode,
 }: PlatformFormProps) {
-  const [formData, setFormData] = React.useState<PlatformFormData>({
+  const [formData, setFormData] = React.useState<IPlatformForm>({
     name: initialData?.name || '',
     manufacturer: initialData?.manufacturer || '',
     releaseDate: initialData?.releaseDate || null,

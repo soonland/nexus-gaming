@@ -1,28 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 
-interface Platform {
-  id: string
-  name: string
-  manufacturer: string
-  releaseDate: string | null
-  games?: {
-    id: string
-    title: string
-  }[]
-}
-
-interface PlatformFormData {
-  name: string
-  manufacturer: string
-  releaseDate?: string | null
-}
+import type { PlatformData, PlatformForm } from '@/types'
 
 // Hook pour la liste des plateformes et les opérations CRUD
 export function usePlatforms() {
   const queryClient = useQueryClient()
 
-  const { data: platforms, isLoading } = useQuery<Platform[]>({
+  const { data: platforms, isLoading } = useQuery<PlatformData[]>({
     queryKey: ['platforms'],
     queryFn: async () => {
       const response = await axios.get('/api/platforms')
@@ -31,7 +16,7 @@ export function usePlatforms() {
   })
 
   const createPlatform = useMutation({
-    mutationFn: async (data: PlatformFormData) => {
+    mutationFn: async (data: PlatformForm) => {
       const response = await axios.post('/api/platforms', data)
       return response.data
     },
@@ -46,7 +31,7 @@ export function usePlatforms() {
       data,
     }: {
       id: string
-      data: PlatformFormData
+      data: PlatformForm
     }) => {
       const response = await axios.patch(`/api/platforms/${id}`, data)
       return response.data
@@ -79,7 +64,7 @@ export function usePlatforms() {
 
 // Hook pour les détails d'une plateforme
 export function usePlatform(id: string) {
-  const { data: platform, isLoading } = useQuery<Platform>({
+  const { data: platform, isLoading } = useQuery<PlatformData>({
     queryKey: ['platform', id],
     queryFn: async () => {
       const response = await axios.get(`/api/platforms/${id}`)

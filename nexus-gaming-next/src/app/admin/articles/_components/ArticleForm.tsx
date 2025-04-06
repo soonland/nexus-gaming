@@ -4,70 +4,77 @@ import React from 'react'
 import {
   Box,
   Button,
-  Container,
   FormControl,
   FormLabel,
+  FormErrorMessage,
   Input,
   Stack,
+  Switch,
   Textarea,
+  HStack,
   useToast,
+  Container,
   VStack,
+  Heading,
+  Select,
 } from '@chakra-ui/react'
 import { useRouter } from 'next/navigation'
+import { useForm } from 'react-hook-form'
+import { useCategories } from '@/hooks/useCategories'
 import GameSelector from './GameSelector'
-import CategorySelect from './CategorySelect'
-
-interface ArticleFormData {
-  title: string
-  content: string
-  categoryId?: string
-  gameIds: string[]
-}
+import type { ArticleForm as IArticleForm } from '@/types'
 
 interface ArticleFormProps {
-  initialData?: ArticleFormData
-  onSubmit: (data: ArticleFormData) => Promise<void>
+  initialData?: Partial<IArticleForm>
+  onSubmit: (data: IArticleForm) => Promise<void>
   isLoading?: boolean
-  mode: 'create' | 'edit'
+  mode?: 'create' | 'edit'
 }
 
 export default function ArticleForm({
   initialData,
   onSubmit,
   isLoading,
-  mode,
+  mode = 'create',
 }: ArticleFormProps) {
-  const [formData, setFormData] = React.useState<ArticleFormData>({
-    title: initialData?.title || '',
-    content: initialData?.content || '',
-    categoryId: initialData?.categoryId,
-    gameIds: initialData?.gameIds || [],
-  })
   const router = useRouter()
   const toast = useToast()
+  const { categories } = useCategories()
+  
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    watch,
+  } = useForm<IArticleForm>({
+    defaultValues: {
+      title: initialData?.title || '',
+      content: initialData?.content || '',
+      categoryId: initialData?.categoryId || '',
+      gameIds: initialData?.gameIds ?? [],
+      status: initialData?.status || 'DRAFT',
+      publishedAt: initialData?.publishedAt,
+    },
+  })
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const status = watch('status')
+  const gameIds = watch('gameIds') ?? []
 
-    if (!formData.title || !formData.content) {
-      toast({
-        title: 'Erreur',
-        description: 'Le titre et le contenu sont requis',
-        status: 'error',
-        duration: 3000,
-      })
-      return
-    }
-
+  const onSubmitForm = async (data: IArticleForm) => {
     try {
-      await onSubmit(formData)
-      router.push('/admin/articles')
+      // Si l'article est publié et qu'il n'y a pas de date de publication, on la définit
+      if (data.status === 'PUBLISHED' && !data.publishedAt) {
+        data.publishedAt = new Date().toISOString()
+      }
+      
+      await onSubmit(data)
       toast({
-        title: 'Succès',
-        description: mode === 'create' ? 'Article créé' : 'Article mis à jour',
+        title: mode === 'create' ? 'Article créé' : 'Article mis à jour',
         status: 'success',
         duration: 3000,
       })
+      router.push('/admin/articles')
     } catch (error) {
       toast({
         title: 'Erreur',
@@ -78,62 +85,75 @@ export default function ArticleForm({
     }
   }
 
-  const handleCategoryChange = (categoryId: string | undefined) => {
-    setFormData(prev => ({
-      ...prev,
-      categoryId,
-    }))
-  }
-
   return (
     <Container maxW="container.lg" py={8}>
-      <Box as="form" onSubmit={handleSubmit}>
-        <VStack spacing={6}>
-          <FormControl isRequired>
+      <VStack spacing={8} align="stretch" as="form" onSubmit={handleSubmit(onSubmitForm)}>
+        <Heading size="lg">
+          {mode === 'create' ? 'Nouvel article' : 'Modifier l\'article'}
+        </Heading>
+
+        <Stack spacing={6}>
+          <FormControl isInvalid={!!errors.title}>
             <FormLabel>Titre</FormLabel>
             <Input
-              value={formData.title}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, title: e.target.value }))
-              }
+              {...register('title', { required: 'Le titre est requis' })}
               placeholder="Titre de l'article"
             />
+            {errors.title && (
+              <FormErrorMessage>{errors.title.message}</FormErrorMessage>
+            )}
           </FormControl>
 
-          <CategorySelect
-            value={formData.categoryId}
-            onChange={handleCategoryChange}
-          />
-
-          <FormControl isRequired>
+          <FormControl isInvalid={!!errors.content}>
             <FormLabel>Contenu</FormLabel>
             <Textarea
-              value={formData.content}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, content: e.target.value }))
-              }
+              {...register('content', { required: 'Le contenu est requis' })}
               placeholder="Contenu de l'article"
-              minHeight="300px"
+              minH="300px"
             />
+            {errors.content && (
+              <FormErrorMessage>{errors.content.message}</FormErrorMessage>
+            )}
+          </FormControl>
+
+          <FormControl isInvalid={!!errors.categoryId}>
+            <FormLabel>Catégorie</FormLabel>
+            <Select
+              {...register('categoryId', { required: 'La catégorie est requise' })}
+              placeholder="Sélectionner une catégorie"
+            >
+              {categories?.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </Select>
+            {errors.categoryId && (
+              <FormErrorMessage>{errors.categoryId.message}</FormErrorMessage>
+            )}
           </FormControl>
 
           <FormControl>
             <FormLabel>Jeux associés</FormLabel>
             <GameSelector
-              selectedIds={formData.gameIds}
-              onChange={(gameIds) =>
-                setFormData((prev) => ({ ...prev, gameIds }))
-              }
+              selectedIds={gameIds}
+              onChange={(ids) => setValue('gameIds', ids)}
             />
           </FormControl>
 
-          <Stack
-            direction="row"
-            spacing={4}
-            justify="flex-end"
-            width="100%"
-            pt={4}
-          >
+          <FormControl>
+            <HStack>
+              <FormLabel mb={0}>Publier l'article</FormLabel>
+              <Switch
+                isChecked={status === 'PUBLISHED'}
+                onChange={(e) =>
+                  setValue('status', e.target.checked ? 'PUBLISHED' : 'DRAFT')
+                }
+              />
+            </HStack>
+          </FormControl>
+
+          <HStack justify="flex-end" spacing={4} pt={4}>
             <Button
               onClick={() => router.push('/admin/articles')}
               variant="ghost"
@@ -147,9 +167,9 @@ export default function ArticleForm({
             >
               {mode === 'create' ? 'Créer' : 'Mettre à jour'}
             </Button>
-          </Stack>
-        </VStack>
-      </Box>
+          </HStack>
+        </Stack>
+      </VStack>
     </Container>
   )
 }

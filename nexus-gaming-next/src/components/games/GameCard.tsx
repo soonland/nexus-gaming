@@ -20,10 +20,10 @@ import {
 import { BsCalendar4 } from 'react-icons/bs'
 import Link from 'next/link'
 import { DateDisplay } from '@/components/common/DateDisplay'
-import { GameWithRelations } from '@/types/game'
+import { GameData } from '@/types'
 
 interface GameCardProps {
-  game: GameWithRelations
+  game: Partial<GameData>
 }
 
 export function GameCard({ game }: GameCardProps) {
@@ -99,7 +99,7 @@ export function GameCard({ game }: GameCardProps) {
           )}
 
           {/* Plateformes */}
-          {game.platforms.length > 0 && (
+          {Array.isArray(game.platforms) && game.platforms.length > 0 && (
             <>
               <Divider />
               <Wrap spacing={2}>

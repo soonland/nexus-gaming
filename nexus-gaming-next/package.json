@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "db:clean": "ts-node prisma/clean.ts"
   },
   "dependencies": {
     "@chakra-ui/icons": "^2.1.1",
@@ -17,7 +18,9 @@
     "@prisma/client": "^5.10.0",
     "@tanstack/react-query": "^5.22.2",
     "@tanstack/react-query-devtools": "^5.71.2",
+    "@types/bcryptjs": "^2.4.6",
     "bcrypt": "^5.1.1",
+    "bcryptjs": "^3.0.2",
     "dayjs": "^1.11.13",
     "framer-motion": "^11.0.5",
     "jose": "^6.0.10",

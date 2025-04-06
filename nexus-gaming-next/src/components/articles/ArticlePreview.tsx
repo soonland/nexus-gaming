@@ -30,6 +30,9 @@ interface ArticlePreviewProps {
 }
 
 export function ArticlePreview({ article }: ArticlePreviewProps) {
+  if (!article.user) {
+    console.error('Article is missing user data:', article)
+  }
   const bgColor = useColorModeValue('white', 'gray.800')
 
   return (

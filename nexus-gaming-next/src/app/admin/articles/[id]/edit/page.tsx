@@ -2,34 +2,60 @@
 
 import React from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { useArticles, useArticle, type ArticleFormData } from '@/hooks/useArticles'
-import ArticleForm from '@/app/admin/articles/_components/ArticleForm'
+import { Container, Alert, AlertIcon } from '@chakra-ui/react'
+import ArticleForm from '../../_components/ArticleForm'
+import { useArticle, useArticles } from '@/hooks/useArticles'
+import type { ArticleForm as ArticleFormData } from '@/types'
+import ArticleFormLoading from '@/components/loading/ArticleFormLoading'
 
 export default function EditArticlePage() {
   const params = useParams()
   const id = params.id as string
-  const { article, isLoading } = useArticle(id)
+  const { article, isLoading: isLoadingArticle, error } = useArticle(id)
   const { updateArticle, isUpdating } = useArticles()
   const router = useRouter()
 
-  if (isLoading) {
-    return <div>Chargement...</div>
+  const handleSubmit = async (data: ArticleFormData) => {
+    await updateArticle(id, data)
+  }
+
+  if (error) {
+    return (
+      <Container maxW="container.lg" py={8}>
+        <Alert status="error">
+          <AlertIcon />
+          Une erreur est survenue lors du chargement de l&apos;article
+        </Alert>
+      </Container>
+    )
+  }
+
+  if (isLoadingArticle) {
+    return (
+      <Container maxW="container.lg" py={8}>
+        <ArticleFormLoading />
+      </Container>
+    )
   }
 
   if (!article) {
-    return <div>Article non trouvé</div>
+    return (
+      <Container maxW="container.lg" py={8}>
+        <Alert status="error">
+          <AlertIcon />
+          Article introuvable
+        </Alert>
+      </Container>
+    )
   }
 
-  const handleSubmit = async (data: ArticleFormData) => {
-    await updateArticle({ id, data })
-    router.push('/admin/articles')
-  }
-
-  const initialData = {
+  const initialData: ArticleFormData = {
     title: article.title,
     content: article.content,
-    categoryId: article.category?.id || undefined,
-    gameIds: article.games.map(game => game.id),
+    categoryId: article.category.id,
+    gameIds: article.games.map(g => g.id),
+    status: article.status,
+    publishedAt: article.publishedAt?.toISOString(),
   }
 
   return (

@@ -1,15 +1,23 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
+import type { PlatformForm } from '@/types'
 
 // GET - Liste des plateformes
 export async function GET() {
   try {
     const platforms = await prisma.platform.findMany({
-      include: {
+      select: {
+        id: true,
+        name: true,
+        manufacturer: true,
+        releaseDate: true,
+        createdAt: true,
+        updatedAt: true,
         games: {
           select: {
             id: true,
             title: true,
+            coverImage: true,
           },
         },
       },
@@ -18,7 +26,14 @@ export async function GET() {
       },
     })
 
-    return NextResponse.json(platforms)
+    const formattedPlatforms = platforms.map(platform => ({
+      ...platform,
+      createdAt: new Date(platform.createdAt),
+      updatedAt: new Date(platform.updatedAt),
+      releaseDate: platform.releaseDate ? new Date(platform.releaseDate) : null
+    }))
+
+    return NextResponse.json(formattedPlatforms)
   } catch (error) {
     console.error('Error fetching platforms:', error)
     return NextResponse.json(
@@ -31,7 +46,7 @@ export async function GET() {
 // POST - Créer une plateforme
 export async function POST(request: Request) {
   try {
-    const body = await request.json()
+    const body = await request.json() as PlatformForm
     const { name, manufacturer, releaseDate } = body
 
     if (!name || !manufacturer) {
@@ -45,11 +60,33 @@ export async function POST(request: Request) {
       data: {
         name,
         manufacturer,
-        releaseDate,
+        releaseDate: releaseDate ? new Date(releaseDate) : null,
+      },
+      select: {
+        id: true,
+        name: true,
+        manufacturer: true,
+        releaseDate: true,
+        createdAt: true,
+        updatedAt: true,
+        games: {
+          select: {
+            id: true,
+            title: true,
+            coverImage: true,
+          },
+        },
       },
     })
 
-    return NextResponse.json(platform, { status: 201 })
+    const formattedPlatform = {
+      ...platform,
+      createdAt: new Date(platform.createdAt),
+      updatedAt: new Date(platform.updatedAt),
+      releaseDate: platform.releaseDate ? new Date(platform.releaseDate) : null
+    }
+
+    return NextResponse.json(formattedPlatform, { status: 201 })
   } catch (error) {
     console.error('Error creating platform:', error)
     return NextResponse.json(

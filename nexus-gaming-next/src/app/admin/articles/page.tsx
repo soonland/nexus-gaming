@@ -6,6 +6,7 @@ import {
   Button,
   Container,
   Heading,
+  VStack,
   HStack,
   Table,
   Thead,
@@ -14,37 +15,47 @@ import {
   Th,
   Td,
   IconButton,
-  Badge,
-  useToast,
   Input,
   InputGroup,
   InputLeftElement,
-  VStack,
+  Badge,
+  useToast,
+  useColorModeValue,
 } from '@chakra-ui/react'
 import {
+  SearchIcon,
   AddIcon,
   EditIcon,
   DeleteIcon,
-  SearchIcon,
+  ExternalLinkIcon,
+  CloseIcon,
 } from '@chakra-ui/icons'
 import Link from 'next/link'
 import { useArticles } from '@/hooks/useArticles'
 import { DateDisplay } from '@/components/common/DateDisplay'
+import type { ArticleStatus } from '@/types'
 
 export default function ArticlesPage() {
   const toast = useToast()
   const [searchTerm, setSearchTerm] = useState('')
-  const { articles, deleteArticle, isLoading } = useArticles()
+  const { articles, deleteArticle, isLoading, isDeleting } = useArticles()
+  const borderColor = useColorModeValue('gray.200', 'gray.700')
 
+  // Filtrage des articles
   const filteredArticles = useMemo(() => {
     if (!articles) return []
     
+    const searchString = searchTerm.toLowerCase()
     return articles.filter(article => {
-      const searchString = searchTerm.toLowerCase()
-      return article.title.toLowerCase().includes(searchString)
+      return (
+        article.title.toLowerCase().includes(searchString) ||
+        article.category.name.toLowerCase().includes(searchString) ||
+        article.games.some(game => game.title.toLowerCase().includes(searchString))
+      )
     })
   }, [articles, searchTerm])
 
+  // Gestion de la suppression
   const handleDelete = async (id: string) => {
     if (window.confirm('Êtes-vous sûr de vouloir supprimer cet article ?')) {
       try {
@@ -65,6 +76,13 @@ export default function ArticlesPage() {
     }
   }
 
+  const getStatusBadge = (status: ArticleStatus) => {
+    const props = status === 'PUBLISHED'
+      ? { colorScheme: 'green', children: 'Publié' }
+      : { colorScheme: 'gray', children: 'Brouillon' }
+    return <Badge {...props} />
+  }
+
   return (
     <Container maxW="container.xl" py={8}>
       <VStack spacing={8} align="stretch">
@@ -81,75 +99,82 @@ export default function ArticlesPage() {
         </HStack>
 
         <Box>
-          <InputGroup maxW="md" mb={4}>
-            <InputLeftElement pointerEvents="none">
-              <SearchIcon color="gray.300" />
-            </InputLeftElement>
-            <Input
-              placeholder="Rechercher un article..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </InputGroup>
+          <HStack mb={4}>
+            <InputGroup maxW="sm">
+              <InputLeftElement pointerEvents="none">
+                <SearchIcon color="gray.300" />
+              </InputLeftElement>
+              <Input
+                placeholder="Rechercher..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </InputGroup>
+            {searchTerm && (
+              <IconButton
+                icon={<CloseIcon />}
+                aria-label="Clear search"
+                size="sm"
+                onClick={() => setSearchTerm('')}
+              />
+            )}
+          </HStack>
 
-          <Table variant="simple">
-            <Thead>
-              <Tr>
-                <Th>Titre</Th>
-                <Th>Catégorie</Th>
-                <Th>Jeux</Th>
-                <Th>Auteur</Th>
-                <Th>Date</Th>
-                <Th width="100px">Actions</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {filteredArticles.map((article) => (
-                <Tr key={article.id}>
-                  <Td>{article.title}</Td>
-                  <Td>
-                    {article.category ? (
-                      <Badge>{article.category.name}</Badge>
-                    ) : (
-                      '-'
-                    )}
-                  </Td>
-                  <Td>
-                    <HStack spacing={1}>
-                      {article.games.map((game) => (
-                        <Badge key={game.id} colorScheme="blue">
-                          {game.title}
-                        </Badge>
-                      ))}
-                    </HStack>
-                  </Td>
-                  <Td>{article.user.username}</Td>
-                  <Td>
-                    <DateDisplay date={article.createdAt} />
-                  </Td>
-                  <Td>
-                    <HStack spacing={2}>
-                      <IconButton
-                        as={Link}
-                        href={`/admin/articles/${article.id}/edit`}
-                        icon={<EditIcon />}
-                        aria-label="Modifier"
-                        size="sm"
-                        colorScheme="blue"
-                      />
-                      <IconButton
-                        icon={<DeleteIcon />}
-                        aria-label="Supprimer"
-                        size="sm"
-                        colorScheme="red"
-                        onClick={() => handleDelete(article.id)}
-                      />
-                    </HStack>
-                  </Td>
+          <Box overflowX="auto" borderWidth="1px" borderColor={borderColor} rounded="lg">
+            <Table variant="simple">
+              <Thead>
+                <Tr>
+                  <Th>Titre</Th>
+                  <Th>Catégorie</Th>
+                  <Th>Status</Th>
+                  <Th>Date de publication</Th>
+                  <Th width="150px">Actions</Th>
                 </Tr>
-              ))}
-            </Tbody>
-          </Table>
+              </Thead>
+              <Tbody>
+                {filteredArticles.map((article) => (
+                  <Tr key={article.id}>
+                    <Td>{article.title}</Td>
+                    <Td>{article.category.name}</Td>
+                    <Td>{getStatusBadge(article.status)}</Td>
+                    <Td>
+                      {article.publishedAt && (
+                        <DateDisplay date={article.publishedAt} format="long" />
+                      )}
+                    </Td>
+                    <Td>
+                      <HStack spacing={2}>
+                        <IconButton
+                          as={Link}
+                          href={`/admin/articles/${article.id}/edit`}
+                          icon={<EditIcon />}
+                          aria-label="Modifier"
+                          size="sm"
+                          colorScheme="blue"
+                        />
+                        <IconButton
+                          as={Link}
+                          href={`/articles/${article.id}`}
+                          icon={<ExternalLinkIcon />}
+                          aria-label="Voir"
+                          size="sm"
+                          colorScheme="green"
+                        />
+                        <IconButton
+                          icon={<DeleteIcon />}
+                          aria-label="Supprimer"
+                          size="sm"
+                          colorScheme="red"
+                          onClick={() => handleDelete(article.id)}
+                          isLoading={isDeleting}
+                        />
+                      </HStack>
+                    </Td>
+                  </Tr>
+                ))}
+              </Tbody>
+            </Table>
+          </Box>
         </Box>
       </VStack>
     </Container>

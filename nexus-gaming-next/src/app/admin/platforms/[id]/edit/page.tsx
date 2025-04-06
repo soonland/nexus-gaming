@@ -4,6 +4,7 @@ import React from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { usePlatform, usePlatforms } from '@/hooks/usePlatforms'
 import PlatformForm from '../../_components/PlatformForm'
+import type { PlatformForm as PlatformFormType } from '@/types'
 
 export default function EditPlatformPage() {
   const params = useParams()
@@ -20,14 +21,18 @@ export default function EditPlatformPage() {
     return <div>Plateforme non trouvée</div>
   }
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (data: PlatformFormType) => {
     await updatePlatform({ id, data })
     router.push('/admin/platforms')
   }
 
   return (
     <PlatformForm
-      initialData={platform}
+      initialData={{
+        name: platform.name,
+        manufacturer: platform.manufacturer,
+        releaseDate: platform.releaseDate?.toISOString() || null
+      }}
       onSubmit={handleSubmit}
       isLoading={isUpdating}
       mode="edit"
