@@ -1,15 +1,15 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect } from 'react'
 import {
   Box,
   Button,
   FormControl,
   FormLabel,
   FormErrorMessage,
+  FormHelperText,
   Input,
   Stack,
-  Switch,
   Textarea,
   HStack,
   useToast,
@@ -22,7 +22,22 @@ import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { useCategories } from '@/hooks/useCategories'
 import GameSelector from './GameSelector'
-import type { ArticleForm as IArticleForm } from '@/types'
+import { useAuth } from '@/hooks/useAuth'
+import { Role } from '@prisma/client'
+import type { ArticleForm as IArticleForm, ArticleStatus } from '@/types'
+
+const getAvailableStatuses = (role?: Role): ArticleStatus[] => {
+  switch (role) {
+    case 'SYSADMIN':
+    case 'ADMIN':
+      return ['DRAFT', 'PENDING_APPROVAL', 'PUBLISHED', 'ARCHIVED'];
+    case 'MODERATOR':
+      return ['DRAFT', 'PENDING_APPROVAL', 'PUBLISHED'];
+    case 'USER':
+    default:
+      return ['DRAFT', 'PENDING_APPROVAL'];
+  }
+};
 
 interface ArticleFormProps {
   initialData?: Partial<IArticleForm>
@@ -40,6 +55,8 @@ export default function ArticleForm({
   const router = useRouter()
   const toast = useToast()
   const { categories } = useCategories()
+  const { user } = useAuth()
+  const availableStatuses = getAvailableStatuses(user?.role)
   
   const {
     register,
@@ -60,6 +77,13 @@ export default function ArticleForm({
 
   const status = watch('status')
   const gameIds = watch('gameIds') ?? []
+
+  // Vérification si le statut actuel est autorisé
+  useEffect(() => {
+    if (status && !availableStatuses.includes(status)) {
+      setValue('status', 'DRAFT');
+    }
+  }, [status, availableStatuses, setValue]);
 
   const onSubmitForm = async (data: IArticleForm) => {
     try {
@@ -93,6 +117,59 @@ export default function ArticleForm({
         </Heading>
 
         <Stack spacing={6}>
+          <HStack spacing={4} width="100%">
+            <FormControl isInvalid={!!errors.categoryId} flex="1">
+              <FormLabel>Catégorie</FormLabel>
+              <Select
+                {...register('categoryId', { required: 'La catégorie est requise' })}
+                placeholder="Sélectionner une catégorie"
+              >
+                {categories?.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </Select>
+              {errors.categoryId ? (
+                <FormErrorMessage>{errors.categoryId.message}</FormErrorMessage>
+              ) : (
+                <FormHelperText>&nbsp;</FormHelperText>
+              )}
+            </FormControl>
+
+            <FormControl flex="1">
+              <FormLabel>Statut de l'article</FormLabel>
+            <Select
+              value={status}
+              onChange={(e) => {
+                setValue('status', e.target.value as ArticleStatus);
+                if (e.target.value === 'PUBLISHED' && !watch('publishedAt')) {
+                  setValue('publishedAt', new Date().toISOString());
+                }
+              }}
+            >
+              {availableStatuses.includes('DRAFT') && (
+                <option value="DRAFT">🔸 Brouillon</option>
+              )}
+              {availableStatuses.includes('PENDING_APPROVAL') && (
+                <option value="PENDING_APPROVAL">🔶 En attente d'approbation</option>
+              )}
+              {availableStatuses.includes('PUBLISHED') && (
+                <option value="PUBLISHED">🟢 Publié</option>
+              )}
+              {availableStatuses.includes('ARCHIVED') && (
+                <option value="ARCHIVED">⚪ Archivé</option>
+              )}
+            </Select>
+              <FormHelperText>
+                {status === 'DRAFT' && "L'article n'est visible que par vous"}
+                {status === 'PENDING_APPROVAL' && "En attente de validation par un modérateur"}
+                {status === 'PUBLISHED' && "L'article est visible publiquement"}
+                {status === 'ARCHIVED' && "L'article n'est plus visible"}
+              </FormHelperText>
+            </FormControl>
+          </HStack>
+
           <FormControl isInvalid={!!errors.title}>
             <FormLabel>Titre</FormLabel>
             <Input
@@ -116,41 +193,12 @@ export default function ArticleForm({
             )}
           </FormControl>
 
-          <FormControl isInvalid={!!errors.categoryId}>
-            <FormLabel>Catégorie</FormLabel>
-            <Select
-              {...register('categoryId', { required: 'La catégorie est requise' })}
-              placeholder="Sélectionner une catégorie"
-            >
-              {categories?.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </Select>
-            {errors.categoryId && (
-              <FormErrorMessage>{errors.categoryId.message}</FormErrorMessage>
-            )}
-          </FormControl>
-
           <FormControl>
             <FormLabel>Jeux associés</FormLabel>
             <GameSelector
               selectedIds={gameIds}
               onChange={(ids) => setValue('gameIds', ids)}
             />
-          </FormControl>
-
-          <FormControl>
-            <HStack>
-              <FormLabel mb={0}>Publier l'article</FormLabel>
-              <Switch
-                isChecked={status === 'PUBLISHED'}
-                onChange={(e) =>
-                  setValue('status', e.target.checked ? 'PUBLISHED' : 'DRAFT')
-                }
-              />
-            </HStack>
           </FormControl>
 
           <HStack justify="flex-end" spacing={4} pt={4}>
