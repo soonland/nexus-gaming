@@ -89,5 +89,7 @@ enum Role {
 
 enum ArticleStatus {
   DRAFT
+  PENDING_APPROVAL
   PUBLISHED
+  ARCHIVED
 }

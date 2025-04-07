@@ -5,6 +5,8 @@ import {
   Box,
   Button,
   Container,
+  FormControl,
+  FormLabel,
   Heading,
   VStack,
   HStack,
@@ -19,6 +21,10 @@ import {
   InputGroup,
   InputLeftElement,
   Badge,
+  Select,
+  Checkbox,
+  CheckboxGroup,
+  Text,
   useToast,
   useColorModeValue,
   AlertDialog,
@@ -45,11 +51,28 @@ import type { ArticleStatus } from '@/types'
 export default function ArticlesPage() {
   const toast = useToast()
   const [searchTerm, setSearchTerm] = useState('')
+  const [selectedStatuses, setSelectedStatuses] = useState<ArticleStatus[]>([])
   const { articles, deleteArticle, isLoading, isDeleting } = useArticles()
   const borderColor = useColorModeValue('gray.200', 'gray.700')
+  const bgColor = useColorModeValue('white', 'gray.800')
   const deleteDialog = useDisclosure()
   const cancelRef = useRef<HTMLButtonElement>(null)
   const [articleToDelete, setArticleToDelete] = useState<string | null>(null)
+
+  // Stats des articles par statut
+  const statusCounts = useMemo(() => {
+    const initialCounts = {
+      DRAFT: 0,
+      PENDING_APPROVAL: 0,
+      PUBLISHED: 0,
+      ARCHIVED: 0
+    }
+    if (!articles) return initialCounts
+    return articles.reduce((acc, article) => {
+      acc[article.status] = (acc[article.status] || 0) + 1
+      return acc
+    }, { ...initialCounts })
+  }, [articles])
 
   // Filtrage des articles
   const filteredArticles = useMemo(() => {
@@ -57,13 +80,16 @@ export default function ArticlesPage() {
     
     const searchString = searchTerm.toLowerCase()
     return articles.filter(article => {
-      return (
+      const matchesSearch = 
         article.title.toLowerCase().includes(searchString) ||
         article.category.name.toLowerCase().includes(searchString) ||
         article.games.some(game => game.title.toLowerCase().includes(searchString))
-      )
+      
+      const matchesStatus = selectedStatuses.length === 0 || selectedStatuses.includes(article.status)
+      
+      return matchesSearch && matchesStatus
     })
-  }, [articles, searchTerm])
+  }, [articles, searchTerm, selectedStatuses])
 
   const handleDeleteClick = (id: string) => {
     setArticleToDelete(id)
@@ -93,10 +119,16 @@ export default function ArticlesPage() {
   }
 
   const getStatusBadge = (status: ArticleStatus) => {
-    const props = status === 'PUBLISHED'
-      ? { colorScheme: 'green', children: 'Publié' }
-      : { colorScheme: 'gray', children: 'Brouillon' }
-    return <Badge {...props} />
+    switch (status) {
+      case 'PUBLISHED':
+        return <Badge colorScheme="green">🟢 Publié</Badge>
+      case 'PENDING_APPROVAL':
+        return <Badge colorScheme="orange">🔶 En attente</Badge>
+      case 'ARCHIVED':
+        return <Badge colorScheme="gray">⚪ Archivé</Badge>
+      default:
+        return <Badge colorScheme="yellow">🔸 Brouillon</Badge>
+    }
   }
 
   return (
@@ -115,25 +147,78 @@ export default function ArticlesPage() {
         </HStack>
 
         <Box>
-          <HStack mb={4}>
-            <InputGroup maxW="sm">
-              <InputLeftElement pointerEvents="none">
-                <SearchIcon color="gray.300" />
-              </InputLeftElement>
-              <Input
-                placeholder="Rechercher..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </InputGroup>
-            {searchTerm && (
-              <IconButton
-                icon={<CloseIcon />}
-                aria-label="Clear search"
-                size="sm"
-                onClick={() => setSearchTerm('')}
-              />
-            )}
+          <HStack mb={4} spacing={4} align="flex-start">
+            <Box flex="1">
+              <HStack>
+                <InputGroup maxW="sm">
+                  <InputLeftElement pointerEvents="none">
+                    <SearchIcon color="gray.300" />
+                  </InputLeftElement>
+                  <Input
+                    placeholder="Rechercher..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </InputGroup>
+                {searchTerm && (
+                  <IconButton
+                    icon={<CloseIcon />}
+                    aria-label="Clear search"
+                    size="sm"
+                    onClick={() => setSearchTerm('')}
+                  />
+                )}
+              </HStack>
+            </Box>
+
+            {/* Filtres par statut */}
+            <Box flex="2">
+              <FormControl>
+                <FormLabel>Filtrer par statut</FormLabel>
+                <CheckboxGroup 
+                  value={selectedStatuses}
+                  onChange={(values) => setSelectedStatuses(values as ArticleStatus[])}
+                >
+                  <HStack spacing={4} wrap="wrap">
+                    <Checkbox 
+                      value="DRAFT"
+                      colorScheme="yellow"
+                    >
+                      <HStack>
+                        <Text>🔸 Brouillon ({statusCounts.DRAFT})</Text>
+                      </HStack>
+                    </Checkbox>
+                    
+                    <Checkbox 
+                      value="PENDING_APPROVAL"
+                      colorScheme="orange"
+                    >
+                      <HStack>
+                        <Text>🔶 En attente ({statusCounts.PENDING_APPROVAL})</Text>
+                      </HStack>
+                    </Checkbox>
+                    
+                    <Checkbox 
+                      value="PUBLISHED"
+                      colorScheme="green"
+                    >
+                      <HStack>
+                        <Text>🟢 Publié ({statusCounts.PUBLISHED})</Text>
+                      </HStack>
+                    </Checkbox>
+                    
+                    <Checkbox 
+                      value="ARCHIVED"
+                      colorScheme="gray"
+                    >
+                      <HStack>
+                        <Text>⚪ Archivé ({statusCounts.ARCHIVED})</Text>
+                      </HStack>
+                    </Checkbox>
+                  </HStack>
+                </CheckboxGroup>
+              </FormControl>
+            </Box>
           </HStack>
 
           <Box overflowX="auto" borderWidth="1px" borderColor={borderColor} rounded="lg">
@@ -185,6 +270,7 @@ export default function ArticlesPage() {
                           isLoading={isDeleting}
                         />
                       </HStack>
+
                     </Td>
                   </Tr>
                 ))}
