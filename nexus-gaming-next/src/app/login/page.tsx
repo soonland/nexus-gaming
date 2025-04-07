@@ -60,12 +60,12 @@ export default function LoginPage() {
 
   return (
     <Container maxW="container.sm" py={8}>
-      <Box bg="white" p={8} rounded="lg" shadow="base">
+      <Box bg="bg.surface" p={8} rounded="lg" shadow="base" borderWidth="1px" borderColor="border.default">
         <Stack spacing={4}>
           <Heading size="lg" textAlign="center">
             Connexion
           </Heading>
-          <Text color="gray.600" textAlign="center">
+          <Text textAlign="center">
             Connectez-vous à votre compte
           </Text>
 
