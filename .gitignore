@@ -39,9 +39,12 @@ lerna-debug.log*
 # TypeScript
 *.tsbuildinfo
 
+# Next.js
+.next
+
 # Prisma
-nexus-gaming-next/prisma/*.db
-nexus-gaming-next/prisma/.env
+prisma/*.db
+prisma/.env
 
 # Docker
 docker-compose.override.yml
