@@ -12,10 +12,10 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
 
-  backend:
+  app:
     build:
       context: .
-      dockerfile: packages/backend/Dockerfile
+      dockerfile: nexus-gaming-next/Dockerfile
     ports:
       - "3000:3000"
     environment:
@@ -24,22 +24,8 @@ services:
     depends_on:
       - postgres
     volumes:
-      - ./packages/backend:/app/packages/backend
-      - /app/packages/backend/node_modules
-
-  frontend:
-    build:
-      context: .
-      dockerfile: packages/frontend/Dockerfile
-    ports:
-      - "5173:5173"
-    environment:
-      - VITE_API_URL=http://localhost:3000
-    volumes:
-      - ./packages/frontend:/app/packages/frontend
-      - /app/packages/frontend/node_modules
-    depends_on:
-      - backend
+      - ./nexus-gaming-next:/app
+      - /app/node_modules
 
 volumes:
   postgres-data:

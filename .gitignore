@@ -39,16 +39,15 @@ lerna-debug.log*
 # TypeScript
 *.tsbuildinfo
 
+# Next.js
+.next
+
 # Prisma
-packages/backend/prisma/migrations/
-packages/backend/prisma/*.db
-packages/backend/prisma/.env
+prisma/*.db
+prisma/.env
 
 # Docker
 docker-compose.override.yml
-
-# Turbo
-.turbo
 
 # System Files
 Thumbs.db

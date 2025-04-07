@@ -1,38 +1,49 @@
 {
   "name": "nexus-gaming",
+  "version": "0.1.0",
   "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
   "scripts": {
-    "dev": "turbo run dev",
-    "build": "turbo run build",
-    "lint": "turbo run lint",
-    "test": "turbo run test",
-    "sync:check": "syncpack list-mismatches",
-    "sync:fix": "syncpack fix-mismatches"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "db:clean": "ts-node prisma/clean.ts"
   },
-  "syncpack": {
-    "source": [
-      "package.json",
-      "packages/*/package.json"
-    ],
-    "semverRange": "^",
-    "sortFirst": [
-      "name",
-      "private",
-      "version",
-      "description",
-      "type",
-      "scripts",
-      "dependencies",
-      "devDependencies",
-      "peerDependencies"
-    ],
-    "versionGroups": []
+  "dependencies": {
+    "@chakra-ui/icons": "^2.1.1",
+    "axios": "^1.6.7",
+    "@chakra-ui/next-js": "^2.2.0",
+    "@chakra-ui/react": "^2.8.2",
+    "@emotion/react": "^11.11.3",
+    "@emotion/styled": "^11.11.0",
+    "@prisma/client": "^5.10.0",
+    "@tanstack/react-query": "^5.22.2",
+    "@tanstack/react-query-devtools": "^5.71.2",
+    "@types/bcryptjs": "^2.4.6",
+    "bcrypt": "^5.1.1",
+    "bcryptjs": "^3.0.2",
+    "dayjs": "^1.11.13",
+    "framer-motion": "^11.0.5",
+    "jose": "^6.0.10",
+    "next": "^15.2.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-hook-form": "^7.50.1",
+    "react-icons": "^5.5.0",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
-    "syncpack": "^13.0.3",
-    "turbo": "^1.12.5"
+    "@types/bcrypt": "^5.0.2",
+    "@types/node": "^20.11.20",
+    "@types/react": "^18.2.58",
+    "@types/react-dom": "^18.2.19",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "^15.2.4",
+    "prisma": "^5.10.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  },
+  "prisma": {
+    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
   }
 }

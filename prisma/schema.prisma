@@ -1,0 +1,89 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String    @id @default(uuid())
+  username  String    @unique
+  email     String    @unique
+  password  String
+  role      Role      @default(USER)
+  articles  Article[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Company {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  isDeveloper Boolean   @default(false)
+  isPublisher Boolean   @default(false)
+  gamesAsDev  Game[]    @relation("developer")
+  gamesAsPub  Game[]    @relation("publisher")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Category {
+  id        String    @id @default(uuid())
+  name      String    @unique
+  articles  Article[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Game {
+  id          String    @id @default(uuid())
+  title       String
+  description String?
+  coverImage  String?
+  releaseDate DateTime?
+  developer   Company    @relation("developer", fields: [developerId], references: [id])
+  developerId String
+  publisher   Company    @relation("publisher", fields: [publisherId], references: [id])
+  publisherId String
+  platforms   Platform[]
+  articles    Article[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Platform {
+  id           String    @id @default(uuid())
+  name         String    @unique
+  manufacturer String
+  releaseDate  DateTime?
+  games        Game[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Article {
+  id          String        @id @default(uuid())
+  title       String
+  content     String
+  status      ArticleStatus @default(DRAFT)
+  publishedAt DateTime?
+  category    Category      @relation(fields: [categoryId], references: [id])
+  categoryId  String
+  user        User         @relation(fields: [userId], references: [id])
+  userId      String
+  games       Game[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum ArticleStatus {
+  DRAFT
+  PUBLISHED
+}
