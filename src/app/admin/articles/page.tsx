@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useRef } from 'react'
 import {
   Box,
   Button,
@@ -21,6 +21,13 @@ import {
   Badge,
   useToast,
   useColorModeValue,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogOverlay,
+  useDisclosure,
 } from '@chakra-ui/react'
 import {
   SearchIcon,
@@ -40,6 +47,9 @@ export default function ArticlesPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const { articles, deleteArticle, isLoading, isDeleting } = useArticles()
   const borderColor = useColorModeValue('gray.200', 'gray.700')
+  const deleteDialog = useDisclosure()
+  const cancelRef = useRef<HTMLButtonElement>(null)
+  const [articleToDelete, setArticleToDelete] = useState<string | null>(null)
 
   // Filtrage des articles
   const filteredArticles = useMemo(() => {
@@ -55,24 +65,30 @@ export default function ArticlesPage() {
     })
   }, [articles, searchTerm])
 
-  // Gestion de la suppression
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer cet article ?')) {
-      try {
-        await deleteArticle(id)
-        toast({
-          title: 'Article supprimé',
-          status: 'success',
-          duration: 3000,
-        })
-      } catch (error) {
-        toast({
-          title: 'Erreur',
-          description: "Une erreur est survenue lors de la suppression",
-          status: 'error',
-          duration: 5000,
-        })
-      }
+  const handleDeleteClick = (id: string) => {
+    setArticleToDelete(id)
+    deleteDialog.onOpen()
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!articleToDelete) return
+
+    try {
+      await deleteArticle(articleToDelete)
+      toast({
+        title: 'Article supprimé',
+        status: 'success',
+        duration: 3000,
+      })
+      deleteDialog.onClose()
+      setArticleToDelete(null)
+    } catch (error) {
+      toast({
+        title: 'Erreur',
+        description: "Une erreur est survenue lors de la suppression",
+        status: 'error',
+        duration: 5000,
+      })
     }
   }
 
@@ -165,7 +181,7 @@ export default function ArticlesPage() {
                           aria-label="Supprimer"
                           size="sm"
                           colorScheme="red"
-                          onClick={() => handleDelete(article.id)}
+                          onClick={() => handleDeleteClick(article.id)}
                           isLoading={isDeleting}
                         />
                       </HStack>
@@ -177,6 +193,34 @@ export default function ArticlesPage() {
           </Box>
         </Box>
       </VStack>
+
+      <AlertDialog
+        isOpen={deleteDialog.isOpen}
+        leastDestructiveRef={cancelRef}
+        onClose={deleteDialog.onClose}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader>Supprimer l'article</AlertDialogHeader>
+            <AlertDialogBody>
+              Êtes-vous sûr de vouloir supprimer cet article ? Cette action ne peut pas être annulée.
+            </AlertDialogBody>
+            <AlertDialogFooter>
+              <Button ref={cancelRef} onClick={deleteDialog.onClose}>
+                Annuler
+              </Button>
+              <Button
+                colorScheme="red"
+                onClick={handleDeleteConfirm}
+                ml={3}
+                isLoading={isDeleting}
+              >
+                Supprimer
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
     </Container>
   )
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useRef } from 'react'
 import {
   Box,
   Button,
@@ -20,6 +20,13 @@ import {
   InputLeftElement,
   useToast,
   useColorModeValue,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogOverlay,
+  useDisclosure,
 } from '@chakra-ui/react'
 import {
   SearchIcon,
@@ -45,6 +52,9 @@ export default function CategoriesPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const { categories, deleteCategory, isLoading, isDeleting } = useCategories()
   const borderColor = useColorModeValue('gray.200', 'gray.700')
+  const deleteDialog = useDisclosure()
+  const cancelRef = useRef<HTMLButtonElement>(null)
+  const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null)
 
   // Filtrage des catégories
   const filteredCategories = useMemo(() => {
@@ -55,26 +65,32 @@ export default function CategoriesPage() {
     )
   }, [categories, searchTerm])
 
-  // Gestion de la suppression
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer cette catégorie ?')) {
-      try {
-        await deleteCategory(id)
-        toast({
-          title: 'Catégorie supprimée',
-          status: 'success',
-          duration: 3000,
-          isClosable: true,
-        })
-      } catch {
-        toast({
-          title: 'Erreur',
-          description: 'Impossible de supprimer la catégorie',
-          status: 'error',
-          duration: 5000,
-          isClosable: true,
-        })
-      }
+  const handleDeleteClick = (id: string) => {
+    setCategoryToDelete(id)
+    deleteDialog.onOpen()
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!categoryToDelete) return
+
+    try {
+      await deleteCategory(categoryToDelete)
+      toast({
+        title: 'Catégorie supprimée',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      })
+      deleteDialog.onClose()
+      setCategoryToDelete(null)
+    } catch {
+      toast({
+        title: 'Erreur',
+        description: 'Impossible de supprimer la catégorie',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      })
     }
   }
 
@@ -144,7 +160,7 @@ export default function CategoriesPage() {
                           aria-label="Supprimer"
                           size="sm"
                           colorScheme="red"
-                          onClick={() => handleDelete(category.id)}
+                          onClick={() => handleDeleteClick(category.id)}
                           isLoading={isDeleting}
                         />
                       </HStack>
@@ -156,6 +172,34 @@ export default function CategoriesPage() {
           </Box>
         </Box>
       </VStack>
+
+      <AlertDialog
+        isOpen={deleteDialog.isOpen}
+        leastDestructiveRef={cancelRef}
+        onClose={deleteDialog.onClose}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader>Supprimer la catégorie</AlertDialogHeader>
+            <AlertDialogBody>
+              Êtes-vous sûr de vouloir supprimer cette catégorie ? Cette action ne peut pas être annulée.
+            </AlertDialogBody>
+            <AlertDialogFooter>
+              <Button ref={cancelRef} onClick={deleteDialog.onClose}>
+                Annuler
+              </Button>
+              <Button
+                colorScheme="red"
+                onClick={handleDeleteConfirm}
+                ml={3}
+                isLoading={isDeleting}
+              >
+                Supprimer
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
     </Container>
   )
 }

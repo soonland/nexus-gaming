@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useRef } from 'react'
 import {
   Box,
   Button,
@@ -20,6 +20,13 @@ import {
   InputLeftElement,
   useToast,
   useColorModeValue,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogOverlay,
+  useDisclosure,
 } from '@chakra-ui/react'
 import {
   SearchIcon,
@@ -37,6 +44,9 @@ export default function PlatformsPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const { platforms, deletePlatform, isLoading, isDeleting } = usePlatforms()
   const borderColor = useColorModeValue('gray.200', 'gray.700')
+  const deleteDialog = useDisclosure()
+  const cancelRef = useRef<HTMLButtonElement>(null)
+  const [platformToDelete, setPlatformToDelete] = useState<string | null>(null)
 
   // Filtrage des plateformes
   const filteredPlatforms = useMemo(() => {
@@ -51,24 +61,30 @@ export default function PlatformsPage() {
     })
   }, [platforms, searchTerm])
 
-  // Gestion de la suppression
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer cette plateforme ?')) {
-      try {
-        await deletePlatform(id)
-        toast({
-          title: 'Plateforme supprimée',
-          status: 'success',
-          duration: 3000,
-        })
-      } catch (error) {
-        toast({
-          title: 'Erreur',
-          description: "Une erreur est survenue lors de la suppression",
-          status: 'error',
-          duration: 5000,
-        })
-      }
+  const handleDeleteClick = (id: string) => {
+    setPlatformToDelete(id)
+    deleteDialog.onOpen()
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!platformToDelete) return
+
+    try {
+      await deletePlatform(platformToDelete)
+      toast({
+        title: 'Plateforme supprimée',
+        status: 'success',
+        duration: 3000,
+      })
+      deleteDialog.onClose()
+      setPlatformToDelete(null)
+    } catch (error) {
+      toast({
+        title: 'Erreur',
+        description: "Une erreur est survenue lors de la suppression",
+        status: 'error',
+        duration: 5000,
+      })
     }
   }
 
@@ -146,7 +162,7 @@ export default function PlatformsPage() {
                           aria-label="Supprimer"
                           size="sm"
                           colorScheme="red"
-                          onClick={() => handleDelete(platform.id)}
+                          onClick={() => handleDeleteClick(platform.id)}
                           isLoading={isDeleting}
                         />
                       </HStack>
@@ -158,6 +174,34 @@ export default function PlatformsPage() {
           </Box>
         </Box>
       </VStack>
+
+      <AlertDialog
+        isOpen={deleteDialog.isOpen}
+        leastDestructiveRef={cancelRef}
+        onClose={deleteDialog.onClose}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader>Supprimer la plateforme</AlertDialogHeader>
+            <AlertDialogBody>
+              Êtes-vous sûr de vouloir supprimer cette plateforme ? Cette action ne peut pas être annulée.
+            </AlertDialogBody>
+            <AlertDialogFooter>
+              <Button ref={cancelRef} onClick={deleteDialog.onClose}>
+                Annuler
+              </Button>
+              <Button
+                colorScheme="red"
+                onClick={handleDeleteConfirm}
+                ml={3}
+                isLoading={isDeleting}
+              >
+                Supprimer
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
     </Container>
   )
 }
