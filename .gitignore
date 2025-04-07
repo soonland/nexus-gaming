@@ -40,15 +40,11 @@ lerna-debug.log*
 *.tsbuildinfo
 
 # Prisma
-packages/backend/prisma/migrations/
-packages/backend/prisma/*.db
-packages/backend/prisma/.env
+nexus-gaming-next/prisma/*.db
+nexus-gaming-next/prisma/.env
 
 # Docker
 docker-compose.override.yml
-
-# Turbo
-.turbo
 
 # System Files
 Thumbs.db

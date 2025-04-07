@@ -1,54 +1,10 @@
 {
   "name": "nexus-gaming",
   "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
   "scripts": {
-    "dev": "turbo run dev",
-    "build": "turbo run build",
-    "lint": "turbo run lint",
-    "test": "turbo run test",
-    "sync:check": "syncpack list-mismatches",
-    "sync:fix": "syncpack fix-mismatches"
-  },
-  "syncpack": {
-    "source": [
-      "package.json",
-      "packages/*/package.json"
-    ],
-    "semverRange": "^",
-    "sortFirst": [
-      "name",
-      "private",
-      "version",
-      "description",
-      "type",
-      "scripts",
-      "dependencies",
-      "devDependencies",
-      "peerDependencies"
-    ],
-    "versionGroups": []
-  },
-  "devDependencies": {
-    "@types/bcrypt": "^5.0.2",
-    "prisma": "^6.5.0",
-    "syncpack": "^13.0.3",
-    "turbo": "^1.12.5"
-  },
-  "dependencies": {
-    "@chakra-ui/icons": "^2.1.1",
-    "@chakra-ui/next-js": "^2.2.0",
-    "@chakra-ui/react": "^2.8.2",
-    "@emotion/react": "^11.11.3",
-    "@emotion/styled": "^11.11.0",
-    "@prisma/client": "^6.5.0",
-    "@tanstack/react-query": "^5.71.1",
-    "bcrypt": "^5.1.1",
-    "dayjs": "^1.11.13",
-    "framer-motion": "^11.0.5",
-    "react-hook-form": "^7.55.0",
-    "zod": "^3.24.2"
+    "dev": "cd nexus-gaming-next && npm run dev",
+    "build": "cd nexus-gaming-next && npm run build",
+    "start": "cd nexus-gaming-next && npm run start",
+    "lint": "cd nexus-gaming-next && npm run lint"
   }
 }
