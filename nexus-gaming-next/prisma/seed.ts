@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 import type { GameForm, ArticleForm } from '@/types'
+import dayjs from '@/lib/dayjs'
 
 const prisma = new PrismaClient()
 
@@ -46,7 +47,7 @@ async function main() {
     data: {
       name: 'Nintendo Switch',
       manufacturer: 'Nintendo',
-      releaseDate: new Date('2017-03-03'),
+      releaseDate: dayjs('2017-03-03').toDate(),
     },
   })
 
@@ -54,7 +55,7 @@ async function main() {
     data: {
       name: 'PlayStation 5',
       manufacturer: 'Sony',
-      releaseDate: new Date('2020-11-12'),
+      releaseDate: dayjs('2020-11-12').toDate(),
     },
   })
 
@@ -139,7 +140,7 @@ async function main() {
       title: zeldaData.title,
       description: zeldaData.description,
       coverImage: zeldaData.coverImage,
-      releaseDate: new Date(zeldaData.releaseDate!),
+      releaseDate: dayjs(zeldaData.releaseDate!).toDate(),
       developer: { connect: { id: zeldaData.developerId } },
       publisher: { connect: { id: zeldaData.publisherId } },
       platforms: { connect: zeldaData.platformIds.map(id => ({ id })) },
@@ -151,7 +152,7 @@ async function main() {
       title: spiderManData.title,
       description: spiderManData.description,
       coverImage: spiderManData.coverImage,
-      releaseDate: new Date(spiderManData.releaseDate!),
+      releaseDate: dayjs(spiderManData.releaseDate!).toDate(),
       developer: { connect: { id: spiderManData.developerId } },
       publisher: { connect: { id: spiderManData.publisherId } },
       platforms: { connect: spiderManData.platformIds.map(id => ({ id })) },
@@ -163,7 +164,7 @@ async function main() {
       title: baldursGateData.title,
       description: baldursGateData.description,
       coverImage: baldursGateData.coverImage,
-      releaseDate: new Date(baldursGateData.releaseDate!),
+      releaseDate: dayjs(baldursGateData.releaseDate!).toDate(),
       developer: { connect: { id: baldursGateData.developerId } },
       publisher: { connect: { id: baldursGateData.publisherId } },
       platforms: { connect: baldursGateData.platformIds.map(id => ({ id })) },
@@ -207,7 +208,7 @@ async function main() {
         title: articleData.title,
         content: articleData.content,
         status: articleData.status,
-        publishedAt: articleData.publishedAt ? new Date(articleData.publishedAt) : null,
+        publishedAt: articleData.publishedAt ? dayjs(articleData.publishedAt).toDate() : null,
         userId: admin.id,
         categoryId: articleData.categoryId,
         games: {

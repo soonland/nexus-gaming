@@ -22,7 +22,6 @@ export default function EditCategoryPage() {
         title: 'Catégorie modifiée',
         status: 'success',
         duration: 3000,
-        isClosable: true,
       })
       router.push('/admin/categories')
     } catch {
@@ -31,7 +30,6 @@ export default function EditCategoryPage() {
         description: 'Impossible de modifier la catégorie',
         status: 'error',
         duration: 3000,
-        isClosable: true,
       })
     }
   }
@@ -71,6 +69,7 @@ export default function EditCategoryPage() {
       <CategoryForm
         initialData={{ name: category.name }}
         onSubmit={handleSubmit}
+        onCancel={() => router.push('/admin/categories')}
         isLoading={isUpdating}
         mode="edit"
       />

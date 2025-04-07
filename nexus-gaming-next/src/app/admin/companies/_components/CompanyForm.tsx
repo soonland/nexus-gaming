@@ -11,9 +11,7 @@ import {
   Input,
   VStack,
   Checkbox,
-  useToast,
 } from '@chakra-ui/react'
-import { useRouter } from 'next/navigation'
 
 interface CompanyFormData {
   name: string
@@ -24,6 +22,7 @@ interface CompanyFormData {
 interface CompanyFormProps {
   initialData?: CompanyFormData
   onSubmit: (data: CompanyFormData) => Promise<void>
+  onCancel: () => void
   isLoading?: boolean
   mode: 'create' | 'edit'
 }
@@ -31,6 +30,7 @@ interface CompanyFormProps {
 export default function CompanyForm({
   initialData,
   onSubmit,
+  onCancel,
   isLoading,
   mode,
 }: CompanyFormProps) {
@@ -39,49 +39,18 @@ export default function CompanyForm({
     isDeveloper: initialData?.isDeveloper || false,
     isPublisher: initialData?.isPublisher || false,
   })
-  const router = useRouter()
-  const toast = useToast()
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (!formData.name) {
-      toast({
-        title: 'Erreur',
-        description: 'Le nom est requis',
-        status: 'error',
-        duration: 3000,
-      })
       return
     }
 
     if (!formData.isDeveloper && !formData.isPublisher) {
-      toast({
-        title: 'Erreur',
-        description: 'La société doit être développeur et/ou éditeur',
-        status: 'error',
-        duration: 3000,
-      })
       return
     }
 
-    try {
-      await onSubmit(formData)
-      router.push('/admin/companies')
-      toast({
-        title: 'Succès',
-        description: mode === 'create' ? 'Société créée' : 'Société mise à jour',
-        status: 'success',
-        duration: 3000,
-      })
-    } catch (error) {
-      toast({
-        title: 'Erreur',
-        description: "Une erreur est survenue",
-        status: 'error',
-        duration: 5000,
-      })
-    }
+    await onSubmit(formData)
   }
 
   return (
@@ -134,7 +103,7 @@ export default function CompanyForm({
             pt={4}
           >
             <Button
-              onClick={() => router.push('/admin/companies')}
+              onClick={onCancel}
               variant="ghost"
             >
               Annuler

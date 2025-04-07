@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
+import dayjs from '@/lib/dayjs'
 
 import type { PlatformData, PlatformForm } from '@/types'
 
@@ -11,14 +12,25 @@ export function usePlatforms() {
     queryKey: ['platforms'],
     queryFn: async () => {
       const response = await axios.get('/api/platforms')
-      return response.data
+      return response.data.map((platform: any) => ({
+        ...platform,
+        createdAt: dayjs(platform.createdAt).toDate(),
+        updatedAt: dayjs(platform.updatedAt).toDate(),
+        releaseDate: platform.releaseDate ? dayjs(platform.releaseDate).toDate() : null
+      }))
     },
   })
 
   const createPlatform = useMutation({
     mutationFn: async (data: PlatformForm) => {
       const response = await axios.post('/api/platforms', data)
-      return response.data
+      const platform = response.data
+      return {
+        ...platform,
+        createdAt: dayjs(platform.createdAt).toDate(),
+        updatedAt: dayjs(platform.updatedAt).toDate(),
+        releaseDate: platform.releaseDate ? dayjs(platform.releaseDate).toDate() : null
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['platforms'] })
@@ -34,7 +46,13 @@ export function usePlatforms() {
       data: PlatformForm
     }) => {
       const response = await axios.patch(`/api/platforms/${id}`, data)
-      return response.data
+      const platform = response.data
+      return {
+        ...platform,
+        createdAt: dayjs(platform.createdAt).toDate(),
+        updatedAt: dayjs(platform.updatedAt).toDate(),
+        releaseDate: platform.releaseDate ? dayjs(platform.releaseDate).toDate() : null
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['platforms'] })
@@ -68,7 +86,13 @@ export function usePlatform(id: string) {
     queryKey: ['platform', id],
     queryFn: async () => {
       const response = await axios.get(`/api/platforms/${id}`)
-      return response.data
+      const platform = response.data
+      return {
+        ...platform,
+        createdAt: dayjs(platform.createdAt).toDate(),
+        updatedAt: dayjs(platform.updatedAt).toDate(),
+        releaseDate: platform.releaseDate ? dayjs(platform.releaseDate).toDate() : null
+      }
     },
     enabled: !!id,
   })

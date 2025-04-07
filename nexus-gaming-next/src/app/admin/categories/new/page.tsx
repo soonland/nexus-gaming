@@ -18,7 +18,6 @@ export default function NewCategoryPage() {
         title: 'Catégorie créée',
         status: 'success',
         duration: 3000,
-        isClosable: true,
       })
       router.push('/admin/categories')
     } catch {
@@ -27,7 +26,6 @@ export default function NewCategoryPage() {
         description: 'Impossible de créer la catégorie',
         status: 'error',
         duration: 3000,
-        isClosable: true,
       })
     }
   }
@@ -36,6 +34,7 @@ export default function NewCategoryPage() {
     <Container maxW="container.md" py={8}>
       <CategoryForm
         onSubmit={handleSubmit}
+        onCancel={() => router.push('/admin/categories')}
         isLoading={isCreating}
         mode="create"
       />

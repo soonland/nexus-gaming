@@ -46,8 +46,11 @@ export type ArticleData = Omit<Article, 'userId' | 'categoryId' | 'createdAt' | 
   publishedAt: Date | null
 }
 
-export type PlatformData = Platform & {
+export type PlatformData = Omit<Platform, 'createdAt' | 'updatedAt' | 'releaseDate'> & {
   games: GameRef[]
+  createdAt: Date
+  updatedAt: Date
+  releaseDate: Date | null
 }
 
 export type CompanyData = Company & {

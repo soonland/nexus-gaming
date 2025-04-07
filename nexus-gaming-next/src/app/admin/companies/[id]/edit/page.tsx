@@ -1,9 +1,11 @@
 'use client'
 
 import React from 'react'
+import { Container, useToast, Alert, AlertIcon } from '@chakra-ui/react'
 import { useParams, useRouter } from 'next/navigation'
 import { useCompanies, useCompany } from '@/hooks/useCompanies'
 import CompanyForm from '../../_components/CompanyForm'
+import CompanyFormLoading from '@/components/loading/CompanyFormLoading'
 
 export default function EditCompanyPage() {
   const params = useParams()
@@ -11,18 +13,44 @@ export default function EditCompanyPage() {
   const { company, isLoading } = useCompany(id)
   const { updateCompany, isUpdating } = useCompanies()
   const router = useRouter()
+  const toast = useToast()
+
+  const handleSubmit = async (data: any) => {
+    try {
+      await updateCompany({ id, data })
+      toast({
+        title: 'Société modifiée',
+        status: 'success',
+        duration: 3000,
+      })
+      router.push('/admin/companies')
+    } catch {
+      toast({
+        title: 'Erreur',
+        description: 'Impossible de modifier la société',
+        status: 'error',
+        duration: 3000,
+      })
+    }
+  }
 
   if (isLoading) {
-    return <div>Chargement...</div>
+    return (
+      <Container maxW="container.md" py={8}>
+        <CompanyFormLoading />
+      </Container>
+    )
   }
 
   if (!company) {
-    return <div>Société non trouvée</div>
-  }
-
-  const handleSubmit = async (data: any) => {
-    await updateCompany({ id, data })
-    router.push('/admin/companies')
+    return (
+      <Container maxW="container.md" py={8}>
+        <Alert status="error">
+          <AlertIcon />
+          Société non trouvée
+        </Alert>
+      </Container>
+    )
   }
 
   const initialData = {
@@ -32,11 +60,14 @@ export default function EditCompanyPage() {
   }
 
   return (
-    <CompanyForm
-      initialData={initialData}
-      onSubmit={handleSubmit}
-      isLoading={isUpdating}
-      mode="edit"
-    />
+    <Container maxW="container.md" py={8}>
+      <CompanyForm
+        initialData={initialData}
+        onSubmit={handleSubmit}
+        onCancel={() => router.push('/admin/companies')}
+        isLoading={isUpdating}
+        mode="edit"
+      />
+    </Container>
   )
 }

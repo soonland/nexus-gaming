@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { Container, useToast } from '@chakra-ui/react'
 import { useRouter } from 'next/navigation'
 import { useCompanies } from '@/hooks/useCompanies'
 import CompanyForm from '../_components/CompanyForm'
@@ -8,17 +9,35 @@ import CompanyForm from '../_components/CompanyForm'
 export default function NewCompanyPage() {
   const { createCompany, isCreating } = useCompanies()
   const router = useRouter()
+  const toast = useToast()
 
   const handleSubmit = async (data: any) => {
-    await createCompany(data)
-    router.push('/admin/companies')
+    try {
+      await createCompany(data)
+      toast({
+        title: 'Société créée',
+        status: 'success',
+        duration: 3000,
+      })
+      router.push('/admin/companies')
+    } catch {
+      toast({
+        title: 'Erreur',
+        description: 'Impossible de créer la société',
+        status: 'error',
+        duration: 3000,
+      })
+    }
   }
 
   return (
-    <CompanyForm
-      onSubmit={handleSubmit}
-      isLoading={isCreating}
-      mode="create"
-    />
+    <Container maxW="container.md" py={8}>
+      <CompanyForm
+        onSubmit={handleSubmit}
+        onCancel={() => router.push('/admin/companies')}
+        isLoading={isCreating}
+        mode="create"
+      />
+    </Container>
   )
 }

@@ -7,6 +7,7 @@ import ArticleForm from '../../_components/ArticleForm'
 import { useArticle, useArticles } from '@/hooks/useArticles'
 import type { ArticleForm as ArticleFormData } from '@/types'
 import ArticleFormLoading from '@/components/loading/ArticleFormLoading'
+import dayjs from '@/lib/dayjs'
 
 export default function EditArticlePage() {
   const params = useParams()
@@ -55,7 +56,7 @@ export default function EditArticlePage() {
     categoryId: article.category.id,
     gameIds: article.games.map(g => g.id),
     status: article.status,
-    publishedAt: article.publishedAt?.toISOString(),
+    publishedAt: article.publishedAt ? dayjs(article.publishedAt).format('YYYY-MM-DD') : undefined,
   }
 
   return (
