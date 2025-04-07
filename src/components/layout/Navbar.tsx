@@ -25,7 +25,7 @@ export function Navbar() {
   const bgColor = useColorModeValue('white', 'gray.800')
   const borderColor = useColorModeValue('gray.200', 'gray.700')
 
-  const isAdmin = user?.role === Role.ADMIN
+  const isAdmin = user?.role === Role.ADMIN || user?.role === Role.SYSADMIN
 
   return (
     <Box
@@ -65,6 +65,9 @@ export function Navbar() {
                   aria-label="Menu d'administration"
                 />
                 <MenuList>
+                  <MenuItem as={Link} href="/admin/users">
+                    Utilisateurs
+                  </MenuItem>
                   <MenuItem as={Link} href="/admin/articles">
                     Articles
                   </MenuItem>

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useRef } from 'react'
 import {
   Box,
   Button,
@@ -23,6 +23,13 @@ import {
   useColorModeValue,
   Wrap,
   WrapItem,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogOverlay,
+  useDisclosure,
 } from '@chakra-ui/react'
 import {
   SearchIcon,
@@ -42,6 +49,9 @@ export default function GamesPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const { games, deleteGame, isLoading, isDeleting } = useGames()
   const borderColor = useColorModeValue('gray.200', 'gray.700')
+  const deleteDialog = useDisclosure()
+  const cancelRef = useRef<HTMLButtonElement>(null)
+  const [gameToDelete, setGameToDelete] = useState<string | null>(null)
 
   // Filtrage des jeux
   const filteredGames = useMemo(() => {
@@ -58,24 +68,30 @@ export default function GamesPage() {
     })
   }, [games, searchTerm])
 
-  // Gestion de la suppression
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer ce jeu ?')) {
-      try {
-        await deleteGame(id)
-        toast({
-          title: 'Jeu supprimé',
-          status: 'success',
-          duration: 3000,
-        })
-      } catch (error) {
-        toast({
-          title: 'Erreur',
-          description: "Une erreur est survenue lors de la suppression",
-          status: 'error',
-          duration: 5000,
-        })
-      }
+  const handleDeleteClick = (id: string) => {
+    setGameToDelete(id)
+    deleteDialog.onOpen()
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!gameToDelete) return
+
+    try {
+      await deleteGame(gameToDelete)
+      toast({
+        title: 'Jeu supprimé',
+        status: 'success',
+        duration: 3000,
+      })
+      deleteDialog.onClose()
+      setGameToDelete(null)
+    } catch (error) {
+      toast({
+        title: 'Erreur',
+        description: "Une erreur est survenue lors de la suppression",
+        status: 'error',
+        duration: 5000,
+      })
     }
   }
 
@@ -181,7 +197,7 @@ export default function GamesPage() {
                           aria-label="Supprimer"
                           size="sm"
                           colorScheme="red"
-                          onClick={() => handleDelete(game.id)}
+                          onClick={() => handleDeleteClick(game.id)}
                           isLoading={isDeleting}
                         />
                       </HStack>
@@ -193,6 +209,34 @@ export default function GamesPage() {
           </Box>
         </Box>
       </VStack>
+
+      <AlertDialog
+        isOpen={deleteDialog.isOpen}
+        leastDestructiveRef={cancelRef}
+        onClose={deleteDialog.onClose}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader>Supprimer le jeu</AlertDialogHeader>
+            <AlertDialogBody>
+              Êtes-vous sûr de vouloir supprimer ce jeu ? Cette action ne peut pas être annulée.
+            </AlertDialogBody>
+            <AlertDialogFooter>
+              <Button ref={cancelRef} onClick={deleteDialog.onClose}>
+                Annuler
+              </Button>
+              <Button
+                colorScheme="red"
+                onClick={handleDeleteConfirm}
+                ml={3}
+                isLoading={isDeleting}
+              >
+                Supprimer
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
     </Container>
   )
 }

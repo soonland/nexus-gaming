@@ -14,7 +14,7 @@ export async function middleware(request: NextRequest) {
   // Pour les routes admin uniquement
   if (path.startsWith('/admin')) {
     const user = await getCurrentUser()
-    if (!user || user.role !== 'ADMIN') {
+    if (!user || (user.role !== 'ADMIN' && user.role !== 'SYSADMIN')) {
       return NextResponse.redirect(new URL('/', request.url))
     }
   }

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useRef } from 'react'
 import {
   Box,
   Button,
@@ -20,6 +20,13 @@ import {
   InputGroup,
   InputLeftElement,
   VStack,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogOverlay,
+  useDisclosure,
 } from '@chakra-ui/react'
 import {
   AddIcon,
@@ -34,6 +41,9 @@ export default function CompaniesPage() {
   const toast = useToast()
   const [searchTerm, setSearchTerm] = useState('')
   const { companies, deleteCompany, isLoading } = useCompanies()
+  const deleteDialog = useDisclosure()
+  const cancelRef = useRef<HTMLButtonElement>(null)
+  const [companyToDelete, setCompanyToDelete] = useState<string | null>(null)
 
   const filteredCompanies = useMemo(() => {
     if (!companies) return []
@@ -44,23 +54,30 @@ export default function CompaniesPage() {
     })
   }, [companies, searchTerm])
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer cette société ?')) {
-      try {
-        await deleteCompany(id)
-        toast({
-          title: 'Société supprimée',
-          status: 'success',
-          duration: 3000,
-        })
-      } catch (error) {
-        toast({
-          title: 'Erreur',
-          description: "Une erreur est survenue lors de la suppression",
-          status: 'error',
-          duration: 5000,
-        })
-      }
+  const handleDeleteClick = (id: string) => {
+    setCompanyToDelete(id)
+    deleteDialog.onOpen()
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!companyToDelete) return
+
+    try {
+      await deleteCompany(companyToDelete)
+      toast({
+        title: 'Société supprimée',
+        status: 'success',
+        duration: 3000,
+      })
+      deleteDialog.onClose()
+      setCompanyToDelete(null)
+    } catch (error) {
+      toast({
+        title: 'Erreur',
+        description: "Une erreur est survenue lors de la suppression",
+        status: 'error',
+        duration: 5000,
+      })
     }
   }
 
@@ -143,7 +160,7 @@ export default function CompaniesPage() {
                         aria-label="Supprimer"
                         size="sm"
                         colorScheme="red"
-                        onClick={() => handleDelete(company.id)}
+                        onClick={() => handleDeleteClick(company.id)}
                       />
                     </HStack>
                   </Td>
@@ -153,6 +170,34 @@ export default function CompaniesPage() {
           </Table>
         </Box>
       </VStack>
+
+      <AlertDialog
+        isOpen={deleteDialog.isOpen}
+        leastDestructiveRef={cancelRef}
+        onClose={deleteDialog.onClose}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader>Supprimer la société</AlertDialogHeader>
+            <AlertDialogBody>
+              Êtes-vous sûr de vouloir supprimer cette société ? Cette action ne peut pas être annulée.
+            </AlertDialogBody>
+            <AlertDialogFooter>
+              <Button ref={cancelRef} onClick={deleteDialog.onClose}>
+                Annuler
+              </Button>
+              <Button
+                colorScheme="red"
+                onClick={handleDeleteConfirm}
+                ml={3}
+                isLoading={isLoading}
+              >
+                Supprimer
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
     </Container>
   )
 }
