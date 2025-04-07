@@ -7,7 +7,7 @@ export async function GET(request: Request) {
   try {
     const tokenUser = await getCurrentUser()
     
-    if (!tokenUser || tokenUser.role !== 'ADMIN') {
+    if (!tokenUser || (tokenUser.role !== 'ADMIN' && tokenUser.role !== 'SYSADMIN')) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 403 }
@@ -80,11 +80,83 @@ export async function GET(request: Request) {
   }
 }
 
+export async function PUT(request: Request) {
+  try {
+    const tokenUser = await getCurrentUser()
+    
+    if (!tokenUser || (tokenUser.role !== 'ADMIN' && tokenUser.role !== 'SYSADMIN')) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 403 }
+      )
+    }
+
+    const body = await request.json()
+    const { id, username, email, password, role, isActive } = body
+
+    // Get the user being edited
+    const targetUser = await prisma.user.findUnique({
+      where: { id }
+    })
+
+    if (!targetUser) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      )
+    }
+
+    // SYSADMIN role checks
+    if (targetUser.role === 'SYSADMIN' && tokenUser.role !== 'SYSADMIN') {
+      return NextResponse.json(
+        { error: 'Only SYSADMIN users can modify SYSADMIN users' },
+        { status: 403 }
+      )
+    }
+
+    if (role === 'SYSADMIN' && tokenUser.role !== 'SYSADMIN') {
+      return NextResponse.json(
+        { error: 'Only SYSADMIN users can grant SYSADMIN role' },
+        { status: 403 }
+      )
+    }
+
+    // Update user
+    const updatedUser = await prisma.user.update({
+      where: { id },
+      data: {
+        username,
+        email,
+        ...(password ? { password } : {}), // Only update password if provided
+        role,
+        isActive
+      },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        role: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true
+      }
+    })
+
+    return NextResponse.json({ user: updatedUser })
+  } catch (error) {
+    console.error('Error updating user:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const tokenUser = await getCurrentUser()
     
-    if (!tokenUser || tokenUser.role !== 'ADMIN') {
+    if (!tokenUser || (tokenUser.role !== 'ADMIN' && tokenUser.role !== 'SYSADMIN')) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 403 }
@@ -93,6 +165,14 @@ export async function POST(request: Request) {
 
     const body = await request.json()
     const { username, email, password, role = 'USER' } = body
+
+    // Only SYSADMIN can create SYSADMIN users
+    if (role === 'SYSADMIN' && tokenUser.role !== 'SYSADMIN') {
+      return NextResponse.json(
+        { error: 'Only SYSADMIN users can create other SYSADMIN users' },
+        { status: 403 }
+      )
+    }
 
     // Basic validation
     if (!username || !email || !password) {

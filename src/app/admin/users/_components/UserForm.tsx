@@ -13,6 +13,7 @@ import {
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { Role } from '@prisma/client'
+import { useAuth } from '@/hooks/useAuth'
 
 interface UserFormData {
   username: string
@@ -28,6 +29,7 @@ interface UserFormProps {
 }
 
 export default function UserForm({ initialData, onSubmit, isLoading }: UserFormProps) {
+  const { user: currentUser } = useAuth()
   const router = useRouter()
   const [errors, setErrors] = useState<Partial<Record<keyof UserFormData, string>>>({})
   const [formData, setFormData] = useState<UserFormData>({
@@ -136,11 +138,15 @@ export default function UserForm({ initialData, onSubmit, isLoading }: UserFormP
             name="role"
             value={formData.role}
             onChange={handleChange}
+            isDisabled={initialData?.role === 'SYSADMIN' && currentUser?.role !== 'SYSADMIN'}
           >
             <option value={Role.USER}>User</option>
             <option value={Role.EDITOR}>Editor</option>
             <option value={Role.MODERATOR}>Moderator</option>
             <option value={Role.ADMIN}>Admin</option>
+            {currentUser?.role === 'SYSADMIN' && (
+              <option value={Role.SYSADMIN}>System Admin</option>
+            )}
           </Select>
         </FormControl>
 

@@ -2,13 +2,17 @@ import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 import dayjs from 'dayjs'
 import type { GameForm, ArticleForm } from '../src/types'
+import { seedAdmin } from './seeds/admin'
 
 const prisma = new PrismaClient()
 
 async function main() {
   console.log('Start seeding...')
 
-  // Create admin user
+  // Seed initial SYSADMIN user
+  await seedAdmin()
+  
+  // Create admin user for testing
   const adminPassword = await bcrypt.hash('admin', 10)
   const admin = await prisma.user.create({
     data: {
@@ -19,7 +23,7 @@ async function main() {
     },
   })
 
-  console.log('Created admin user')
+  console.log('Created admin users')
 
   // Create categories
   const newsCategory = await prisma.category.create({

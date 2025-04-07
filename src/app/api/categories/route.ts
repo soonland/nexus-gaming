@@ -37,7 +37,7 @@ export async function POST(request: Request) {
   try {
     const user = await getCurrentUser()
 
-    if (!user || user.role !== 'ADMIN') {
+    if (!user || (user.role !== 'ADMIN' && user.role !== 'SYSADMIN')) {
       return NextResponse.json(
         { error: 'Not authorized' },
         { status: 403 }

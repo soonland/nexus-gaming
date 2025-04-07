@@ -84,6 +84,7 @@ enum Role {
   ADMIN
   MODERATOR
   EDITOR
+  SYSADMIN
 }
 
 enum ArticleStatus {

@@ -1,16 +1,17 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/jwt'
 import { Role } from '@prisma/client'
 
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const tokenUser = await getCurrentUser()
     
-    if (!tokenUser || tokenUser.role !== 'ADMIN') {
+    if (!tokenUser || (tokenUser.role !== 'ADMIN' && tokenUser.role !== 'SYSADMIN')) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 403 }
@@ -18,7 +19,7 @@ export async function GET(
     }
 
     const user = await prisma.user.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: {
         id: true,
         username: true,
@@ -51,13 +52,14 @@ export async function GET(
 }
 
 export async function PUT(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const tokenUser = await getCurrentUser()
     
-    if (!tokenUser || tokenUser.role !== 'ADMIN') {
+    if (!tokenUser || (tokenUser.role !== 'ADMIN' && tokenUser.role !== 'SYSADMIN')) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 403 }
@@ -83,7 +85,7 @@ export async function PUT(
           { email }
         ],
         NOT: {
-          id: params.id
+          id
         }
       }
     })
@@ -95,9 +97,36 @@ export async function PUT(
       )
     }
 
+    // Get the user being edited
+    const targetUser = await prisma.user.findUnique({
+      where: { id}
+    })
+
+    if (!targetUser) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      )
+    }
+
+    // SYSADMIN role checks
+    if (targetUser.role === 'SYSADMIN' && tokenUser.role !== 'SYSADMIN') {
+      return NextResponse.json(
+        { error: 'Only SYSADMIN users can modify SYSADMIN users' },
+        { status: 403 }
+      )
+    }
+
+    if (role === 'SYSADMIN' && tokenUser.role !== 'SYSADMIN') {
+      return NextResponse.json(
+        { error: 'Only SYSADMIN users can grant SYSADMIN role' },
+        { status: 403 }
+      )
+    }
+
     // Update user
     const user = await prisma.user.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         username,
         email,
@@ -125,32 +154,40 @@ export async function PUT(
 }
 
 export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const tokenUser = await getCurrentUser()
-    
-    if (!tokenUser || tokenUser.role !== 'ADMIN') {
+    const { id } = await params
+    if (!tokenUser || (tokenUser.role !== 'ADMIN' && tokenUser.role !== 'SYSADMIN')) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 403 }
       )
     }
 
-    // Check if user exists and is not the current user
-    const user = await prisma.user.findUnique({
-      where: { id: params.id }
+    // Check if user exists
+    const targetUser = await prisma.user.findUnique({
+      where: { id }
     })
 
-    if (!user) {
+    if (!targetUser) {
       return NextResponse.json(
         { error: 'User not found' },
         { status: 404 }
       )
     }
 
-    if (user.id === tokenUser.id) {
+    // SYSADMIN checks
+    if (targetUser.role === 'SYSADMIN' && tokenUser.role !== 'SYSADMIN') {
+      return NextResponse.json(
+        { error: 'Only SYSADMIN users can delete SYSADMIN users' },
+        { status: 403 }
+      )
+    }
+
+    if (targetUser.id === tokenUser.id) {
       return NextResponse.json(
         { error: 'Cannot delete yourself' },
         { status: 400 }
@@ -159,7 +196,7 @@ export async function DELETE(
 
     // Delete user
     await prisma.user.delete({
-      where: { id: params.id }
+      where: { id }
     })
 
     return NextResponse.json(
@@ -177,13 +214,13 @@ export async function DELETE(
 
 // Route for toggling user status (active/inactive)
 export async function PATCH(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const tokenUser = await getCurrentUser()
-    
-    if (!tokenUser || tokenUser.role !== 'ADMIN') {
+    const { id } = await params
+    if (!tokenUser || (tokenUser.role !== 'ADMIN' && tokenUser.role !== 'SYSADMIN')) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 403 }
@@ -192,7 +229,6 @@ export async function PATCH(
 
     const body = await request.json()
     const { isActive } = body
-    const { id } = await params
 
     if (typeof isActive !== 'boolean') {
       return NextResponse.json(
@@ -201,19 +237,27 @@ export async function PATCH(
       )
     }
 
-    // Check if user exists and is not the current user
-    const user = await prisma.user.findUnique({
+    // Check if user exists
+    const targetUser = await prisma.user.findUnique({
       where: { id }
     })
 
-    if (!user) {
+    if (!targetUser) {
       return NextResponse.json(
         { error: 'User not found' },
         { status: 404 }
       )
     }
 
-    if (user.id === tokenUser.id) {
+    // SYSADMIN checks
+    if (targetUser.role === 'SYSADMIN' && tokenUser.role !== 'SYSADMIN') {
+      return NextResponse.json(
+        { error: 'Only SYSADMIN users can modify SYSADMIN users' },
+        { status: 403 }
+      )
+    }
+
+    if (targetUser.id === tokenUser.id) {
       return NextResponse.json(
         { error: 'Cannot change your own status' },
         { status: 400 }

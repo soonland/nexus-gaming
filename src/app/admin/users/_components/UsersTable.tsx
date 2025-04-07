@@ -46,6 +46,7 @@ const roleColors = {
   MODERATOR: 'purple',
   EDITOR: 'blue',
   USER: 'gray',
+  SYSADMIN: 'orange',
 }
 
 const RoleBadge = ({ role }: { role: Role }) => (

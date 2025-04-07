@@ -6,19 +6,17 @@ import {
   useToast,
   VStack,
 } from '@chakra-ui/react'
-import { useRouter } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { useUser, useUpdateUser } from '@/hooks/useUsers'
 import UserForm from '../../_components/UserForm'
 
-export default function EditUserPage({
-  params,
-}: {
-  params: { id: string }
-}) {
+export default function EditUserPage() {
+  const params = useParams()
+  const id = params.id as string
   const router = useRouter()
   const toast = useToast()
-  const { data, isLoading: isLoadingUser } = useUser(params.id)
-  const updateUser = useUpdateUser(params.id)
+  const { data, isLoading: isLoadingUser } = useUser(id)
+  const updateUser = useUpdateUser(id)
 
   if (isLoadingUser) {
     return null // Loading component will be shown

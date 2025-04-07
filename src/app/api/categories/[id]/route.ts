@@ -45,13 +45,6 @@ export async function PATCH(
     const { id } = await params
     const user = await getCurrentUser()
 
-    if (!user || user.role !== 'ADMIN') {
-      return NextResponse.json(
-        { error: 'Not authorized' },
-        { status: 403 }
-      )
-    }
-
     const body = await request.json()
     const { name } = body
 
@@ -87,7 +80,7 @@ export async function DELETE(
     const { id } = await params
     const user = await getCurrentUser()
 
-    if (!user || user.role !== 'ADMIN') {
+    if (!user || (user.role !== 'ADMIN' && user.role !== 'SYSADMIN')) {
       return NextResponse.json(
         { error: 'Not authorized' },
         { status: 403 }
