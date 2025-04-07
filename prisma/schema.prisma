@@ -13,6 +13,7 @@ model User {
   email     String    @unique
   password  String
   role      Role      @default(USER)
+  isActive  Boolean   @default(true)
   articles  Article[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -81,6 +82,8 @@ model Article {
 enum Role {
   USER
   ADMIN
+  MODERATOR
+  EDITOR
 }
 
 enum ArticleStatus {
