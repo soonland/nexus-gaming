@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
-import type { GameForm, ArticleForm } from '@/types'
-import dayjs from '@/lib/dayjs'
+import dayjs from 'dayjs'
+import type { GameForm, ArticleForm } from '../src/types'
 
 const prisma = new PrismaClient()
 
