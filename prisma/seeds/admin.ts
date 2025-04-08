@@ -1,5 +1,8 @@
 import { PrismaClient, Role } from '@prisma/client'
+import { hash } from 'bcrypt'
 const prisma = new PrismaClient()
+
+const SALT_ROUNDS = 10
 
 export const seedAdmin = async () => {
   try {
@@ -9,12 +12,13 @@ export const seedAdmin = async () => {
     })
 
     if (!existingAdmin) {
-      // Create initial SYSADMIN user
+      // Create initial SYSADMIN user with hashed password
+      const hashedPassword = await hash('Adm1nP@ss123!', SALT_ROUNDS)
       await prisma.user.create({
         data: {
           username: 'sysadmin',
           email: 'sysadmin@nexus-gaming.com',
-          password: 'Adm1nP@ss123!', // This should be changed after first login
+          password: hashedPassword, // This should be changed after first login
           role: Role.SYSADMIN,
           isActive: true
         }
