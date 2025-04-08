@@ -17,9 +17,10 @@ import {
   Box,
   Text,
 } from '@chakra-ui/react'
-import { BiDotsVertical, BiEdit, BiTrash } from 'react-icons/bi'
+import { BiDotsVertical, BiEdit, BiTrash, BiLock } from 'react-icons/bi'
 import { Role } from '@prisma/client'
 import { useRouter } from 'next/navigation'
+import { useAuth } from '@/hooks/useAuth'
 import dayjs from '@/lib/dayjs'
 
 interface User {
@@ -63,6 +64,7 @@ const StatusBadge = ({ isActive }: { isActive: boolean }) => (
 
 export default function UsersTable({ users, onToggleStatus, onDelete }: UsersTableProps) {
   const router = useRouter()
+  const { user: currentUser } = useAuth()
 
   return (
     <Box overflowX="auto">
@@ -98,35 +100,45 @@ export default function UsersTable({ users, onToggleStatus, onDelete }: UsersTab
                 </Text>
               </Td>
               <Td>
-                <Menu>
-                  <MenuButton
-                    as={IconButton}
-                    icon={<BiDotsVertical />}
+                {user.role === 'SYSADMIN' && currentUser?.role !== 'SYSADMIN' ? (
+                  <IconButton
+                    icon={<BiLock />}
                     variant="ghost"
                     size="sm"
-                    aria-label="Actions"
+                    aria-label="Locked"
+                    isDisabled
                   />
-                  <MenuList>
-                    <MenuItem
-                      icon={<BiEdit />}
-                      onClick={() => router.push(`/admin/users/${user.id}/edit`)}
-                    >
-                      Edit
-                    </MenuItem>
-                    <MenuItem
-                      onClick={() => onToggleStatus(user.id, !user.isActive)}
-                    >
-                      {user.isActive ? 'Deactivate' : 'Activate'}
-                    </MenuItem>
-                    <MenuItem
-                      icon={<BiTrash />}
-                      onClick={() => onDelete(user.id)}
-                      color="red.500"
-                    >
-                      Delete
-                    </MenuItem>
-                  </MenuList>
-                </Menu>
+                ) : (
+                  <Menu>
+                    <MenuButton
+                      as={IconButton}
+                      icon={<BiDotsVertical />}
+                      variant="ghost"
+                      size="sm"
+                      aria-label="Actions"
+                    />
+                    <MenuList>
+                      <MenuItem
+                        icon={<BiEdit />}
+                        onClick={() => router.push(`/admin/users/${user.id}/edit`)}
+                      >
+                        Edit
+                      </MenuItem>
+                      <MenuItem
+                        onClick={() => onToggleStatus(user.id, !user.isActive)}
+                      >
+                        {user.isActive ? 'Deactivate' : 'Activate'}
+                      </MenuItem>
+                      <MenuItem
+                        icon={<BiTrash />}
+                        onClick={() => onDelete(user.id)}
+                        color="red.500"
+                      >
+                        Delete
+                      </MenuItem>
+                    </MenuList>
+                  </Menu>
+                )}
               </Td>
             </Tr>
           ))}
