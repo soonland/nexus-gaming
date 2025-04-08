@@ -174,7 +174,6 @@ export default function ArticlesPage() {
             {/* Filtres par statut */}
             <Box flex="2">
               <FormControl>
-                <FormLabel>Filtrer par statut</FormLabel>
                 <CheckboxGroup 
                   value={selectedStatuses}
                   onChange={(values) => setSelectedStatuses(values as ArticleStatus[])}
@@ -227,6 +226,7 @@ export default function ArticlesPage() {
                 <Tr>
                   <Th>Titre</Th>
                   <Th>Catégorie</Th>
+                  <Th>Auteur</Th>
                   <Th>Status</Th>
                   <Th>Date de publication</Th>
                   <Th width="150px">Actions</Th>
@@ -237,6 +237,7 @@ export default function ArticlesPage() {
                   <Tr key={article.id}>
                     <Td>{article.title}</Td>
                     <Td>{article.category.name}</Td>
+                    <Td>{article.user.username}</Td>
                     <Td>{getStatusBadge(article.status)}</Td>
                     <Td>
                       {article.publishedAt && (

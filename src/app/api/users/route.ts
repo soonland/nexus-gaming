@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/jwt'
 import { Prisma, Role } from '@prisma/client'
+import { hashPassword } from '@/lib/password'
 
 export async function GET(request: Request) {
   try {
@@ -121,16 +122,21 @@ export async function PUT(request: Request) {
       )
     }
 
-    // Update user
+    // Hash password if provided and update user
+    const updateData: Prisma.UserUpdateInput = {
+      username,
+      email,
+      role,
+      isActive
+    }
+
+    if (password) {
+      updateData.password = await hashPassword(password)
+    }
+
     const updatedUser = await prisma.user.update({
       where: { id },
-      data: {
-        username,
-        email,
-        ...(password ? { password } : {}), // Only update password if provided
-        role,
-        isActive
-      },
+      data: updateData,
       select: {
         id: true,
         username: true,
@@ -199,12 +205,13 @@ export async function POST(request: Request) {
       )
     }
 
-    // Create user
+    // Hash password and create user
+    const hashedPassword = await hashPassword(password)
     const user = await prisma.user.create({
       data: {
         username,
         email,
-        password, // Note: In a real app, you should hash the password
+        password: hashedPassword,
         role,
         isActive: true
       },

@@ -50,13 +50,14 @@ export default function EditArticlePage() {
     )
   }
 
-  const initialData: ArticleFormData = {
+  const initialData = {
     title: article.title,
     content: article.content,
     categoryId: article.category.id,
     gameIds: article.games.map(g => g.id),
     status: article.status,
     publishedAt: article.publishedAt ? dayjs(article.publishedAt).format('YYYY-MM-DD') : undefined,
+    user: article.user,
   }
 
   return (
