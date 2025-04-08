@@ -40,7 +40,7 @@ const getAvailableStatuses = (role?: Role): ArticleStatus[] => {
 };
 
 interface ArticleFormProps {
-  initialData?: Partial<IArticleForm>
+  initialData?: Partial<IArticleForm> & { user?: { username: string } }
   onSubmit: (data: IArticleForm) => Promise<void>
   isLoading?: boolean
   mode?: 'create' | 'edit'
@@ -118,6 +118,18 @@ export default function ArticleForm({
 
         <Stack spacing={6}>
           <HStack spacing={4} width="100%">
+            {/* Champ auteur en lecture seule */}
+            <FormControl flex="1">
+              <FormLabel>Auteur</FormLabel>
+              <Input
+                value={mode === 'create' ? user?.username : initialData?.user?.username}
+                isReadOnly
+                bg="gray.50"
+                _dark={{ bg: 'gray.700' }}
+              />
+              <FormHelperText>&nbsp;</FormHelperText>
+            </FormControl>
+
             <FormControl isInvalid={!!errors.categoryId} flex="1">
               <FormLabel>Catégorie</FormLabel>
               <Select
