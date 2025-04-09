@@ -11,6 +11,7 @@ import {
   Input,
   Button,
   useColorMode,
+  useColorModeValue,
   Switch,
   Text,
   Stack,
@@ -39,6 +40,7 @@ export default function ProfilePage() {
     confirm: '',
   })
   const [error, setError] = useState('')
+  const textColor = useColorModeValue('gray.600', 'gray.300')
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -102,46 +104,38 @@ export default function ProfilePage() {
         <Card>
           <CardBody>
             <VStack spacing={4} align="stretch">
-              {/* Informations sur l'expiration du mot de passe */}
-              <Box>
-                <Text fontWeight="medium" mb={2}>
-                  Sécurité du mot de passe
-                </Text>
-                {passwordExpiration && (
-                  <VStack align="stretch" spacing={3}>
-                    {(passwordExpiration.isExpired || passwordExpiration.isExpiringSoon) && (
-                      <Alert
-                        status={passwordExpiration.isExpired ? 'error' : 'warning'}
-                        variant="left-accent"
-                      >
-                        <AlertIcon />
-                        <Box>
-                          <AlertTitle>
-                            {passwordExpiration.isExpired
-                              ? 'Mot de passe expiré!'
-                              : 'Expiration imminente!'
-                            }
-                          </AlertTitle>
-                          <AlertDescription>
-                            {passwordExpiration.isExpired
-                              ? 'Votre mot de passe a expiré. Veuillez le changer immédiatement.'
-                              : `Votre mot de passe expirera dans ${passwordExpiration.daysUntilExpiration} jours. Changez-le dès maintenant pour éviter toute interruption.`
-                            }
-                          </AlertDescription>
-                        </Box>
-                      </Alert>
-                    )}
-                    <VStack align="stretch" spacing={1}>
-                      <Text fontSize="sm">
-                        Dernier changement: {dayjs(passwordExpiration.lastPasswordChange).format('DD/MM/YYYY')}
-                      </Text>
-                      <Text fontSize="sm">
-                        Expire le: {dayjs(passwordExpiration.expirationDate).format('DD/MM/YYYY')}
-                      </Text>
-                    </VStack>
-                  </VStack>
-                )}
-              </Box>
+              {/* Avertissement d'expiration du mot de passe */}
+              {passwordExpiration && (passwordExpiration.isExpired || passwordExpiration.isExpiringSoon) && (
+                <Alert
+                  status={passwordExpiration.isExpired ? 'error' : 'warning'}
+                  variant="left-accent"
+                >
+                  <AlertIcon />
+                  <Box>
+                    <AlertTitle>
+                      {passwordExpiration.isExpired
+                        ? 'Mot de passe expiré!'
+                        : 'Expiration imminente!'
+                      }
+                    </AlertTitle>
+                    <AlertDescription>
+                      <VStack align="stretch" spacing={1}>
+                        <Text color={textColor}>
+                          {passwordExpiration.isExpired
+                            ? 'Votre mot de passe a expiré. Veuillez le changer immédiatement.'
+                            : `Votre mot de passe expirera dans ${passwordExpiration.daysUntilExpiration} jours. Changez-le dès maintenant pour éviter toute interruption.`
+                          }
+                        </Text>
+                        <Text fontSize="sm" color={textColor}>
+                          Dernier changement: {dayjs(passwordExpiration.lastPasswordChange).format('DD/MM/YYYY')}
+                          <br />
+                          Expire le: {dayjs(passwordExpiration.expirationDate).format('DD/MM/YYYY')}
+                        </Text>
+                      </VStack>
+                    </AlertDescription>
+                  </Box>
+                </Alert>
+              )}
 
               <FormControl>
                 <FormLabel>Nom d&apos;utilisateur</FormLabel>

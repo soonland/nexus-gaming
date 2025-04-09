@@ -15,23 +15,15 @@ import {
   useColorModeValue,
   Text,
 } from '@chakra-ui/react'
-import { FiMenu, FiAlertTriangle } from 'react-icons/fi'
+import { FiMenu } from 'react-icons/fi'
 import { BiPowerOff, BiUser } from 'react-icons/bi'
-import { usePasswordExpiration } from '@/hooks/usePasswordExpiration'
+import { NotificationBell } from '@/components/common/NotificationBell'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
 import { Role } from '@prisma/client'
-import { keyframes } from '@emotion/react'
-
-const pulseAnimation = keyframes`
-  0% { transform: scale(0.95); opacity: 0.5; }
-  50% { transform: scale(1.05); opacity: 0.8; }
-  100% { transform: scale(0.95); opacity: 0.5; }
-`
 
 export function Navbar() {
   const { user, logout } = useAuth()
-  const passwordExpiration = usePasswordExpiration()
   const bgColor = useColorModeValue('white', 'gray.800')
   const borderColor = useColorModeValue('gray.200', 'gray.700')
 
@@ -97,48 +89,18 @@ export function Navbar() {
               </Menu>
             )}
 
+            {/* Notifications */}
+            {user && <NotificationBell />}
+
             {/* Menu utilisateur ou bouton de connexion */}
             {user ? (
               <Menu>
-                <MenuButton as={Button} variant="ghost" position="relative">
-                  <HStack>
-                    <Text>{user.username}</Text>
-                    {(passwordExpiration?.isExpiringSoon || passwordExpiration?.isExpired) && (
-                      <Box
-                        position="relative"
-                        color={passwordExpiration.isExpired ? "red.500" : "orange.500"}
-                      >
-                        <FiAlertTriangle size={18} />
-                        <Box
-                          position="absolute"
-                          top="-1"
-                          right="-1"
-                          w="2"
-                          h="2"
-                          bg={passwordExpiration.isExpired ? "red.500" : "orange.500"}
-                          borderRadius="full"
-                          animation={`${pulseAnimation} 2s infinite`}
-                        />
-                      </Box>
-                    )}
-                  </HStack>
+                <MenuButton as={Button} variant="ghost">
+                  <Text>{user.username}</Text>
                 </MenuButton>
                 <MenuList>
                   <MenuItem as={Link} href="/profile" icon={<BiUser />}>
                     Mon profil
-                    {(passwordExpiration?.isExpiringSoon || passwordExpiration?.isExpired) && (
-                      <Text
-                        as="span"
-                        ml={2}
-                        fontSize="sm"
-                        color="orange.500"
-                      >
-                        {passwordExpiration.isExpired 
-                          ? '(Mot de passe expiré)'
-                          : `(Expire dans ${passwordExpiration.daysUntilExpiration}j)`
-                        }
-                      </Text>
-                    )}
                   </MenuItem>
                   <MenuItem onClick={logout} color="red.500" icon={<BiPowerOff />}>
                     Déconnexion
