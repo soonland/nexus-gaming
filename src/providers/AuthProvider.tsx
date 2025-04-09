@@ -9,6 +9,7 @@ interface AuthContextType {
   isLoading: boolean
   login: (credentials: LoginCredentials) => Promise<void>
   logout: () => Promise<void>
+  refresh: () => Promise<void>
 }
 
 export const AuthContext = createContext<AuthContextType>({
@@ -16,6 +17,7 @@ export const AuthContext = createContext<AuthContextType>({
   isLoading: true,
   login: async () => {},
   logout: async () => {},
+  refresh: async () => {},
 })
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -56,26 +58,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [router])
 
+  const refresh = useCallback(async () => {
+    try {
+      const response = await fetch('/api/auth/me')
+      if (response.ok) {
+        const data = await response.json()
+        setUser(data.user)
+      }
+    } catch (error) {
+      console.error('Auth check error:', error)
+    }
+  }, [])
+
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await fetch('/api/auth/me')
-        if (response.ok) {
-          const data = await response.json()
-          setUser(data.user)
-        }
-      } catch (error) {
-        console.error('Auth check error:', error)
+        await refresh()
       } finally {
         setIsLoading(false)
       }
     }
 
     checkAuth()
-  }, [])
+  }, [refresh])
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, login, logout, refresh }}>
       {children}
     </AuthContext.Provider>
   )

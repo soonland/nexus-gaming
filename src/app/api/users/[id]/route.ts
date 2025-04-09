@@ -29,6 +29,8 @@ export async function GET(
         isActive: true,
         createdAt: true,
         updatedAt: true,
+        lastPasswordChange: true,
+        passwordExpiresAt: true,
         _count: {
           select: { articles: true }
         }
@@ -42,7 +44,16 @@ export async function GET(
       )
     }
 
-    return NextResponse.json({ user })
+    // Convert Date objects to ISO strings for API response
+    return NextResponse.json({
+      user: {
+        ...user,
+        lastPasswordChange: user.lastPasswordChange?.toISOString(),
+        passwordExpiresAt: user.passwordExpiresAt?.toISOString(),
+        createdAt: user.createdAt.toISOString(),
+        updatedAt: user.updatedAt.toISOString(),
+      }
+    })
   } catch (error) {
     console.error('Error fetching user:', error)
     return NextResponse.json(
@@ -132,9 +143,11 @@ export async function PUT(
       role: role as Role
     }
 
-    // Add hashed password if provided
+    // Add hashed password and update expiration if password is provided
     if (body.password) {
       updateData.password = await hashPassword(body.password)
+      updateData.lastPasswordChange = new Date()
+      updateData.passwordExpiresAt = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000) // 90 days
     }
 
     const user = await prisma.user.update({
@@ -147,11 +160,22 @@ export async function PUT(
         role: true,
         isActive: true,
         createdAt: true,
-        updatedAt: true
+        updatedAt: true,
+        lastPasswordChange: true,
+        passwordExpiresAt: true
       }
     })
 
-    return NextResponse.json({ user })
+    // Convert Date objects to ISO strings for API response
+    return NextResponse.json({
+      user: {
+        ...user,
+        lastPasswordChange: user.lastPasswordChange?.toISOString(),
+        passwordExpiresAt: user.passwordExpiresAt?.toISOString(),
+        createdAt: user.createdAt.toISOString(),
+        updatedAt: user.updatedAt.toISOString(),
+      }
+    })
   } catch (error) {
     console.error('Error updating user:', error)
     return NextResponse.json(
@@ -283,11 +307,22 @@ export async function PATCH(
         role: true,
         isActive: true,
         createdAt: true,
-        updatedAt: true
+        updatedAt: true,
+        lastPasswordChange: true,
+        passwordExpiresAt: true
       }
     })
 
-    return NextResponse.json({ user: updatedUser })
+    // Convert Date objects to ISO strings for API response
+    return NextResponse.json({
+      user: {
+        ...updatedUser,
+        lastPasswordChange: updatedUser.lastPasswordChange?.toISOString(),
+        passwordExpiresAt: updatedUser.passwordExpiresAt?.toISOString(),
+        createdAt: updatedUser.createdAt.toISOString(),
+        updatedAt: updatedUser.updatedAt.toISOString(),
+      }
+    })
   } catch (error) {
     console.error('Error updating user status:', error)
     return NextResponse.json(

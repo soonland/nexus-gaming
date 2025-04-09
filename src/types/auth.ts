@@ -6,6 +6,9 @@ export type AuthUser = {
   email: string
   username: string
   role: Role
+  isActive: boolean
+  lastPasswordChange: string
+  passwordExpiresAt: string
 }
 
 export interface LoginCredentials {

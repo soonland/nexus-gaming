@@ -17,7 +17,7 @@ import {
   Box,
   Text,
 } from '@chakra-ui/react'
-import { BiDotsVertical, BiEdit, BiTrash, BiLock } from 'react-icons/bi'
+import { BiDotsVertical, BiEdit, BiTrash, BiLock, BiPowerOff, BiCheckCircle } from 'react-icons/bi'
 import { Role } from '@prisma/client'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
@@ -125,7 +125,9 @@ export default function UsersTable({ users, onToggleStatus, onDelete }: UsersTab
                         Edit
                       </MenuItem>
                       <MenuItem
+                        icon={user.isActive ? <BiPowerOff /> : <BiCheckCircle />}
                         onClick={() => onToggleStatus(user.id, !user.isActive)}
+                        isDisabled={user.id === currentUser?.id}
                       >
                         {user.isActive ? 'Deactivate' : 'Activate'}
                       </MenuItem>
@@ -133,6 +135,7 @@ export default function UsersTable({ users, onToggleStatus, onDelete }: UsersTab
                         icon={<BiTrash />}
                         onClick={() => onDelete(user.id)}
                         color="red.500"
+                        isDisabled={user.id === currentUser?.id}
                       >
                         Delete
                       </MenuItem>

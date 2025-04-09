@@ -12,6 +12,7 @@ import {
 } from '@chakra-ui/react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import PasswordStrengthIndicator from '@/components/common/PasswordStrengthIndicator'
 import { Role } from '@prisma/client'
 import { useAuth } from '@/hooks/useAuth'
 
@@ -19,11 +20,12 @@ interface UserFormData {
   username: string
   email: string
   password?: string
+  confirmPassword?: string
   role: Role
 }
 
 interface UserFormProps {
-  initialData?: Omit<UserFormData, 'password'>
+  initialData?: Omit<UserFormData, 'password'> & { id?: string }
   onSubmit: (data: UserFormData) => Promise<void>
   isLoading: boolean
 }
@@ -36,6 +38,7 @@ export default function UserForm({ initialData, onSubmit, isLoading }: UserFormP
     username: initialData?.username || '',
     email: initialData?.email || '',
     password: '',
+    confirmPassword: '',
     role: initialData?.role || Role.USER,
   })
 
@@ -47,12 +50,29 @@ export default function UserForm({ initialData, onSubmit, isLoading }: UserFormP
       ...prev,
       [name]: value,
     }))
-    // Clear error when field is modified
-    if (errors[name as keyof UserFormData]) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: undefined,
-      }))
+
+    // Clear current field error
+    setErrors((prev) => ({
+      ...prev,
+      [name]: undefined,
+    }))
+
+    // Real-time password match validation
+    if (name === 'password' || name === 'confirmPassword') {
+      const otherField = name === 'password' ? 'confirmPassword' : 'password'
+      const otherValue = name === 'password' ? formData.confirmPassword : formData.password
+
+      if (value && otherValue && value !== otherValue) {
+        setErrors((prev) => ({
+          ...prev,
+          confirmPassword: 'Passwords do not match',
+        }))
+      } else {
+        setErrors((prev) => ({
+          ...prev,
+          confirmPassword: undefined,
+        }))
+      }
     }
   }
 
@@ -69,6 +89,8 @@ export default function UserForm({ initialData, onSubmit, isLoading }: UserFormP
     }
     if (!initialData && !formData.password) {
       newErrors.password = 'Password is required'
+    } else if (formData.password && formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match'
     }
 
     setErrors(newErrors)
@@ -130,6 +152,18 @@ export default function UserForm({ initialData, onSubmit, isLoading }: UserFormP
             onChange={handleChange}
           />
           <FormErrorMessage>{errors.password}</FormErrorMessage>
+          {formData.password && <PasswordStrengthIndicator password={formData.password} />}
+        </FormControl>
+
+        <FormControl isRequired={!initialData && !!formData.password} isInvalid={!!errors.confirmPassword}>
+          <FormLabel>Confirm Password</FormLabel>
+          <Input
+            name="confirmPassword"
+            type="password"
+            value={formData.confirmPassword}
+            onChange={handleChange}
+          />
+          <FormErrorMessage>{errors.confirmPassword}</FormErrorMessage>
         </FormControl>
 
         <FormControl isRequired>
@@ -138,7 +172,10 @@ export default function UserForm({ initialData, onSubmit, isLoading }: UserFormP
             name="role"
             value={formData.role}
             onChange={handleChange}
-            isDisabled={initialData?.role === 'SYSADMIN' && currentUser?.role !== 'SYSADMIN'}
+            isDisabled={
+              (initialData?.role === 'SYSADMIN' && currentUser?.role !== 'SYSADMIN') ||
+              initialData?.id === currentUser?.id
+            }
           >
             <option value={Role.USER}>User</option>
             <option value={Role.EDITOR}>Editor</option>
