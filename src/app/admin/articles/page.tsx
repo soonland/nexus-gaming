@@ -5,8 +5,6 @@ import {
   Box,
   Button,
   Container,
-  FormControl,
-  FormLabel,
   Heading,
   VStack,
   HStack,
@@ -21,10 +19,6 @@ import {
   InputGroup,
   InputLeftElement,
   Badge,
-  Select,
-  Checkbox,
-  CheckboxGroup,
-  Text,
   useToast,
   useColorModeValue,
   AlertDialog,
@@ -43,23 +37,60 @@ import {
   ExternalLinkIcon,
   CloseIcon,
 } from '@chakra-ui/icons'
+import { BiFilter } from 'react-icons/bi'
 import Link from 'next/link'
 import { useArticles } from '@/hooks/useArticles'
+import { useUsers } from '@/hooks/useUsers'
+import { useCategories } from '@/hooks/useCategories'
 import { DateDisplay } from '@/components/common/DateDisplay'
+import { FiltersPanel } from './_components/FiltersPanel'
 import type { ArticleStatus } from '@/types'
+
+const getStatusBadge = (status: ArticleStatus) => {
+  switch (status) {
+    case 'PUBLISHED':
+      return <Badge colorScheme="green">🟢 Publié</Badge>
+    case 'PENDING_APPROVAL':
+      return <Badge colorScheme="orange">🔶 En attente</Badge>
+    case 'ARCHIVED':
+      return <Badge colorScheme="gray">⚪ Archivé</Badge>
+    default:
+      return <Badge colorScheme="yellow">🔸 Brouillon</Badge>
+  }
+}
 
 export default function ArticlesPage() {
   const toast = useToast()
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedStatuses, setSelectedStatuses] = useState<ArticleStatus[]>([])
-  const { articles, deleteArticle, isLoading, isDeleting } = useArticles()
-  const borderColor = useColorModeValue('gray.200', 'gray.700')
-  const bgColor = useColorModeValue('white', 'gray.800')
   const deleteDialog = useDisclosure()
   const cancelRef = useRef<HTMLButtonElement>(null)
+
+  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedStatuses, setSelectedStatuses] = useState<ArticleStatus[]>([])
+  const [selectedUser, setSelectedUser] = useState<string>('')
+  const [selectedCategory, setSelectedCategory] = useState<string>('')
+  const [showFilters, setShowFilters] = useState<boolean>(false)
   const [articleToDelete, setArticleToDelete] = useState<string | null>(null)
 
-  // Stats des articles par statut
+  const borderColor = useColorModeValue('gray.200', 'gray.700')
+
+  const { articles, deleteArticle, isLoading, isDeleting } = useArticles()
+  const { data: users, isLoading: isLoadingUsers } = useUsers()
+  const { categories, isLoading: isLoadingCategories } = useCategories()
+
+  // Memoized values
+  const hasActiveFilters = useMemo(() => {
+    return searchTerm || selectedUser || selectedCategory || selectedStatuses.length > 0
+  }, [searchTerm, selectedUser, selectedCategory, selectedStatuses])
+
+  const activeFiltersCount = useMemo(() => (
+    [
+      searchTerm ? 1 : 0,
+      selectedUser ? 1 : 0,
+      selectedCategory ? 1 : 0,
+      selectedStatuses.length
+    ].reduce((a, b) => a + b, 0)
+  ), [searchTerm, selectedUser, selectedCategory, selectedStatuses])
+
   const statusCounts = useMemo(() => {
     const initialCounts = {
       DRAFT: 0,
@@ -74,7 +105,6 @@ export default function ArticlesPage() {
     }, { ...initialCounts })
   }, [articles])
 
-  // Filtrage des articles
   const filteredArticles = useMemo(() => {
     if (!articles) return []
     
@@ -86,10 +116,19 @@ export default function ArticlesPage() {
         article.games.some(game => game.title.toLowerCase().includes(searchString))
       
       const matchesStatus = selectedStatuses.length === 0 || selectedStatuses.includes(article.status)
+      const matchesUser = !selectedUser || article.user.id === selectedUser
+      const matchesCategory = !selectedCategory || article.category.id === selectedCategory
       
-      return matchesSearch && matchesStatus
+      return matchesSearch && matchesStatus && matchesUser && matchesCategory
     })
-  }, [articles, searchTerm, selectedStatuses])
+  }, [articles, searchTerm, selectedStatuses, selectedUser, selectedCategory])
+
+  const handleResetFilters = () => {
+    setSearchTerm('')
+    setSelectedUser('')
+    setSelectedCategory('')
+    setSelectedStatuses([])
+  }
 
   const handleDeleteClick = (id: string) => {
     setArticleToDelete(id)
@@ -118,19 +157,6 @@ export default function ArticlesPage() {
     }
   }
 
-  const getStatusBadge = (status: ArticleStatus) => {
-    switch (status) {
-      case 'PUBLISHED':
-        return <Badge colorScheme="green">🟢 Publié</Badge>
-      case 'PENDING_APPROVAL':
-        return <Badge colorScheme="orange">🔶 En attente</Badge>
-      case 'ARCHIVED':
-        return <Badge colorScheme="gray">⚪ Archivé</Badge>
-      default:
-        return <Badge colorScheme="yellow">🔸 Brouillon</Badge>
-    }
-  }
-
   return (
     <Container maxW="container.xl" py={8}>
       <VStack spacing={8} align="stretch">
@@ -147,80 +173,60 @@ export default function ArticlesPage() {
         </HStack>
 
         <Box>
-          <HStack mb={4} spacing={4} align="flex-start">
-            <Box flex="1">
-              <HStack>
-                <InputGroup maxW="sm">
-                  <InputLeftElement pointerEvents="none">
-                    <SearchIcon color="gray.300" />
-                  </InputLeftElement>
-                  <Input
-                    placeholder="Rechercher..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                </InputGroup>
-                {searchTerm && (
-                  <IconButton
-                    icon={<CloseIcon />}
-                    aria-label="Clear search"
-                    size="sm"
-                    onClick={() => setSearchTerm('')}
-                  />
-                )}
-              </HStack>
-            </Box>
+          <HStack mb={4} spacing={4}>
+            <HStack flex="1" spacing={4}>
+              <InputGroup maxW="sm">
+                <InputLeftElement pointerEvents="none">
+                  <SearchIcon color="gray.300" />
+                </InputLeftElement>
+                <Input
+                  placeholder="Rechercher..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </InputGroup>
+              {searchTerm && (
+                <IconButton
+                  icon={<CloseIcon />}
+                  aria-label="Clear search"
+                  size="sm"
+                  onClick={() => setSearchTerm('')}
+                />
+              )}
+            </HStack>
 
-            {/* Filtres par statut */}
-            <Box flex="2">
-              <FormControl>
-                <CheckboxGroup 
-                  value={selectedStatuses}
-                  onChange={(values) => setSelectedStatuses(values as ArticleStatus[])}
-                >
-                  <HStack spacing={4} wrap="wrap">
-                    <Checkbox 
-                      value="DRAFT"
-                      colorScheme="yellow"
-                    >
-                      <HStack>
-                        <Text>🔸 Brouillon ({statusCounts.DRAFT})</Text>
-                      </HStack>
-                    </Checkbox>
-                    
-                    <Checkbox 
-                      value="PENDING_APPROVAL"
-                      colorScheme="orange"
-                    >
-                      <HStack>
-                        <Text>🔶 En attente ({statusCounts.PENDING_APPROVAL})</Text>
-                      </HStack>
-                    </Checkbox>
-                    
-                    <Checkbox 
-                      value="PUBLISHED"
-                      colorScheme="green"
-                    >
-                      <HStack>
-                        <Text>🟢 Publié ({statusCounts.PUBLISHED})</Text>
-                      </HStack>
-                    </Checkbox>
-                    
-                    <Checkbox 
-                      value="ARCHIVED"
-                      colorScheme="gray"
-                    >
-                      <HStack>
-                        <Text>⚪ Archivé ({statusCounts.ARCHIVED})</Text>
-                      </HStack>
-                    </Checkbox>
-                  </HStack>
-                </CheckboxGroup>
-              </FormControl>
-            </Box>
+            <HStack>
+              <Button
+                leftIcon={<BiFilter />}
+                variant="outline"
+                onClick={() => setShowFilters(prev => !prev)}
+                colorScheme={hasActiveFilters ? "blue" : "gray"}
+              >
+                Filtres {hasActiveFilters && `(${activeFiltersCount})`}
+              </Button>
+            </HStack>
           </HStack>
 
-          <Box overflowX="auto" borderWidth="1px" borderColor={borderColor} rounded="lg">
+          <FiltersPanel 
+            isVisible={showFilters}
+            selectedUser={selectedUser}
+            selectedCategory={selectedCategory}
+            selectedStatuses={selectedStatuses}
+            users={users}
+            categories={categories ?? []}
+            statusCounts={statusCounts}
+            hasActiveFilters={Boolean(hasActiveFilters)}
+            filteredCount={filteredArticles.length}
+            totalCount={articles?.length || 0}
+            isLoadingUsers={isLoadingUsers}
+            isLoadingCategories={isLoadingCategories}
+            onUserChange={setSelectedUser}
+            onCategoryChange={setSelectedCategory}
+            onStatusesChange={setSelectedStatuses}
+            onReset={handleResetFilters}
+          />
+
+          <Box mt={4} overflowX="auto" borderWidth="1px" borderColor={borderColor} rounded="lg">
             <Table variant="simple">
               <Thead>
                 <Tr>
@@ -271,7 +277,6 @@ export default function ArticlesPage() {
                           isLoading={isDeleting}
                         />
                       </HStack>
-
                     </Td>
                   </Tr>
                 ))}
