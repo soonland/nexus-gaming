@@ -26,4 +26,7 @@ export interface JWTPayload extends JoseJWTPayload {
   email: string
   username: string
   role: string
+  isActive: boolean
+  lastPasswordChange: string
+  passwordExpiresAt: string
 }
