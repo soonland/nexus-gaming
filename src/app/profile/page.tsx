@@ -21,8 +21,12 @@ import {
   AlertIcon,
   AlertTitle,
   AlertDescription,
+  Select,
   Divider,
 } from '@chakra-ui/react'
+import { useTheme } from '@/providers/ThemeProvider'
+import { ThemeSelector } from '@/components/theme/ThemeSelector'
+import type { ThemeName } from '@/theme'
 import { useState } from 'react'
 import { SocialProfilesSection } from '@/components/profile/SocialProfilesSection'
 import { useAuth } from '@/hooks/useAuth'
@@ -33,6 +37,7 @@ import dayjs from '@/lib/dayjs'
 export default function ProfilePage() {
   const { user, refresh } = useAuth()
   const { colorMode, toggleColorMode } = useColorMode()
+  const { theme, changeTheme } = useTheme()
   const toast = useToast()
   const passwordExpiration = usePasswordExpiration()
   const [isLoading, setIsLoading] = useState(false)
@@ -166,15 +171,25 @@ export default function ProfilePage() {
             <VStack spacing={4} align="stretch">
               <Heading size="md">Préférences</Heading>
               
-              <FormControl display="flex" alignItems="center">
-                <FormLabel mb={0}>
-                  Thème {colorMode === 'dark' ? 'sombre' : 'clair'}
-                </FormLabel>
-                <Switch
-                  isChecked={colorMode === 'dark'}
-                  onChange={toggleColorMode}
-                />
-              </FormControl>
+              <Stack spacing={4}>
+                <FormControl display="flex" alignItems="center">
+                  <FormLabel mb={0}>
+                    Mode {colorMode === 'dark' ? 'sombre' : 'clair'}
+                  </FormLabel>
+                  <Switch
+                    isChecked={colorMode === 'dark'}
+                    onChange={toggleColorMode}
+                  />
+                </FormControl>
+
+                <FormControl>
+                  <FormLabel>Thème de couleur</FormLabel>
+                  <ThemeSelector
+                    currentTheme={theme}
+                    onThemeChange={changeTheme}
+                  />
+                </FormControl>
+              </Stack>
             </VStack>
           </CardBody>
         </Card>
