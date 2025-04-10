@@ -67,6 +67,9 @@ export function Navbar() {
                   aria-label="Menu d'administration"
                 />
                 <MenuList>
+                  <MenuItem as={Link} href="/admin/announcements">
+                    Annonces
+                  </MenuItem>
                   <MenuItem as={Link} href="/admin/users">
                     Utilisateurs
                   </MenuItem>
