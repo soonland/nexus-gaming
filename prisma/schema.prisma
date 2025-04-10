@@ -7,18 +7,47 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum SocialPlatform {
+  // Gaming Platforms
+  PSN
+  XBOX
+  STEAM
+  NINTENDO
+  EPIC
+  BATTLENET
+  // Social Networks
+  TWITCH
+  TWITTER
+  INSTAGRAM
+  TIKTOK
+  YOUTUBE
+}
+
+model UserSocialProfile {
+  id        String        @id @default(uuid())
+  platform  SocialPlatform
+  username  String
+  url       String?
+  user      User          @relation(fields: [userId], references: [id])
+  userId    String
+
+  @@index([userId])
+  @@unique([userId, platform])
+}
+
 model User {
   id                String    @id @default(uuid())
   username          String    @unique
-  email             String    @unique
-  password          String
-  role              Role      @default(USER)
-  isActive          Boolean   @default(true)
-  articles          Article[]
+  email            String    @unique
+  password         String
+  role             Role      @default(USER)
+  isActive         Boolean   @default(true)
+  articles         Article[]
+  socialProfiles   UserSocialProfile[]
   lastPasswordChange DateTime  @default(now())
   passwordExpiresAt  DateTime  @default(dbgenerated("now() + interval '90 days'"))
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 }
 
 model Company {

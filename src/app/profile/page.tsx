@@ -21,8 +21,10 @@ import {
   AlertIcon,
   AlertTitle,
   AlertDescription,
+  Divider,
 } from '@chakra-ui/react'
 import { useState } from 'react'
+import { SocialProfilesSection } from '@/components/profile/SocialProfilesSection'
 import { useAuth } from '@/hooks/useAuth'
 import { usePasswordExpiration } from '@/hooks/usePasswordExpiration'
 import PasswordStrengthIndicator from '@/components/common/PasswordStrengthIndicator'
@@ -146,6 +148,15 @@ export default function ProfilePage() {
                 <FormLabel>Email</FormLabel>
                 <Input value={user.email} isReadOnly />
               </FormControl>
+            </VStack>
+          </CardBody>
+        </Card>
+
+        <Card>
+          <CardBody>
+            <VStack spacing={4} align="stretch">
+              <Heading size="md">Profils sociaux</Heading>
+              <SocialProfilesSection />
             </VStack>
           </CardBody>
         </Card>
