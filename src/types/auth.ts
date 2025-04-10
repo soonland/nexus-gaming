@@ -6,6 +6,9 @@ export type AuthUser = {
   email: string
   username: string
   role: Role
+  isActive: boolean
+  lastPasswordChange: string
+  passwordExpiresAt: string
 }
 
 export interface LoginCredentials {
@@ -23,4 +26,7 @@ export interface JWTPayload extends JoseJWTPayload {
   email: string
   username: string
   role: string
+  isActive: boolean
+  lastPasswordChange: string
+  passwordExpiresAt: string
 }

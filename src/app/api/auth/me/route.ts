@@ -22,6 +22,9 @@ export async function GET() {
         email: true,
         username: true,
         role: true,
+        isActive: true,
+        lastPasswordChange: true,
+        passwordExpiresAt: true,
       },
     })
 
@@ -32,7 +35,14 @@ export async function GET() {
       )
     }
 
-    return NextResponse.json<{ user: AuthUser }>({ user })
+    // Convert Date objects to ISO strings for API response
+    return NextResponse.json<{ user: AuthUser }>({
+      user: {
+        ...user,
+        lastPasswordChange: user.lastPasswordChange.toISOString(),
+        passwordExpiresAt: user.passwordExpiresAt.toISOString(),
+      }
+    })
   } catch (error) {
     console.error('Auth check error:', error)
     return NextResponse.json(

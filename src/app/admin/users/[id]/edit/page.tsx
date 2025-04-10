@@ -52,6 +52,7 @@ export default function EditUserPage() {
         <Heading size="lg">Edit User</Heading>
         <UserForm
           initialData={{
+            id: data.user.id,
             username: data.user.username,
             email: data.user.email,
             role: data.user.role,

@@ -19,6 +19,9 @@ export async function POST(request: NextRequest) {
         username: true,
         password: true,
         role: true,
+        isActive: true,
+        lastPasswordChange: true,
+        passwordExpiresAt: true,
       },
     })
 
@@ -37,7 +40,22 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { password: _, ...userWithoutPassword } = user
+    // Check if user is active
+    if (!user.isActive) {
+      return NextResponse.json(
+        { error: 'Account is inactive' },
+        { status: 403 }
+      )
+    }
+
+    // Convert dates to ISO strings
+    const userWithFormattedDates = {
+      ...user,
+      lastPasswordChange: user.lastPasswordChange.toISOString(),
+      passwordExpiresAt: user.passwordExpiresAt.toISOString(),
+    }
+
+    const { password: _, ...userWithoutPassword } = userWithFormattedDates
     const token = await signToken(userWithoutPassword)
 
     const response = NextResponse.json<AuthResponse>({

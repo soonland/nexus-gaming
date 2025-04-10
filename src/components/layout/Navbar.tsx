@@ -13,15 +13,17 @@ import {
   IconButton,
   useColorMode,
   useColorModeValue,
+  Text,
 } from '@chakra-ui/react'
-import { FiMenu, FiMoon, FiSun } from 'react-icons/fi'
+import { FiMenu } from 'react-icons/fi'
+import { BiPowerOff, BiUser } from 'react-icons/bi'
+import { NotificationBell } from '@/components/common/NotificationBell'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
 import { Role } from '@prisma/client'
 
 export function Navbar() {
   const { user, logout } = useAuth()
-  const { toggleColorMode, colorMode } = useColorMode()
   const bgColor = useColorModeValue('white', 'gray.800')
   const borderColor = useColorModeValue('gray.200', 'gray.700')
 
@@ -87,19 +89,24 @@ export function Navbar() {
               </Menu>
             )}
 
-            {/* Bouton pour basculer le thème */}
-            <IconButton
-              icon={colorMode === 'light' ? <FiMoon /> : <FiSun />}
-              onClick={toggleColorMode}
-              variant="ghost"
-              aria-label="Toggle color mode"
-            />
+            {/* Notifications */}
+            {user && <NotificationBell />}
 
-            {/* Boutons de connexion/déconnexion */}
+            {/* Menu utilisateur ou bouton de connexion */}
             {user ? (
-              <Button onClick={logout} variant="ghost">
-                Déconnexion
-              </Button>
+              <Menu>
+                <MenuButton as={Button} variant="ghost">
+                  <Text>{user.username}</Text>
+                </MenuButton>
+                <MenuList>
+                  <MenuItem as={Link} href="/profile" icon={<BiUser />}>
+                    Mon profil
+                  </MenuItem>
+                  <MenuItem onClick={logout} color="red.500" icon={<BiPowerOff />}>
+                    Déconnexion
+                  </MenuItem>
+                </MenuList>
+              </Menu>
             ) : (
               <Button as={Link} href="/login" variant="ghost">
                 Connexion
