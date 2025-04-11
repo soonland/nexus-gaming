@@ -48,6 +48,7 @@ model User {
   passwordExpiresAt  DateTime  @default(dbgenerated("now() + interval '90 days'"))
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
+  announcements    AdminAnnouncement[]
 }
 
 model Company {
@@ -123,4 +124,23 @@ enum ArticleStatus {
   PENDING_APPROVAL
   PUBLISHED
   ARCHIVED
+}
+
+enum AnnouncementType {
+  INFO
+  ATTENTION
+  URGENT
+}
+
+model AdminAnnouncement {
+  id          String    @id @default(uuid())
+  message     String
+  type        AnnouncementType
+  isActive    Boolean   @default(true)
+  expiresAt   DateTime?
+  createdAt   DateTime  @default(now())
+  createdBy   User      @relation(fields: [createdById], references: [id])
+  createdById String
+
+  @@index([createdById])
 }
