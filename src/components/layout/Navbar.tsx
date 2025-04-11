@@ -21,6 +21,7 @@ import { NotificationBell } from '@/components/common/NotificationBell'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
 import { Role } from '@prisma/client'
+import { canManageAnnouncements } from '@/lib/permissions'
 
 export function Navbar() {
   const { user, logout } = useAuth()
@@ -28,6 +29,7 @@ export function Navbar() {
   const borderColor = useColorModeValue('gray.200', 'gray.700')
 
   const isAdmin = user && user.role !== Role.USER
+  const hasAnnouncementAccess = canManageAnnouncements(user?.role)
 
   return (
     <Box
@@ -67,9 +69,11 @@ export function Navbar() {
                   aria-label="Menu d'administration"
                 />
                 <MenuList>
-                  <MenuItem as={Link} href="/admin/announcements">
-                    Annonces
-                  </MenuItem>
+                  {hasAnnouncementAccess && (
+                    <MenuItem as={Link} href="/admin/announcements">
+                      Annonces
+                    </MenuItem>
+                  )}
                   <MenuItem as={Link} href="/admin/users">
                     Utilisateurs
                   </MenuItem>

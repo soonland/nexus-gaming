@@ -4,51 +4,50 @@ import { useAdminAnnouncement, AdminAnnouncement } from '@/hooks/useAdminAnnounc
 import {
   Alert,
   AlertIcon,
-  AlertTitle,
   Badge,
   Box,
-  CloseButton,
-  Collapse,
+  Button,
   Container,
   Flex,
   HStack,
   Icon,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
   Text,
   VStack,
+  useDisclosure,
 } from '@chakra-ui/react'
 import { AnnouncementType } from '@prisma/client'
-import { FiChevronDown, FiChevronUp } from 'react-icons/fi'
-import { useState } from 'react'
+import { FiList, FiInfo, FiAlertCircle, FiAlertTriangle } from 'react-icons/fi'
 import { useAuth } from '@/hooks/useAuth'
 
 const typeToAlertProps = {
   [AnnouncementType.INFO]: {
-    status: 'info',
     colorScheme: 'blue',
+    status: 'info',
     label: 'Info',
-    accent: 'blue.400'
+    accent: 'blue.400',
+    icon: FiInfo
   },
   [AnnouncementType.ATTENTION]: {
-    status: 'warning',
     colorScheme: 'orange',
+    status: 'warning',
     label: 'Attention',
-    accent: 'orange.400'
+    accent: 'orange.400',
+    icon: FiAlertCircle
   },
   [AnnouncementType.URGENT]: {
-    status: 'error',
     colorScheme: 'red',
+    status: 'error',
     label: 'Urgent',
-    accent: 'red.400'
+    accent: 'red.400',
+    icon: FiAlertTriangle
   },
 } as const
-
-const formatDate = (date: string) => {
-  return new Date(date).toLocaleDateString('fr-FR', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
-}
 
 function AnnouncementSummary({ announcements }: { announcements: AdminAnnouncement[] }) {
   const counts = Object.values(AnnouncementType).reduce((acc, type) => ({
@@ -67,8 +66,6 @@ function AnnouncementSummary({ announcements }: { announcements: AdminAnnounceme
             color="white"
             p="1"
             fontWeight="medium"
-            transition="all 0.2s"
-            _hover={{ transform: 'scale(1.05)', opacity: 0.9 }}
           >
             {count} {typeToAlertProps[type].label}
           </Badge>
@@ -79,93 +76,94 @@ function AnnouncementSummary({ announcements }: { announcements: AdminAnnounceme
 }
 
 export function AdminAnnouncementBanner() {
-  const { announcements = [], updateAnnouncement } = useAdminAnnouncement()
+  const { announcements = [] } = useAdminAnnouncement()
   const { isLoading } = useAuth()
-  const [isExpanded, setIsExpanded] = useState(true)
+  const { isOpen, onOpen, onClose } = useDisclosure()
 
   if (isLoading) {
     return null
   }
 
-  if (!announcements.length) {
+  // Ne montrer que les annonces actives
+  const activeAnnouncements = announcements.filter(a => a.isActive)
+  if (!activeAnnouncements.length) {
     return null
   }
 
-  const handleClose = (id: string) => {
-    updateAnnouncement.mutate({ id, isActive: false })
-  }
-
-  const headerIconColor = 'white'
-
   return (
-    <Container maxW="container.xl">
-      <Box 
-        borderRadius="lg" 
-        bg="white"
-        mb={4}
-        borderWidth="1px"
-        borderColor="gray.200"
-        overflow="hidden"
-      >
-        <Flex
-          p={4}
-          onClick={() => setIsExpanded(!isExpanded)}
-          cursor="pointer"
-          alignItems="center"
-          justifyContent="space-between"
+    <>
+      <Container maxW="container.xl">
+        <Box
+          height="40px"
           bg="blue.500"
           color="white"
-          transition="background-color 0.2s"
-          _hover={{ bg: 'blue.600' }}
-          borderBottomWidth={isExpanded ? "1px" : "0"}
-          borderBottomColor="blue.400"
+          mb={4}
+          borderRadius="lg"
+          overflow="hidden"
         >
-          <AnnouncementSummary announcements={announcements} />
-          <Icon 
-            as={isExpanded ? FiChevronUp : FiChevronDown}
-            color={headerIconColor}
-          />
-        </Flex>
+          <Flex
+            height="100%"
+            px={4}
+            alignItems="center"
+            justifyContent="space-between"
+          >
+            <AnnouncementSummary announcements={activeAnnouncements} />
+            <Button
+              size="sm"
+              variant="ghost"
+              color="white"
+              leftIcon={<FiList />}
+              onClick={onOpen}
+              _hover={{ bg: 'whiteAlpha.200' }}
+            >
+              Voir les annonces
+            </Button>
+          </Flex>
+        </Box>
+      </Container>
 
-        <Collapse in={isExpanded}>
-          <VStack spacing={2} p={4}>
-            {announcements.map(announcement => (
-              <Alert
-                key={announcement.id}
-                status={typeToAlertProps[announcement.type].status as any}
-                width="100%"
-                variant="left-accent"
-                bg="whiteAlpha.900"
-                color="gray.700"
-                borderRadius="md"
-                boxShadow="sm"
-                borderStartWidth="3px"
-                borderStartColor={typeToAlertProps[announcement.type].accent}
-                _hover={{ bg: 'gray.50' }}
-              >
-                <AlertIcon color={typeToAlertProps[announcement.type].accent} />
-                <Box flex="1">
-                  <AlertTitle>{announcement.message}</AlertTitle>
-                  <Text fontSize="sm" color="gray.600">
-                    Par {announcement.createdBy.username}
-                    {announcement.expiresAt && (
-                      <> • Expire le {formatDate(announcement.expiresAt)}</>
-                    )}
-                  </Text>
-                </Box>
-                <CloseButton
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleClose(announcement.id)
-                  }}
-                  transition="all 0.2s"
-                  _hover={{ bg: 'blackAlpha.100' }}
-                />
-              </Alert>
-            ))}
-          </VStack>
-        </Collapse>
-      </Box>
-    </Container>
+      <Modal isOpen={isOpen} onClose={onClose} size="2xl">
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Annonces actives</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody p={0}>
+            <VStack spacing={0} width="100%">
+              {activeAnnouncements.map(announcement => (
+                <Alert
+                  key={announcement.id}
+                  variant="left-accent"
+                  status={typeToAlertProps[announcement.type].status}
+                  borderLeftColor={typeToAlertProps[announcement.type].accent}
+                  bg="white"
+                  transition="background-color 0.2s"
+                  _hover={{ bg: 'gray.50' }}
+                  p={6}
+                >
+                  <Box 
+                    fontSize="xl" 
+                    color={typeToAlertProps[announcement.type].accent}
+                    mr={4}
+                    display="flex"
+                    alignItems="flex-start"
+                    mt={0.5}
+                  >
+                    <Icon as={typeToAlertProps[announcement.type].icon} />
+                  </Box>
+                  <Box flex="1">
+                    <Text fontSize="md" fontWeight="medium">
+                      {announcement.message}
+                    </Text>
+                    <Text fontSize="sm" color="gray.600" mt={2}>
+                      Par {announcement.createdBy.username}
+                    </Text>
+                  </Box>
+                </Alert>
+              ))}
+            </VStack>
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+    </>
   )
 }
