@@ -39,7 +39,8 @@ export default function GameSelector({
   error,
 }: GameSelectorProps) {
   const { isOpen, onOpen, onClose } = useDisclosure()
-  const { games = [] } = useGames()
+  const { data } = useGames({ limit: '100' }) // Get all games for selector
+  const games = data?.games || []
   const [tempSelectedIds, setTempSelectedIds] = useState(selectedIds)
   const [searchTerm, setSearchTerm] = useState('')
 
@@ -71,8 +72,8 @@ export default function GameSelector({
   }
 
   const selectedGames = useMemo(() => 
-    games.filter(game => selectedIds.includes(game.id)),
-    [games, selectedIds]
+    (data?.games || []).filter(game => selectedIds.includes(game.id)),
+    [data?.games, selectedIds]
   )
 
   const filteredGames = useMemo(() => {

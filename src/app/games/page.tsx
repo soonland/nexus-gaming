@@ -13,7 +13,8 @@ import { GameCard } from '@/components/games/GameCard'
 import { useGames } from '@/hooks/useGames'
 
 export default function GamesPage() {
-  const { games, isLoading, error } = useGames()
+  const { data, isLoading, error } = useGames({ limit: '100' })
+  const games = data?.games || []
 
   if (error) {
     return (
@@ -34,7 +35,7 @@ export default function GamesPage() {
       <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
         {isLoading
           ? [...Array(6)].map((_, i) => <Skeleton key={i} height="300px" />)
-          : games?.map((game) => <GameCard key={game.id} game={game} />)}
+          : games.map((game) => <GameCard key={game.id} game={game} />)}
       </SimpleGrid>
     </Container>
   )

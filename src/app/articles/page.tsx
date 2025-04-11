@@ -14,7 +14,11 @@ import { useArticles } from '@/hooks/useArticles'
 import type { ArticleData } from '@/types'
 
 export default function ArticlesPage() {
-  const { articles, isLoading, error } = useArticles()
+  const { data, isLoading, error } = useArticles({
+    limit: '100',
+    status: 'PUBLISHED'
+  })
+  const articles = data?.articles || []
   
   if (error) {
     return (
