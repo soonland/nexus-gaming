@@ -118,13 +118,6 @@ export function ChakraDateTimePicker({
         '.react-datepicker__day': {
           color: textColor,
         },
-        '.react-datepicker__time-container': {
-          borderLeft: '1px solid',
-          borderColor: borderColor,
-        },
-        '.react-datepicker__time-container .react-datepicker__time': {
-          backgroundColor: bgColor,
-        },
         // Hover states
         '.react-datepicker__time-container .react-datepicker__time-box ul.react-datepicker__time-list li.react-datepicker__time-list-item:hover': {
           backgroundColor: hoverBgColor,
@@ -144,7 +137,8 @@ export function ChakraDateTimePicker({
         
         // Time container
         '.react-datepicker__time-container': {
-          borderLeftColor: borderColor,
+          borderLeft: '1px solid',
+          borderColor: borderColor,
         },
         '.react-datepicker__time': {
           backgroundColor: bgColor,
@@ -154,12 +148,12 @@ export function ChakraDateTimePicker({
           '&:hover': {
             backgroundColor: hoverBgColor,
           },
-          '&--selected': {
+        },
+        '.react-datepicker__time-container .react-datepicker__time .react-datepicker__time-box ul.react-datepicker__time-list li.react-datepicker__time-list-item--selected': {
+          backgroundColor: selectedBgColor,
+          color: 'white',
+          '&:hover': {
             backgroundColor: selectedBgColor,
-            color: 'white',
-            '&:hover': {
-              backgroundColor: selectedBgColor,
-            },
           },
         },
         '.react-datepicker__input-container input': {
