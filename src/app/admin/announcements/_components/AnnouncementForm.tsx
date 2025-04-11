@@ -6,7 +6,6 @@ import {
   FormControl,
   FormLabel,
   FormErrorMessage,
-  Input,
   Stack,
   Textarea,
   HStack,
@@ -14,13 +13,14 @@ import {
   useToast,
 } from '@chakra-ui/react'
 import { useRouter } from 'next/navigation'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { AnnouncementType } from '@prisma/client'
+import { ChakraDateTimePicker } from '@/components/common/ChakraDateTimePicker'
 
 interface AnnouncementForm {
   message: string
   type: AnnouncementType
-  expiresAt?: string
+  expiresAt?: Date | null
   isActive: boolean
 }
 
@@ -43,12 +43,13 @@ export default function AnnouncementForm({
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
   } = useForm<AnnouncementForm>({
     defaultValues: {
       message: initialData?.message || '',
       type: initialData?.type || AnnouncementType.INFO,
-      expiresAt: initialData?.expiresAt || '',
+      expiresAt: initialData?.expiresAt ? new Date(initialData.expiresAt) : null,
       isActive: initialData?.isActive ?? true,
     },
   })
@@ -101,10 +102,17 @@ export default function AnnouncementForm({
 
         <FormControl>
           <FormLabel>Date d'expiration (optionnelle)</FormLabel>
-          <Input
-            {...register('expiresAt')}
-            type="datetime-local"
-            min={new Date().toISOString().slice(0, 16)}
+          <Controller
+            name="expiresAt"
+            control={control}
+            render={({ field: { onChange, value } }) => (
+              <ChakraDateTimePicker
+                selectedDate={value || null}
+                onChange={(date: Date | null) => onChange(date)}
+                minDate={new Date()}
+                placeholderText="Sélectionner une date d'expiration"
+              />
+            )}
           />
         </FormControl>
 

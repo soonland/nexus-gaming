@@ -5,7 +5,6 @@ import {
   Button,
   FormControl,
   FormLabel,
-  Input,
   Select,
   VStack,
   Textarea,
@@ -14,6 +13,7 @@ import {
 import { AnnouncementType } from '@prisma/client'
 import { useState } from 'react'
 import { useAuth } from '@/hooks/useAuth'
+import { ChakraDateTimePicker } from '@/components/common/ChakraDateTimePicker'
 
 export function CreateAnnouncementForm() {
   const { createAnnouncement } = useAdminAnnouncement()
@@ -21,7 +21,7 @@ export function CreateAnnouncementForm() {
   const toast = useToast()
   const [message, setMessage] = useState('')
   const [type, setType] = useState<AnnouncementType>(AnnouncementType.INFO)
-  const [expiresAt, setExpiresAt] = useState('')
+  const [expiresAt, setExpiresAt] = useState<Date | null>(null)
 
   if (authLoading) {
     return null
@@ -34,7 +34,7 @@ export function CreateAnnouncementForm() {
       await createAnnouncement.mutateAsync({
         message,
         type,
-        expiresAt: expiresAt || undefined,
+        expiresAt: expiresAt?.toISOString() || undefined,
       })
 
       toast({
@@ -46,7 +46,7 @@ export function CreateAnnouncementForm() {
       // Reset form
       setMessage('')
       setType(AnnouncementType.INFO)
-      setExpiresAt('')
+      setExpiresAt(null)
     } catch (error) {
       toast({
         title: "Erreur lors de la création de l'annonce",
@@ -79,11 +79,11 @@ export function CreateAnnouncementForm() {
 
         <FormControl>
           <FormLabel>Date d'expiration (optionnelle)</FormLabel>
-          <Input
-            type="datetime-local"
-            value={expiresAt}
-            onChange={(e) => setExpiresAt(e.target.value)}
-            min={new Date().toISOString().slice(0, 16)}
+          <ChakraDateTimePicker
+            selectedDate={expiresAt}
+            onChange={setExpiresAt}
+            minDate={new Date()}
+            placeholderText="Sélectionner une date d'expiration"
           />
         </FormControl>
 
