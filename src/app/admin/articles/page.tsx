@@ -262,6 +262,8 @@ export default function ArticlesPage() {
                           aria-label="Voir"
                           size="sm"
                           colorScheme="green"
+                          target="_blank"
+                          rel="noopener noreferrer"
                         />
                         <IconButton
                           icon={<DeleteIcon />}

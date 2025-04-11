@@ -2,17 +2,37 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import type { GameData, GameForm } from '@/types'
 
-export function useGames() {
+interface GamesResponse {
+  games: GameData[]
+  pagination: {
+    total: number
+    pages: number
+    page: number
+    limit: number
+  }
+}
+
+interface GamesParams {
+  page?: string
+  limit?: string
+  search?: string
+}
+
+export function useGames(params: GamesParams = {}) {
   const queryClient = useQueryClient()
 
   const {
-    data: games,
+    data,
     isLoading,
     error,
-  } = useQuery<GameData[]>({
-    queryKey: ['games'],
+  } = useQuery<GamesResponse>({
+    queryKey: ['games', params],
     queryFn: async () => {
-      const response = await axios.get('/api/games')
+      const queryParams = new URLSearchParams()
+      Object.entries(params).forEach(([key, value]) => {
+        if (value) queryParams.set(key, value)
+      })
+      const response = await axios.get(`/api/games?${queryParams.toString()}`)
       return response.data
     },
   })
@@ -47,7 +67,7 @@ export function useGames() {
   })
 
   return {
-    games,
+    data,
     isLoading,
     error,
     createGame: async (data: GameForm) => {
