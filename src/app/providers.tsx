@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { AppLayout } from '@/components/layout/AppLayout'
 import '@/lib/dayjs'
 import { CacheProvider } from '@chakra-ui/next-js'
 import { QueryProvider } from '@/providers/QueryProvider'
@@ -13,7 +14,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <ThemeProvider>
         <QueryProvider>
           <AuthProvider>
-            {children}
+            <AppLayout>
+              {children}
+            </AppLayout>
           </AuthProvider>
         </QueryProvider>
       </ThemeProvider>

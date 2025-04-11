@@ -2,17 +2,38 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import type { ArticleData, ArticleForm } from '@/types'
 
-export function useArticles() {
+interface ArticlesResponse {
+  articles: ArticleData[]
+  pagination: {
+    total: number
+    pages: number
+    page: number
+    limit: number
+  }
+}
+
+interface ArticlesParams {
+  page?: string
+  limit?: string
+  search?: string
+  status?: string
+}
+
+export function useArticles(params: ArticlesParams = {}) {
   const queryClient = useQueryClient()
 
   const {
-    data: articles,
+    data,
     isLoading,
     error,
-  } = useQuery<ArticleData[]>({
-    queryKey: ['articles'],
+  } = useQuery<ArticlesResponse>({
+    queryKey: ['articles', params],
     queryFn: async () => {
-      const response = await axios.get('/api/articles')
+      const queryParams = new URLSearchParams()
+      Object.entries(params).forEach(([key, value]) => {
+        if (value) queryParams.set(key, value)
+      })
+      const response = await axios.get(`/api/articles?${queryParams.toString()}`)
       return response.data
     },
   })
@@ -47,7 +68,7 @@ export function useArticles() {
   })
 
   return {
-    articles,
+    data,
     isLoading,
     error,
     createArticle: async (data: ArticleForm) => {

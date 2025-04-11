@@ -1,15 +1,40 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
+import { Prisma, ArticleStatus } from '@prisma/client'
 import type { ArticleForm, ArticleData } from '@/types'
 
 // GET - Liste des articles
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const articles = await prisma.article.findMany({
-      where: {
-        status: 'PUBLISHED',
-      },
-      select: {
+    // Get URL parameters
+    const { searchParams } = new URL(request.url)
+    const page = parseInt(searchParams.get('page') ?? '1')
+    const limit = parseInt(searchParams.get('limit') ?? '10')
+    const search = searchParams.get('search') ?? ''
+    const status = searchParams.get('status') ?? undefined
+
+    // Calculate pagination
+    const skip = (page - 1) * limit
+
+    // Build where clause
+    const where: Prisma.ArticleWhereInput = {
+      OR: search ? [
+        { title: { contains: search, mode: 'insensitive' } },
+        { content: { contains: search, mode: 'insensitive' } }
+      ] : undefined,
+      status: status ? (status as ArticleStatus) : undefined
+    }
+
+    // Get articles with pagination
+    const [articles, totalResults] = await Promise.all([
+      prisma.article.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: {
+          publishedAt: 'desc',
+        },
+        select: {
         id: true,
         title: true,
         content: true,
@@ -36,11 +61,10 @@ export async function GET() {
             coverImage: true,
           },
         },
-      },
-      orderBy: {
-        publishedAt: 'desc',
-      },
-    })
+        },
+      }),
+      prisma.article.count({ where })
+    ])
 
     const formattedArticles = articles.map(article => ({
       ...article,
@@ -48,7 +72,16 @@ export async function GET() {
       updatedAt: new Date(article.updatedAt),
       publishedAt: article.publishedAt ? new Date(article.publishedAt) : null
     }))
-    return NextResponse.json(formattedArticles)
+
+    return NextResponse.json({
+      articles: formattedArticles,
+      pagination: {
+        total: totalResults,
+        pages: Math.ceil(totalResults / limit),
+        page,
+        limit
+      }
+    })
   } catch (error) {
     console.error('Error fetching articles:', error)
     return NextResponse.json(
