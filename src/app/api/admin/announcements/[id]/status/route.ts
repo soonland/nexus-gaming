@@ -5,9 +5,10 @@ import { canManageAnnouncements } from '@/lib/permissions'
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const user = await getCurrentUser()
     if (!user || !canManageAnnouncements(user.role)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -24,7 +25,7 @@ export async function PATCH(
 
     const announcement = await prisma.adminAnnouncement.update({
       where: {
-        id: params.id,
+        id,
       },
       data: {
         isActive,
