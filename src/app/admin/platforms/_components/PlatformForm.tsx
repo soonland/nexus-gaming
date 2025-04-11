@@ -3,17 +3,16 @@
 import React from 'react'
 import {
   Box,
-  Container,
-  VStack,
   FormControl,
   FormLabel,
   Input,
   Button,
   Stack,
-  Heading,
   useToast,
 } from '@chakra-ui/react'
 import { useRouter } from 'next/navigation'
+import { useForm, Controller } from 'react-hook-form'
+import { ChakraDateTimePicker } from '@/components/common/ChakraDateTimePicker'
 
 import type { PlatformForm as IPlatformForm } from '@/types'
 
@@ -30,16 +29,28 @@ export default function PlatformForm({
   isLoading,
   mode,
 }: PlatformFormProps) {
-  const [formData, setFormData] = React.useState<IPlatformForm>({
-    name: initialData?.name || '',
-    manufacturer: initialData?.manufacturer || '',
-    releaseDate: initialData?.releaseDate || null,
-  })
   const router = useRouter()
   const toast = useToast()
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors }
+  } = useForm<IPlatformForm & { releaseDateTemp: Date | null }>({
+    defaultValues: {
+      name: initialData?.name || '',
+      manufacturer: initialData?.manufacturer || '',
+      releaseDateTemp: initialData?.releaseDate ? new Date(initialData.releaseDate) : null,
+    }
+  })
+
+  const onSubmitForm = async (data: IPlatformForm & { releaseDateTemp: Date | null }) => {
+    const formData: IPlatformForm = {
+      name: data.name,
+      manufacturer: data.manufacturer,
+      releaseDate: data.releaseDateTemp?.toISOString() || null,
+    }
     try {
       await onSubmit(formData)
       toast({
@@ -59,50 +70,38 @@ export default function PlatformForm({
   }
 
   return (
-    <Container maxW="container.md" py={8}>
-      <VStack spacing={8} align="stretch">
-        <Heading size="lg">
-          {mode === 'create' ? 'Nouvelle plateforme' : 'Modifier la plateforme'}
-        </Heading>
-
-        <Box as="form" onSubmit={handleSubmit}>
-          <VStack spacing={4}>
-            <FormControl isRequired>
+    <Box as="form" onSubmit={handleSubmit(onSubmitForm)}>
+      <Stack spacing={4}>
+            <FormControl isRequired isInvalid={!!errors.name}>
               <FormLabel>Nom</FormLabel>
               <Input
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, name: e.target.value }))
-                }
+                {...register('name', { required: 'Le nom est requis' })}
                 placeholder="Ex: PlayStation 5"
               />
             </FormControl>
 
-            <FormControl isRequired>
+            <FormControl isRequired isInvalid={!!errors.manufacturer}>
               <FormLabel>Fabricant</FormLabel>
               <Input
-                value={formData.manufacturer}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    manufacturer: e.target.value,
-                  }))
-                }
+                {...register('manufacturer', { required: 'Le fabricant est requis' })}
                 placeholder="Ex: Sony"
               />
             </FormControl>
 
             <FormControl>
               <FormLabel>Date de sortie</FormLabel>
-              <Input
-                type="date"
-                value={formData.releaseDate?.split('T')[0] || ''}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    releaseDate: e.target.value || null,
-                  }))
-                }
+              <Controller
+                name="releaseDateTemp"
+                control={control}
+                render={({ field: { onChange, value } }) => (
+                  <ChakraDateTimePicker
+                    selectedDate={value}
+                    onChange={(date: Date | null) => onChange(date)}
+                    showTimeSelect={false}
+                    minDate={undefined}
+                    placeholderText="Sélectionner une date de sortie"
+                  />
+                )}
               />
             </FormControl>
 
@@ -127,9 +126,7 @@ export default function PlatformForm({
                 {mode === 'create' ? 'Créer' : 'Mettre à jour'}
               </Button>
             </Stack>
-          </VStack>
-        </Box>
-      </VStack>
-    </Container>
+      </Stack>
+    </Box>
   )
 }

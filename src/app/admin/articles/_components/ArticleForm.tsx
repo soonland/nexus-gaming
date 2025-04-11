@@ -13,9 +13,6 @@ import {
   Textarea,
   HStack,
   useToast,
-  Container,
-  VStack,
-  Heading,
   Select,
 } from '@chakra-ui/react'
 import { useRouter } from 'next/navigation'
@@ -110,13 +107,8 @@ export default function ArticleForm({
   }
 
   return (
-    <Container maxW="container.lg" py={8}>
-      <VStack spacing={8} align="stretch" as="form" onSubmit={handleSubmit(onSubmitForm)}>
-        <Heading size="lg">
-          {mode === 'create' ? 'Nouvel article' : 'Modifier l\'article'}
-        </Heading>
-
-        <Stack spacing={6}>
+    <Box as="form" onSubmit={handleSubmit(onSubmitForm)}>
+      <Stack spacing={6}>
           <HStack spacing={4} width="100%">
             {/* Champ auteur en lecture seule */}
             <FormControl flex="1">
@@ -228,8 +220,7 @@ export default function ArticleForm({
               {mode === 'create' ? 'Créer' : 'Mettre à jour'}
             </Button>
           </HStack>
-        </Stack>
-      </VStack>
-    </Container>
+      </Stack>
+    </Box>
   )
 }

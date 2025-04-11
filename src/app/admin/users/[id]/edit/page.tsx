@@ -4,7 +4,9 @@ import {
   Container,
   Heading,
   useToast,
-  VStack,
+  Card,
+  CardHeader,
+  CardBody,
 } from '@chakra-ui/react'
 import { useParams, useRouter } from 'next/navigation'
 import { useUser, useUpdateUser } from '@/hooks/useUsers'
@@ -48,19 +50,23 @@ export default function EditUserPage() {
 
   return (
     <Container maxW="container.md" py={8}>
-      <VStack spacing={8} align="stretch">
-        <Heading size="lg">Edit User</Heading>
-        <UserForm
-          initialData={{
-            id: data.user.id,
-            username: data.user.username,
-            email: data.user.email,
-            role: data.user.role,
-          }}
-          onSubmit={handleSubmit}
-          isLoading={updateUser.isPending}
-        />
-      </VStack>
+      <Card>
+        <CardHeader>
+          <Heading size="lg">Edit User</Heading>
+        </CardHeader>
+        <CardBody>
+          <UserForm
+            initialData={{
+              id: data.user.id,
+              username: data.user.username,
+              email: data.user.email,
+              role: data.user.role,
+            }}
+            onSubmit={handleSubmit}
+            isLoading={updateUser.isPending}
+          />
+        </CardBody>
+      </Card>
     </Container>
   )
 }

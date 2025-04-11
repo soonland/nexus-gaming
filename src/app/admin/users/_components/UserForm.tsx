@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  Box,
   FormControl,
   FormLabel,
   Input,
@@ -8,7 +9,6 @@ import {
   Button,
   Select,
   FormErrorMessage,
-  VStack,
 } from '@chakra-ui/react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -120,8 +120,8 @@ export default function UserForm({ initialData, onSubmit, isLoading }: UserFormP
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <VStack spacing={4} align="stretch">
+    <Box as="form" onSubmit={handleSubmit}>
+      <Stack spacing={4}>
         <FormControl isRequired isInvalid={!!errors.username}>
           <FormLabel>Username</FormLabel>
           <Input
@@ -203,7 +203,7 @@ export default function UserForm({ initialData, onSubmit, isLoading }: UserFormP
             {initialData ? 'Update' : 'Create'} User
           </Button>
         </Stack>
-      </VStack>
-    </form>
+      </Stack>
+    </Box>
   )
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Container, useToast } from '@chakra-ui/react'
+import { Container, useToast, Card, CardHeader, CardBody, Heading } from '@chakra-ui/react'
 import { useRouter } from 'next/navigation'
 import CategoryForm from '@/app/admin/categories/_components/CategoryForm'
 import { useCategories } from '@/hooks/useCategories'
@@ -32,12 +32,19 @@ export default function NewCategoryPage() {
 
   return (
     <Container maxW="container.md" py={8}>
-      <CategoryForm
-        onSubmit={handleSubmit}
-        onCancel={() => router.push('/admin/categories')}
-        isLoading={isCreating}
-        mode="create"
-      />
+      <Card>
+        <CardHeader>
+          <Heading size="lg">Nouvelle catégorie</Heading>
+        </CardHeader>
+        <CardBody>
+          <CategoryForm
+            onSubmit={handleSubmit}
+            onCancel={() => router.push('/admin/categories')}
+            isLoading={isCreating}
+            mode="create"
+          />
+        </CardBody>
+      </Card>
     </Container>
   )
 }

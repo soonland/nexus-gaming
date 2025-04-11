@@ -4,12 +4,10 @@ import React from 'react'
 import {
   Box,
   Button,
-  Container,
   FormControl,
   FormLabel,
   Stack,
   Input,
-  VStack,
   Checkbox,
 } from '@chakra-ui/react'
 
@@ -54,9 +52,8 @@ export default function CompanyForm({
   }
 
   return (
-    <Container maxW="container.md" py={8}>
-      <Box as="form" onSubmit={handleSubmit}>
-        <VStack spacing={4}>
+    <Box as="form" onSubmit={handleSubmit}>
+      <Stack spacing={4}>
           <FormControl isRequired>
             <FormLabel>Nom</FormLabel>
             <Input
@@ -116,8 +113,7 @@ export default function CompanyForm({
               {mode === 'create' ? 'Créer' : 'Mettre à jour'}
             </Button>
           </Stack>
-        </VStack>
-      </Box>
-    </Container>
+      </Stack>
+    </Box>
   )
 }

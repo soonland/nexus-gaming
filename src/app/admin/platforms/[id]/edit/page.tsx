@@ -1,10 +1,12 @@
 'use client'
 
 import React from 'react'
+import { Container, Alert, AlertIcon, Card, CardHeader, CardBody, Heading } from '@chakra-ui/react'
 import { useParams, useRouter } from 'next/navigation'
 import { usePlatform, usePlatforms } from '@/hooks/usePlatforms'
 import PlatformForm from '../../_components/PlatformForm'
 import type { PlatformForm as PlatformFormType } from '@/types'
+import PlatformFormLoading from '@/components/loading/PlatformFormLoading'
 
 export default function EditPlatformPage() {
   const params = useParams()
@@ -14,11 +16,22 @@ export default function EditPlatformPage() {
   const router = useRouter()
 
   if (isLoading) {
-    return <div>Chargement...</div>
+    return (
+      <Container maxW="container.md" py={8}>
+        <PlatformFormLoading />
+      </Container>
+    )
   }
 
   if (!platform) {
-    return <div>Plateforme non trouvée</div>
+    return (
+      <Container maxW="container.md" py={8}>
+        <Alert status="error">
+          <AlertIcon />
+          Plateforme non trouvée
+        </Alert>
+      </Container>
+    )
   }
 
   const handleSubmit = async (data: PlatformFormType) => {
@@ -27,15 +40,24 @@ export default function EditPlatformPage() {
   }
 
   return (
-    <PlatformForm
-      initialData={{
-        name: platform.name,
-        manufacturer: platform.manufacturer,
-        releaseDate: platform.releaseDate?.toISOString() || null
-      }}
-      onSubmit={handleSubmit}
-      isLoading={isUpdating}
-      mode="edit"
-    />
+    <Container maxW="container.md" py={8}>
+      <Card>
+        <CardHeader>
+          <Heading size="lg">Modifier la plateforme</Heading>
+        </CardHeader>
+        <CardBody>
+          <PlatformForm
+            initialData={{
+              name: platform.name,
+              manufacturer: platform.manufacturer,
+              releaseDate: platform.releaseDate?.toISOString() || null
+            }}
+            onSubmit={handleSubmit}
+            isLoading={isUpdating}
+            mode="edit"
+          />
+        </CardBody>
+      </Card>
+    </Container>
   )
 }

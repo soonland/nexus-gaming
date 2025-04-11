@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { Container, Card, CardHeader, CardBody, Heading } from '@chakra-ui/react'
 import { useRouter } from 'next/navigation'
 import { usePlatforms } from '@/hooks/usePlatforms'
 import PlatformForm from '../_components/PlatformForm'
@@ -15,10 +16,19 @@ export default function NewPlatformPage() {
   }
 
   return (
-    <PlatformForm
-      onSubmit={handleSubmit}
-      isLoading={isCreating}
-      mode="create"
-    />
+    <Container maxW="container.md" py={8}>
+      <Card>
+        <CardHeader>
+          <Heading size="lg">Nouvelle plateforme</Heading>
+        </CardHeader>
+        <CardBody>
+          <PlatformForm
+            onSubmit={handleSubmit}
+            isLoading={isCreating}
+            mode="create"
+          />
+        </CardBody>
+      </Card>
+    </Container>
   )
 }
