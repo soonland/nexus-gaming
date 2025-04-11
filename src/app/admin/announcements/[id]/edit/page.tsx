@@ -5,6 +5,7 @@ import { Container, Heading, Card, CardHeader, CardBody, Spinner, Center } from 
 import AnnouncementForm from '../../_components/AnnouncementForm'
 import { useAdminAnnouncement } from '@/hooks/useAdminAnnouncement'
 import { useParams } from 'next/navigation'
+import dayjs from '@/lib/dayjs'
 
 export default function EditAnnouncementPage() {
   const params = useParams()
@@ -34,7 +35,7 @@ export default function EditAnnouncementPage() {
             initialData={{
               message: announcement.message,
               type: announcement.type,
-              expiresAt: announcement.expiresAt || undefined,
+              expiresAt: announcement.expiresAt ? dayjs(announcement.expiresAt).toDate() : null,
               isActive: announcement.isActive,
             }}
             onSubmit={handleSubmit}

@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import { AnnouncementType } from '@prisma/client'
+import dayjs from '@/lib/dayjs'
 
 export interface AdminAnnouncement {
   id: string
@@ -17,7 +18,7 @@ export interface AdminAnnouncement {
 interface CreateAnnouncementData {
   message: string
   type: AnnouncementType
-  expiresAt?: string
+  expiresAt?: Date | null
 }
 
 export function useAdminAnnouncement(id?: string) {
@@ -42,7 +43,10 @@ export function useAdminAnnouncement(id?: string) {
 
   const createAnnouncement = useMutation({
     mutationFn: async (data: CreateAnnouncementData) => {
-      const response = await axios.post('/api/admin/announcements', data)
+      const response = await axios.post('/api/admin/announcements', {
+        ...data,
+        expiresAt: data.expiresAt ? dayjs(data.expiresAt).toISOString() : undefined
+      })
       return response.data
     },
     onSuccess: () => {
@@ -50,18 +54,19 @@ export function useAdminAnnouncement(id?: string) {
     },
   })
 
-  interface UpdateAnnouncementData {
-    id: string
-    message: string
-    type: AnnouncementType
-    expiresAt?: string
-    isActive: boolean
-  }
+interface UpdateAnnouncementData {
+  id: string
+  message: string
+  type: AnnouncementType
+  expiresAt?: Date | null
+  isActive: boolean
+}
 
   const updateAnnouncement = useMutation({
     mutationFn: async (data: UpdateAnnouncementData) => {
       const response = await axios.put(`/api/admin/announcements/${data.id}`, {
         ...data,
+        expiresAt: data.expiresAt ? dayjs(data.expiresAt).toISOString() : undefined,
         isActive: Boolean(data.isActive)
       })
       return response.data
