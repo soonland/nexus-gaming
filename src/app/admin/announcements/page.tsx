@@ -24,7 +24,7 @@ import {
   AlertDialogOverlay,
   useDisclosure,
 } from '@chakra-ui/react'
-import { AddIcon, EditIcon, DeleteIcon } from '@chakra-ui/icons'
+import { AddIcon, EditIcon, DeleteIcon, SunIcon, MoonIcon } from '@chakra-ui/icons'
 import React, { useRef } from 'react'
 import { DateDisplay } from '@/components/common/DateDisplay'
 import Link from 'next/link'
@@ -41,7 +41,7 @@ const getTypeBadge = (type: string) => {
 }
 
 export default function AnnouncementsPage() {
-  const { announcements, deleteAnnouncement } = useAdminAnnouncement()
+  const { announcements, deleteAnnouncement, toggleAnnouncementStatus } = useAdminAnnouncement()
   const { isOpen, onOpen, onClose } = useDisclosure()
   const toast = useToast()
   const cancelRef = useRef<HTMLButtonElement>(null)
@@ -126,6 +126,38 @@ export default function AnnouncementsPage() {
                       aria-label="Modifier"
                       size="sm"
                       colorScheme="blue"
+                    />
+                    <IconButton
+                      icon={announcement.isActive ? <SunIcon /> : <MoonIcon />}
+                      aria-label={announcement.isActive ? "Désactiver" : "Activer"}
+                      size="sm"
+                      colorScheme={announcement.isActive ? "green" : "gray"}
+                      onClick={() => {
+                        toggleAnnouncementStatus.mutate(
+                          {
+                            id: announcement.id,
+                            isActive: !announcement.isActive
+                          },
+                          {
+                            onSuccess: () => {
+                              toast({
+                                title: announcement.isActive ? 'Annonce désactivée' : 'Annonce activée',
+                                status: 'success',
+                                duration: 3000,
+                              })
+                            },
+                            onError: () => {
+                              toast({
+                                title: 'Erreur',
+                                description: "Impossible de modifier le statut de l'annonce",
+                                status: 'error',
+                                duration: 5000,
+                              })
+                            }
+                          }
+                        )
+                      }}
+                      isLoading={toggleAnnouncementStatus.isPending}
                     />
                     <IconButton
                       icon={<DeleteIcon />}

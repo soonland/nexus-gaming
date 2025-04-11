@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Container, useToast, Alert, AlertIcon } from '@chakra-ui/react'
+import { Container, useToast, Alert, AlertIcon, Card, CardHeader, CardBody, Heading } from '@chakra-ui/react'
 import { useParams, useRouter } from 'next/navigation'
 import { useCompanies, useCompany } from '@/hooks/useCompanies'
 import CompanyForm from '../../_components/CompanyForm'
@@ -61,13 +61,20 @@ export default function EditCompanyPage() {
 
   return (
     <Container maxW="container.md" py={8}>
-      <CompanyForm
-        initialData={initialData}
-        onSubmit={handleSubmit}
-        onCancel={() => router.push('/admin/companies')}
-        isLoading={isUpdating}
-        mode="edit"
-      />
+      <Card>
+        <CardHeader>
+          <Heading size="lg">Modifier la société</Heading>
+        </CardHeader>
+        <CardBody>
+          <CompanyForm
+            initialData={initialData}
+            onSubmit={handleSubmit}
+            onCancel={() => router.push('/admin/companies')}
+            isLoading={isUpdating}
+            mode="edit"
+          />
+        </CardBody>
+      </Card>
     </Container>
   )
 }

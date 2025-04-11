@@ -3,14 +3,11 @@
 import React from 'react'
 import {
   Box,
-  Container,
-  VStack,
   FormControl,
   FormLabel,
   Input,
   Button,
   Stack,
-  Heading,
   useToast,
   FormErrorMessage,
 } from '@chakra-ui/react'
@@ -50,13 +47,8 @@ export default function CategoryForm({
   }
 
   return (
-    <Container maxW="container.md" py={8}>
-      <VStack spacing={8} align="stretch" as="form" onSubmit={handleSubmit(onSubmitForm)}>
-        <Heading size="lg">
-          {mode === 'create' ? 'Nouvelle catégorie' : 'Modifier la catégorie'}
-        </Heading>
-
-        <Stack spacing={6}>
+    <Box as="form" onSubmit={handleSubmit(onSubmitForm)}>
+      <Stack spacing={6}>
           <FormControl isInvalid={!!errors.name}>
             <FormLabel>Nom</FormLabel>
             <Input
@@ -90,8 +82,7 @@ export default function CategoryForm({
               {mode === 'create' ? 'Créer' : 'Mettre à jour'}
             </Button>
           </Stack>
-        </Stack>
-      </VStack>
-    </Container>
+      </Stack>
+    </Box>
   )
 }

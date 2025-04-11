@@ -3,7 +3,7 @@
 import React from 'react'
 import dayjs from '@/lib/dayjs'
 import { useParams } from 'next/navigation'
-import { Container, Alert, AlertIcon } from '@chakra-ui/react'
+import { Container, Alert, AlertIcon, Card, CardHeader, CardBody, Heading } from '@chakra-ui/react'
 import { useGame, useGames } from '@/hooks/useGames'
 import GameForm from '../../_components/GameForm'
 import GameFormLoading from '@/components/loading/GameFormLoading'
@@ -15,8 +15,23 @@ export default function EditGamePage() {
   const { game, isLoading } = useGame(id)
   const { updateGame, isUpdating } = useGames()
 
-  if (isLoading || !game) {
-    return <GameFormLoading />
+  if (isLoading) {
+    return (
+      <Container maxW="container.md" py={8}>
+        <GameFormLoading />
+      </Container>
+    )
+  }
+
+  if (!game) {
+    return (
+      <Container maxW="container.md" py={8}>
+        <Alert status="error">
+          <AlertIcon />
+          Jeu non trouvé
+        </Alert>
+      </Container>
+    )
   }
 
   const initialData = {
@@ -34,11 +49,20 @@ export default function EditGamePage() {
   }
 
   return (
-    <GameForm
-      mode="edit"
-      initialData={initialData}
-      onSubmit={handleSubmit}
-      isLoading={isUpdating}
-    />
+    <Container maxW="container.md" py={8}>
+      <Card>
+        <CardHeader>
+          <Heading size="lg">Modifier le jeu</Heading>
+        </CardHeader>
+        <CardBody>
+          <GameForm
+            mode="edit"
+            initialData={initialData}
+            onSubmit={handleSubmit}
+            isLoading={isUpdating}
+          />
+        </CardBody>
+      </Card>
+    </Container>
   )
 }

@@ -73,7 +73,7 @@ export function ChakraDateTimePicker({
   onChange,
   showTimeSelect = true,
   minDate = new Date(),
-  placeholderText = "Sélectionner une date et heure",
+  placeholderText,
   isClearable = true,
 }: ChakraDateTimePickerProps) {
   const [mounted, setMounted] = useState(false)
@@ -166,14 +166,17 @@ export function ChakraDateTimePicker({
         onChange={onChange}
         showTimeSelect={showTimeSelect}
         minDate={minDate}
-        placeholderText={placeholderText}
+        placeholderText={placeholderText || (showTimeSelect ? "Sélectionner une date et heure" : "Sélectionner une date")}
         isClearable={false}
         timeFormat="HH:mm"
         timeIntervals={15}
-        dateFormat="Pp"
+        dateFormat={showTimeSelect ? "Pp" : "PP"}
         locale="fr"
         timeCaption="Heure"
-        customInput={<CustomInput placeholder={placeholderText} onClear={() => onChange(null)} />}
+        customInput={<CustomInput 
+          placeholder={placeholderText || (showTimeSelect ? "Sélectionner une date et heure" : "Sélectionner une date")}
+          onClear={() => onChange(null)} 
+        />}
         popperProps={{
           strategy: 'fixed',
         }}

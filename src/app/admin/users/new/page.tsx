@@ -4,7 +4,9 @@ import {
   Container,
   Heading,
   useToast,
-  VStack,
+  Card,
+  CardHeader,
+  CardBody,
 } from '@chakra-ui/react'
 import UserForm from '../_components/UserForm'
 import { useCreateUser } from '@/hooks/useUsers'
@@ -34,13 +36,17 @@ export default function NewUserPage() {
 
   return (
     <Container maxW="container.md" py={8}>
-      <VStack spacing={8} align="stretch">
-        <Heading size="lg">Create New User</Heading>
-        <UserForm
-          onSubmit={handleSubmit}
-          isLoading={createUser.isPending}
-        />
-      </VStack>
+      <Card>
+        <CardHeader>
+          <Heading size="lg">Create New User</Heading>
+        </CardHeader>
+        <CardBody>
+          <UserForm
+            onSubmit={handleSubmit}
+            isLoading={createUser.isPending}
+          />
+        </CardBody>
+      </Card>
     </Container>
   )
 }

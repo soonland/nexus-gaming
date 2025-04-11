@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { Container, Alert, AlertIcon } from '@chakra-ui/react'
+import { Container, Alert, AlertIcon, Card, CardHeader, CardBody, Heading } from '@chakra-ui/react'
 import ArticleForm from '../../_components/ArticleForm'
 import { useArticle, useArticles } from '@/hooks/useArticles'
 import type { ArticleForm as ArticleFormData } from '@/types'
@@ -61,11 +61,20 @@ export default function EditArticlePage() {
   }
 
   return (
-    <ArticleForm
-      initialData={initialData}
-      onSubmit={handleSubmit}
-      isLoading={isUpdating}
-      mode="edit"
-    />
+    <Container maxW="container.lg" py={8}>
+      <Card>
+        <CardHeader>
+          <Heading size="lg">Modifier l&apos;article</Heading>
+        </CardHeader>
+        <CardBody>
+          <ArticleForm
+            initialData={initialData}
+            onSubmit={handleSubmit}
+            isLoading={isUpdating}
+            mode="edit"
+          />
+        </CardBody>
+      </Card>
+    </Container>
   )
 }

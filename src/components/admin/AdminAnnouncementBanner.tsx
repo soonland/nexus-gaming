@@ -92,12 +92,12 @@ export function AdminAnnouncementBanner() {
 
   return (
     <>
-      <Container maxW="container.xl">
+      <Container maxW="container.xl" mt={6}>
         <Box
           height="40px"
           bg="blue.500"
           color="white"
-          mb={4}
+          mb={2}
           borderRadius="lg"
           overflow="hidden"
         >
