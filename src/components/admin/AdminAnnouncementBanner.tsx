@@ -20,6 +20,7 @@ import {
   Text,
   VStack,
   useDisclosure,
+  useColorModeValue,
 } from '@chakra-ui/react'
 import { AnnouncementType } from '@prisma/client'
 import { FiList, FiInfo, FiAlertCircle, FiAlertTriangle } from 'react-icons/fi'
@@ -76,9 +77,17 @@ function AnnouncementSummary({ announcements }: { announcements: AdminAnnounceme
 }
 
 export function AdminAnnouncementBanner() {
+  // Hooks
   const { announcements = [] } = useAdminAnnouncement()
   const { isLoading } = useAuth()
   const { isOpen, onOpen, onClose } = useDisclosure()
+  
+  // Theme values
+  const modalBg = useColorModeValue('white', 'gray.800')
+  const modalColor = useColorModeValue('inherit', 'white')
+  const alertBg = useColorModeValue('white', 'gray.800')
+  const alertHoverBg = useColorModeValue('gray.50', 'gray.700')
+  const textColor = useColorModeValue('gray.600', 'gray.400')
 
   if (isLoading) {
     return null
@@ -124,7 +133,11 @@ export function AdminAnnouncementBanner() {
 
       <Modal isOpen={isOpen} onClose={onClose} size="2xl">
         <ModalOverlay />
-        <ModalContent>
+        <ModalContent
+          bg={modalBg}
+          color={modalColor}
+          boxShadow="xl"
+        >
           <ModalHeader>Annonces actives</ModalHeader>
           <ModalCloseButton />
           <ModalBody p={0}>
@@ -135,9 +148,9 @@ export function AdminAnnouncementBanner() {
                   variant="left-accent"
                   status={typeToAlertProps[announcement.type].status}
                   borderLeftColor={typeToAlertProps[announcement.type].accent}
-                  bg="white"
+                  bg={alertBg}
                   transition="background-color 0.2s"
-                  _hover={{ bg: 'gray.50' }}
+                  _hover={{ bg: alertHoverBg }}
                   p={6}
                 >
                   <Box 
@@ -154,7 +167,11 @@ export function AdminAnnouncementBanner() {
                     <Text fontSize="md" fontWeight="medium">
                       {announcement.message}
                     </Text>
-                    <Text fontSize="sm" color="gray.600" mt={2}>
+                    <Text 
+                      fontSize="sm" 
+                      color={textColor}
+                      mt={2}
+                    >
                       Par {announcement.createdBy.username}
                     </Text>
                   </Box>

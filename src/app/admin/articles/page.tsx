@@ -39,6 +39,7 @@ import {
 } from '@chakra-ui/icons'
 import { BiFilter } from 'react-icons/bi'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { useArticles } from '@/hooks/useArticles'
 import { useUsers } from '@/hooks/useUsers'
 import { useCategories } from '@/hooks/useCategories'
@@ -60,10 +61,16 @@ const getStatusBadge = (status: ArticleStatus) => {
 }
 
 export default function ArticlesPage() {
+  // Hooks
+  const searchParams = useSearchParams()
   const toast = useToast()
   const deleteDialog = useDisclosure()
   const cancelRef = useRef<HTMLButtonElement>(null)
+  const borderColor = useColorModeValue('gray.200', 'gray.700')
 
+  // State
+  const [page, setPage] = useState(parseInt(searchParams.get('page') ?? '1'))
+  const [limit] = useState(10)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedStatuses, setSelectedStatuses] = useState<ArticleStatus[]>([])
   const [selectedUser, setSelectedUser] = useState<string>('')
@@ -71,9 +78,13 @@ export default function ArticlesPage() {
   const [showFilters, setShowFilters] = useState<boolean>(false)
   const [articleToDelete, setArticleToDelete] = useState<string | null>(null)
 
-  const borderColor = useColorModeValue('gray.200', 'gray.700')
-
-  const { articles, deleteArticle, isLoading, isDeleting } = useArticles()
+  // Queries
+  const { data, deleteArticle, isLoading, isDeleting } = useArticles({
+    page: page.toString(),
+    limit: limit.toString(),
+    search: searchTerm,
+    status: selectedStatuses.length === 1 ? selectedStatuses[0] : undefined,
+  })
   const { data: users, isLoading: isLoadingUsers } = useUsers()
   const { categories, isLoading: isLoadingCategories } = useCategories()
 
@@ -98,30 +109,14 @@ export default function ArticlesPage() {
       PUBLISHED: 0,
       ARCHIVED: 0
     }
-    if (!articles) return initialCounts
-    return articles.reduce((acc, article) => {
+    if (!data?.articles) return initialCounts
+    return data.articles.reduce((acc: Record<ArticleStatus, number>, article) => {
       acc[article.status] = (acc[article.status] || 0) + 1
       return acc
     }, { ...initialCounts })
-  }, [articles])
+  }, [data?.articles])
 
-  const filteredArticles = useMemo(() => {
-    if (!articles) return []
-    
-    const searchString = searchTerm.toLowerCase()
-    return articles.filter(article => {
-      const matchesSearch = 
-        article.title.toLowerCase().includes(searchString) ||
-        article.category.name.toLowerCase().includes(searchString) ||
-        article.games.some(game => game.title.toLowerCase().includes(searchString))
-      
-      const matchesStatus = selectedStatuses.length === 0 || selectedStatuses.includes(article.status)
-      const matchesUser = !selectedUser || article.user.id === selectedUser
-      const matchesCategory = !selectedCategory || article.category.id === selectedCategory
-      
-      return matchesSearch && matchesStatus && matchesUser && matchesCategory
-    })
-  }, [articles, searchTerm, selectedStatuses, selectedUser, selectedCategory])
+  const filteredArticles = data?.articles || []
 
   const handleResetFilters = () => {
     setSearchTerm('')
@@ -217,7 +212,7 @@ export default function ArticlesPage() {
             statusCounts={statusCounts}
             hasActiveFilters={Boolean(hasActiveFilters)}
             filteredCount={filteredArticles.length}
-            totalCount={articles?.length || 0}
+            totalCount={data?.articles?.length || 0}
             isLoadingUsers={isLoadingUsers}
             isLoadingCategories={isLoadingCategories}
             onUserChange={setSelectedUser}
@@ -267,6 +262,8 @@ export default function ArticlesPage() {
                           aria-label="Voir"
                           size="sm"
                           colorScheme="green"
+                          target="_blank"
+                          rel="noopener noreferrer"
                         />
                         <IconButton
                           icon={<DeleteIcon />}
@@ -283,6 +280,21 @@ export default function ArticlesPage() {
               </Tbody>
             </Table>
           </Box>
+
+          {data?.pagination && data.pagination.pages > 1 && (
+            <HStack justify="center" spacing={2} mt={4}>
+              {Array.from({ length: data.pagination.pages }, (_, i) => (
+                <Button
+                  key={i + 1}
+                  size="sm"
+                  variant={page === i + 1 ? 'solid' : 'outline'}
+                  onClick={() => setPage(i + 1)}
+                >
+                  {i + 1}
+                </Button>
+              ))}
+            </HStack>
+          )}
         </Box>
       </VStack>
 

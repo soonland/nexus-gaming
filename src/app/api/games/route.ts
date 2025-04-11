@@ -1,10 +1,33 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 import type { GameData, GameForm } from '@/types'
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const games = await prisma.game.findMany({
+    // Get URL parameters
+    const { searchParams } = new URL(request.url)
+    const page = parseInt(searchParams.get('page') ?? '1')
+    const limit = parseInt(searchParams.get('limit') ?? '10')
+    const search = searchParams.get('search') ?? ''
+
+    // Calculate pagination
+    const skip = (page - 1) * limit
+
+    // Build where clause
+    const where = {
+      OR: search ? [
+        { title: { contains: search, mode: 'insensitive' as Prisma.QueryMode } },
+        { description: { contains: search, mode: 'insensitive' as Prisma.QueryMode } }
+      ] : undefined
+    }
+
+    // Get games with pagination
+    const [games, totalCount] = await Promise.all([
+      prisma.game.findMany({
+        where,
+        skip,
+        take: limit,
       select: {
         id: true,
         title: true,
@@ -61,10 +84,12 @@ export async function GET() {
           },
         },
       },
-      orderBy: {
-        title: 'asc',
-      },
-    })
+        orderBy: {
+          title: 'asc',
+        },
+      }),
+      prisma.game.count({ where })
+    ])
 
     const formattedGames = games.map(game => ({
       ...game,
@@ -82,7 +107,15 @@ export async function GET() {
         updatedAt: new Date(game.publisher.updatedAt)
       }
     }))
-    return NextResponse.json(formattedGames)
+    return NextResponse.json({
+      games: formattedGames,
+      pagination: {
+        total: totalCount,
+        pages: Math.ceil(totalCount / limit),
+        page,
+        limit
+      }
+    })
   } catch (error) {
     console.error('Error fetching games:', error)
     return NextResponse.json(

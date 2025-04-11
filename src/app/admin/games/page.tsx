@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useMemo, useRef } from 'react'
+import { useSearchParams } from 'next/navigation'
 import {
   Box,
   Button,
@@ -46,27 +47,23 @@ import GameListLoading from '@/components/loading/GameListLoading'
 
 export default function GamesPage() {
   const toast = useToast()
+  const searchParams = useSearchParams()
+  const [page, setPage] = useState(parseInt(searchParams.get('page') ?? '1'))
+  const [limit] = useState(10)
   const [searchTerm, setSearchTerm] = useState('')
-  const { games, deleteGame, isLoading, isDeleting } = useGames()
+
+  const { data, deleteGame, isLoading, isDeleting } = useGames({
+    page: page.toString(),
+    limit: limit.toString(),
+    search: searchTerm,
+  })
   const borderColor = useColorModeValue('gray.200', 'gray.700')
   const deleteDialog = useDisclosure()
   const cancelRef = useRef<HTMLButtonElement>(null)
   const [gameToDelete, setGameToDelete] = useState<string | null>(null)
 
   // Filtrage des jeux
-  const filteredGames = useMemo(() => {
-    if (!games) return []
-    
-    const searchString = searchTerm.toLowerCase()
-    return games.filter(game => {
-      return (
-        game.title.toLowerCase().includes(searchString) ||
-        game.developer.name.toLowerCase().includes(searchString) ||
-        game.publisher.name.toLowerCase().includes(searchString) ||
-        game.platforms.some(platform => platform.name.toLowerCase().includes(searchString))
-      )
-    })
-  }, [games, searchTerm])
+  const filteredGames = data?.games || []
 
   const handleDeleteClick = (id: string) => {
     setGameToDelete(id)
@@ -191,6 +188,8 @@ export default function GamesPage() {
                           aria-label="Voir"
                           size="sm"
                           colorScheme="green"
+                          target="_blank"
+                          rel="noopener noreferrer"
                         />
                         <IconButton
                           icon={<DeleteIcon />}
@@ -207,6 +206,21 @@ export default function GamesPage() {
               </Tbody>
             </Table>
           </Box>
+
+          {data?.pagination && data.pagination.pages > 1 && (
+            <HStack justify="center" spacing={2} mt={4}>
+              {Array.from({ length: data.pagination.pages }, (_, i) => (
+                <Button
+                  key={i + 1}
+                  size="sm"
+                  variant={page === i + 1 ? 'solid' : 'outline'}
+                  onClick={() => setPage(i + 1)}
+                >
+                  {i + 1}
+                </Button>
+              ))}
+            </HStack>
+          )}
         </Box>
       </VStack>
 
