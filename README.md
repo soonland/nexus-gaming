@@ -20,24 +20,28 @@ Plateforme de gestion de fiches de jeux vidéo avec critiques et articles.
 ## Installation
 
 1. Cloner le dépôt :
+
 ```bash
 git clone <repository-url>
 cd nexus-gaming
 ```
 
 2. Installer les dépendances :
+
 ```bash
 cd nexus-gaming-next
 npm install
 ```
 
 3. Configuration des variables d'environnement :
+
 ```bash
 cp .env.example .env
 # Modifier les variables selon votre environnement
 ```
 
 4. Initialiser la base de données :
+
 ```bash
 npx prisma migrate dev
 ```
@@ -45,6 +49,7 @@ npx prisma migrate dev
 ## Démarrage
 
 ### Avec Docker :
+
 ```bash
 docker-compose up
 ```
@@ -56,6 +61,7 @@ npm run dev
 ```
 
 L'application sera accessible à :
+
 - http://localhost:3000
 
 ## Structure du projet
