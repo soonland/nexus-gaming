@@ -1,20 +1,21 @@
 /* eslint-disable no-console */
-import { PrismaClient } from '@prisma/client'
-import bcrypt from 'bcryptjs'
-import dayjs from 'dayjs'
-import type { GameForm, ArticleForm } from '../src/types'
-import { seedAdmin } from './seeds/admin'
+import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
+import dayjs from 'dayjs';
 
-const prisma = new PrismaClient()
+import type { GameForm, ArticleForm } from '../src/types';
+import { seedAdmin } from './seeds/admin';
+
+const prisma = new PrismaClient();
 
 async function main() {
-  console.log('Start seeding...')
+  console.log('Start seeding...');
 
   // Seed initial SYSADMIN user
-  await seedAdmin()
-  
+  await seedAdmin();
+
   // Create admin user for testing
-  const adminPassword = await bcrypt.hash('admin', 10)
+  const adminPassword = await bcrypt.hash('admin', 10);
   const admin = await prisma.user.create({
     data: {
       username: 'admin',
@@ -22,30 +23,30 @@ async function main() {
       password: adminPassword,
       role: 'ADMIN',
     },
-  })
+  });
 
-  console.log('Created admin users')
+  console.log('Created admin users');
 
   // Create categories
   await prisma.category.create({
     data: {
       name: 'Actualités',
     },
-  })
+  });
 
   const reviewCategory = await prisma.category.create({
     data: {
       name: 'Tests',
     },
-  })
+  });
 
   const previewCategory = await prisma.category.create({
     data: {
       name: 'Previews',
     },
-  })
+  });
 
-  console.log('Created categories')
+  console.log('Created categories');
 
   // Create platforms
   const switch_ = await prisma.platform.create({
@@ -54,7 +55,7 @@ async function main() {
       manufacturer: 'Nintendo',
       releaseDate: dayjs('2017-03-03').toDate(),
     },
-  })
+  });
 
   const ps5 = await prisma.platform.create({
     data: {
@@ -62,7 +63,7 @@ async function main() {
       manufacturer: 'Sony',
       releaseDate: dayjs('2020-11-12').toDate(),
     },
-  })
+  });
 
   const pc = await prisma.platform.create({
     data: {
@@ -70,9 +71,9 @@ async function main() {
       manufacturer: 'Multiple',
       releaseDate: null,
     },
-  })
+  });
 
-  console.log('Created platforms')
+  console.log('Created platforms');
 
   // Create companies
   const nintendo = await prisma.company.create({
@@ -81,7 +82,7 @@ async function main() {
       isDeveloper: true,
       isPublisher: true,
     },
-  })
+  });
 
   const insomniac = await prisma.company.create({
     data: {
@@ -89,7 +90,7 @@ async function main() {
       isDeveloper: true,
       isPublisher: false,
     },
-  })
+  });
 
   const sony = await prisma.company.create({
     data: {
@@ -97,7 +98,7 @@ async function main() {
       isDeveloper: false,
       isPublisher: true,
     },
-  })
+  });
 
   const larianStudios = await prisma.company.create({
     data: {
@@ -105,9 +106,9 @@ async function main() {
       isDeveloper: true,
       isPublisher: true,
     },
-  })
+  });
 
-  console.log('Created companies')
+  console.log('Created companies');
 
   // Create games
   const zeldaData: GameForm = {
@@ -118,27 +119,27 @@ async function main() {
     platformIds: [switch_.id],
     developerId: nintendo.id,
     publisherId: nintendo.id,
-  }
+  };
 
   const spiderManData: GameForm = {
-    title: 'Marvel\'s Spider-Man 2',
+    title: "Marvel's Spider-Man 2",
     description: 'Nouvelle aventure de Spider-Man',
     releaseDate: '2023-10-20',
     coverImage: '/images/placeholder-game.png',
     platformIds: [ps5.id],
     developerId: insomniac.id,
     publisherId: sony.id,
-  }
+  };
 
   const baldursGateData: GameForm = {
-    title: 'Baldur\'s Gate 3',
-    description: 'RPG dans l\'univers de D&D',
+    title: "Baldur's Gate 3",
+    description: "RPG dans l'univers de D&D",
     releaseDate: '2023-08-03',
     coverImage: '/images/placeholder-game.png',
     platformIds: [pc.id, ps5.id],
     developerId: larianStudios.id,
     publisherId: larianStudios.id,
-  }
+  };
 
   const zelda = await prisma.game.create({
     data: {
@@ -150,7 +151,7 @@ async function main() {
       publisher: { connect: { id: zeldaData.publisherId } },
       platforms: { connect: zeldaData.platformIds.map(id => ({ id })) },
     },
-  })
+  });
 
   const spiderMan2 = await prisma.game.create({
     data: {
@@ -162,7 +163,7 @@ async function main() {
       publisher: { connect: { id: spiderManData.publisherId } },
       platforms: { connect: spiderManData.platformIds.map(id => ({ id })) },
     },
-  })
+  });
 
   const baldursGate = await prisma.game.create({
     data: {
@@ -174,9 +175,9 @@ async function main() {
       publisher: { connect: { id: baldursGateData.publisherId } },
       platforms: { connect: baldursGateData.platformIds.map(id => ({ id })) },
     },
-  })
+  });
 
-  console.log('Created games')
+  console.log('Created games');
 
   // Create articles
   // Create articles
@@ -198,14 +199,14 @@ async function main() {
       publishedAt: '2023-09-15',
     },
     {
-      title: 'Baldur\'s Gate 3 : Le test complet',
-      content: 'Le RPG de l\'année ?',
+      title: "Baldur's Gate 3 : Le test complet",
+      content: "Le RPG de l'année ?",
       categoryId: reviewCategory.id,
       gameIds: [baldursGate.id],
       status: 'PUBLISHED',
       publishedAt: '2023-08-10',
     },
-  ]
+  ];
 
   for (const articleData of articlesData) {
     await prisma.article.create({
@@ -213,25 +214,27 @@ async function main() {
         title: articleData.title,
         content: articleData.content,
         status: articleData.status,
-        publishedAt: articleData.publishedAt ? dayjs(articleData.publishedAt).toDate() : null,
+        publishedAt: articleData.publishedAt
+          ? dayjs(articleData.publishedAt).toDate()
+          : null,
         userId: admin.id,
         categoryId: articleData.categoryId,
         games: {
           connect: articleData.gameIds?.map(id => ({ id })) || [],
         },
       },
-    })
+    });
   }
 
-  console.log('Created articles')
-  console.log('Seeding finished')
+  console.log('Created articles');
+  console.log('Seeding finished');
 }
 
 main()
-  .catch((e) => {
-    console.error('Error during seeding:', e)
-    throw e
+  .catch(e => {
+    console.error('Error during seeding:', e);
+    throw e;
   })
   .finally(async () => {
-    await prisma.$disconnect()
-  })
+    await prisma.$disconnect();
+  });

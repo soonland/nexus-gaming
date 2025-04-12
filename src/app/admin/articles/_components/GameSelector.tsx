@@ -1,6 +1,6 @@
-'use client'
+'use client';
 
-import { useState, useCallback, useMemo, useEffect } from 'react'
+import { AddIcon } from '@chakra-ui/icons';
 import {
   Button,
   FormControl,
@@ -21,15 +21,17 @@ import {
   Wrap,
   WrapItem,
   useDisclosure,
-} from '@chakra-ui/react'
-import { AddIcon } from '@chakra-ui/icons'
-import { useGames } from '@/hooks/useGames'
-import GameSelectorList from './GameSelectorList'
+} from '@chakra-ui/react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
+
+import { useGames } from '@/hooks/useGames';
+
+import GameSelectorList from './GameSelectorList';
 
 interface GameSelectorProps {
-  selectedIds: string[]
-  onChange: (ids: string[]) => void
-  error?: string
+  selectedIds: string[];
+  onChange: (ids: string[]) => void;
+  error?: string;
 }
 
 export default function GameSelector({
@@ -37,63 +39,63 @@ export default function GameSelector({
   onChange,
   error,
 }: GameSelectorProps) {
-  const { isOpen, onOpen, onClose } = useDisclosure()
-  const { data } = useGames({ limit: '100' }) // Get all games for selector
-  const [tempSelectedIds, setTempSelectedIds] = useState(selectedIds)
-  const [searchTerm, setSearchTerm] = useState('')
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { data } = useGames({ limit: '100' }); // Get all games for selector
+  const [tempSelectedIds, setTempSelectedIds] = useState(selectedIds);
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Reset temp selection when modal opens
   useEffect(() => {
-    setTempSelectedIds(selectedIds)
-  }, [selectedIds, isOpen])
+    setTempSelectedIds(selectedIds);
+  }, [selectedIds, isOpen]);
 
   const handleGameToggle = useCallback((gameId: string) => {
     setTempSelectedIds(current =>
       current.includes(gameId)
         ? current.filter(id => id !== gameId)
         : [...current, gameId]
-    )
-  }, [])
+    );
+  }, []);
 
   const handleSave = () => {
-    onChange(tempSelectedIds)
-    onClose()
-  }
+    onChange(tempSelectedIds);
+    onClose();
+  };
 
   const handleClose = () => {
-    setTempSelectedIds(selectedIds)
-    onClose()
-  }
+    setTempSelectedIds(selectedIds);
+    onClose();
+  };
 
   const removeGame = (gameId: string) => {
-    onChange(selectedIds.filter(id => id !== gameId))
-  }
+    onChange(selectedIds.filter(id => id !== gameId));
+  };
 
-  const selectedGames = useMemo(() => 
-    (data?.games || []).filter(game => selectedIds.includes(game.id)),
+  const selectedGames = useMemo(
+    () => (data?.games || []).filter(game => selectedIds.includes(game.id)),
     [data?.games, selectedIds]
-  )
+  );
 
   const filteredGames = useMemo(() => {
-    const games = data?.games || []
-    if (!searchTerm) return games
-    const term = searchTerm.toLowerCase()
+    const games = data?.games || [];
+    if (!searchTerm) return games;
+    const term = searchTerm.toLowerCase();
     return games.filter(
       game =>
         game.title.toLowerCase().includes(term) ||
         game.platforms.some(p => p.name.toLowerCase().includes(term))
-    )
-  }, [data?.games, searchTerm])
+    );
+  }, [data?.games, searchTerm]);
 
   return (
     <FormControl isInvalid={!!error}>
-      <VStack align="stretch" spacing={3}>
+      <VStack align='stretch' spacing={3}>
         <Button
-          size="sm"
-          onClick={onOpen}
-          colorScheme="blue"
-          variant="outline"
+          colorScheme='blue'
           leftIcon={<AddIcon />}
+          size='sm'
+          variant='outline'
+          onClick={onOpen}
         >
           Sélectionner des jeux
         </Button>
@@ -102,10 +104,10 @@ export default function GameSelector({
           {selectedGames.map(game => (
             <WrapItem key={game.id}>
               <Tag
-                size="md"
-                borderRadius="full"
-                variant="subtle"
-                colorScheme="blue"
+                borderRadius='full'
+                colorScheme='blue'
+                size='md'
+                variant='subtle'
               >
                 <TagLabel>{game.title}</TagLabel>
                 <TagCloseButton onClick={() => removeGame(game.id)} />
@@ -115,7 +117,7 @@ export default function GameSelector({
         </Wrap>
       </VStack>
 
-      <Modal isOpen={isOpen} onClose={handleClose} size="xl">
+      <Modal isOpen={isOpen} size='xl' onClose={handleClose}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Sélectionner des jeux</ModalHeader>
@@ -123,21 +125,23 @@ export default function GameSelector({
           <ModalBody>
             <GameSelectorList
               games={filteredGames}
+              searchTerm={searchTerm}
               selectedGames={tempSelectedIds}
               onGameSelect={handleGameToggle}
-              searchTerm={searchTerm}
               onSearchChange={setSearchTerm}
             />
           </ModalBody>
           <ModalFooter>
             <HStack spacing={4}>
-              <Text color="gray.500">
-                {tempSelectedIds.length} jeu{tempSelectedIds.length > 1 ? 'x' : ''} sélectionné{tempSelectedIds.length > 1 ? 's' : ''}
+              <Text color='gray.500'>
+                {tempSelectedIds.length} jeu
+                {tempSelectedIds.length > 1 ? 'x' : ''} sélectionné
+                {tempSelectedIds.length > 1 ? 's' : ''}
               </Text>
-              <Button variant="ghost" onClick={handleClose}>
+              <Button variant='ghost' onClick={handleClose}>
                 Annuler
               </Button>
-              <Button colorScheme="blue" onClick={handleSave}>
+              <Button colorScheme='blue' onClick={handleSave}>
                 Confirmer la sélection
               </Button>
             </HStack>
@@ -147,5 +151,5 @@ export default function GameSelector({
 
       {error && <FormErrorMessage>{error}</FormErrorMessage>}
     </FormControl>
-  )
+  );
 }

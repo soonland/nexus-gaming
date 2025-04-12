@@ -1,6 +1,5 @@
-'use client'
+'use client';
 
-import { useAdminAnnouncement, AdminAnnouncement } from '@/hooks/useAdminAnnouncement'
 import {
   Alert,
   Badge,
@@ -20,10 +19,13 @@ import {
   VStack,
   useDisclosure,
   useColorModeValue,
-} from '@chakra-ui/react'
-import { AnnouncementType } from '@prisma/client'
-import { FiList, FiInfo, FiAlertCircle, FiAlertTriangle } from 'react-icons/fi'
-import { useAuth } from '@/hooks/useAuth'
+} from '@chakra-ui/react';
+import { AnnouncementType } from '@prisma/client';
+import { FiList, FiInfo, FiAlertCircle, FiAlertTriangle } from 'react-icons/fi';
+
+import { useAdminAnnouncement } from '@/hooks/useAdminAnnouncement';
+import type { AdminAnnouncement } from '@/hooks/useAdminAnnouncement';
+import { useAuth } from '@/hooks/useAuth';
 
 const typeToAlertProps = {
   [AnnouncementType.INFO]: {
@@ -31,98 +33,106 @@ const typeToAlertProps = {
     status: 'info',
     label: 'Info',
     accent: 'blue.400',
-    icon: FiInfo
+    icon: FiInfo,
   },
   [AnnouncementType.ATTENTION]: {
     colorScheme: 'orange',
     status: 'warning',
     label: 'Attention',
     accent: 'orange.400',
-    icon: FiAlertCircle
+    icon: FiAlertCircle,
   },
   [AnnouncementType.URGENT]: {
     colorScheme: 'red',
     status: 'error',
     label: 'Urgent',
     accent: 'red.400',
-    icon: FiAlertTriangle
+    icon: FiAlertTriangle,
   },
-} as const
+} as const;
 
-function AnnouncementSummary({ announcements }: { announcements: AdminAnnouncement[] }) {
-  const counts = Object.values(AnnouncementType).reduce((acc, type) => ({
-    ...acc,
-    [type]: announcements.filter(a => a.type === type).length
-  }), {} as Record<AnnouncementType, number>)
+const AnnouncementSummary = ({
+  announcements,
+}: {
+  announcements: AdminAnnouncement[];
+}) => {
+  const counts = Object.values(AnnouncementType).reduce(
+    (acc, type) => ({
+      ...acc,
+      [type]: announcements.filter(a => a.type === type).length,
+    }),
+    {} as Record<AnnouncementType, number>
+  );
 
   return (
     <HStack spacing={4}>
-      {(Object.entries(counts) as [AnnouncementType, number][]).map(([type, count]) => (
-        count > 0 && (
-          <Badge 
-            key={type}
-            variant="solid"
-            bg={typeToAlertProps[type].accent}
-            color="white"
-            p="1"
-            fontWeight="medium"
-          >
-            {count} {typeToAlertProps[type].label}
-          </Badge>
-        )
-      ))}
+      {(Object.entries(counts) as [AnnouncementType, number][]).map(
+        ([type, count]) =>
+          count > 0 && (
+            <Badge
+              key={type}
+              bg={typeToAlertProps[type].accent}
+              color='white'
+              fontWeight='medium'
+              p='1'
+              variant='solid'
+            >
+              {count} {typeToAlertProps[type].label}
+            </Badge>
+          )
+      )}
     </HStack>
-  )
-}
+  );
+};
 
-export function AdminAnnouncementBanner() {
+export const AdminAnnouncementBanner = () => {
   // Hooks
-  const { announcements = [] } = useAdminAnnouncement()
-  const { isLoading } = useAuth()
-  const { isOpen, onOpen, onClose } = useDisclosure()
-  
+  const { announcements = [] } = useAdminAnnouncement();
+  const { isLoading } = useAuth();
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
   // Theme values
-  const modalBg = useColorModeValue('white', 'gray.800')
-  const modalColor = useColorModeValue('inherit', 'white')
-  const alertBg = useColorModeValue('white', 'gray.800')
-  const alertHoverBg = useColorModeValue('gray.50', 'gray.700')
-  const textColor = useColorModeValue('gray.600', 'gray.400')
+  const modalBg = useColorModeValue('white', 'gray.800');
+  const modalColor = useColorModeValue('inherit', 'white');
+  const alertBg = useColorModeValue('white', 'gray.800');
+  const alertHoverBg = useColorModeValue('gray.50', 'gray.700');
+  const textColor = useColorModeValue('gray.600', 'gray.400');
 
   if (isLoading) {
-    return null
+    return null;
   }
 
   // Ne montrer que les annonces actives
-  const activeAnnouncements = announcements.filter(a => a.isActive)
+  const activeAnnouncements = announcements.filter(a => a.isActive);
   if (!activeAnnouncements.length) {
-    return null
+    return null;
   }
 
   return (
     <>
-      <Container maxW="container.xl" mt={6}>
+      <Container maxW='container.xl' mt={6}>
         <Box
-          height="40px"
-          bg="blue.500"
-          color="white"
+          bg='blue.500'
+          borderRadius='lg'
+          color='white'
+          height='40px'
           mb={2}
-          borderRadius="lg"
-          overflow="hidden"
+          overflow='hidden'
         >
           <Flex
-            height="100%"
+            alignItems='center'
+            height='100%'
+            justifyContent='space-between'
             px={4}
-            alignItems="center"
-            justifyContent="space-between"
           >
             <AnnouncementSummary announcements={activeAnnouncements} />
             <Button
-              size="sm"
-              variant="ghost"
-              color="white"
-              leftIcon={<FiList />}
-              onClick={onOpen}
               _hover={{ bg: 'whiteAlpha.200' }}
+              color='white'
+              leftIcon={<FiList />}
+              size='sm'
+              variant='ghost'
+              onClick={onOpen}
             >
               Voir les annonces
             </Button>
@@ -130,47 +140,39 @@ export function AdminAnnouncementBanner() {
         </Box>
       </Container>
 
-      <Modal isOpen={isOpen} onClose={onClose} size="2xl">
+      <Modal isOpen={isOpen} size='2xl' onClose={onClose}>
         <ModalOverlay />
-        <ModalContent
-          bg={modalBg}
-          color={modalColor}
-          boxShadow="xl"
-        >
+        <ModalContent bg={modalBg} boxShadow='xl' color={modalColor}>
           <ModalHeader>Annonces actives</ModalHeader>
           <ModalCloseButton />
           <ModalBody p={0}>
-            <VStack spacing={0} width="100%">
+            <VStack spacing={0} width='100%'>
               {activeAnnouncements.map(announcement => (
                 <Alert
                   key={announcement.id}
-                  variant="left-accent"
-                  status={typeToAlertProps[announcement.type].status}
-                  borderLeftColor={typeToAlertProps[announcement.type].accent}
-                  bg={alertBg}
-                  transition="background-color 0.2s"
                   _hover={{ bg: alertHoverBg }}
+                  bg={alertBg}
+                  borderLeftColor={typeToAlertProps[announcement.type].accent}
                   p={6}
+                  status={typeToAlertProps[announcement.type].status}
+                  transition='background-color 0.2s'
+                  variant='left-accent'
                 >
-                  <Box 
-                    fontSize="xl" 
+                  <Box
+                    alignItems='flex-start'
                     color={typeToAlertProps[announcement.type].accent}
+                    display='flex'
+                    fontSize='xl'
                     mr={4}
-                    display="flex"
-                    alignItems="flex-start"
                     mt={0.5}
                   >
                     <Icon as={typeToAlertProps[announcement.type].icon} />
                   </Box>
-                  <Box flex="1">
-                    <Text fontSize="md" fontWeight="medium">
+                  <Box flex='1'>
+                    <Text fontSize='md' fontWeight='medium'>
                       {announcement.message}
                     </Text>
-                    <Text 
-                      fontSize="sm" 
-                      color={textColor}
-                      mt={2}
-                    >
+                    <Text color={textColor} fontSize='sm' mt={2}>
                       Par {announcement.createdBy.username}
                     </Text>
                   </Box>
@@ -181,5 +183,5 @@ export function AdminAnnouncementBanner() {
         </ModalContent>
       </Modal>
     </>
-  )
-}
+  );
+};

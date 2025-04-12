@@ -1,14 +1,16 @@
-import { compare } from 'bcrypt'
-import { NextRequest, NextResponse } from 'next/server'
-import prisma from '@/lib/prisma'
-import { signToken } from '@/lib/jwt'
-import { AuthResponse, LoginCredentials } from '@/types/auth'
+import { compare } from 'bcrypt';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
-const TOKEN_COOKIE = 'auth_token'
+import { signToken } from '@/lib/jwt';
+import prisma from '@/lib/prisma';
+import type { AuthResponse, LoginCredentials } from '@/types/auth';
+
+const TOKEN_COOKIE = 'auth_token';
 
 export async function POST(request: NextRequest) {
   try {
-    const body = (await request.json()) as LoginCredentials
+    const body = (await request.json()) as LoginCredentials;
 
     const user = await prisma.user.findUnique({
       where: { email: body.email },
@@ -22,21 +24,21 @@ export async function POST(request: NextRequest) {
         lastPasswordChange: true,
         passwordExpiresAt: true,
       },
-    })
+    });
 
     if (!user) {
       return NextResponse.json(
         { error: 'Invalid credentials' },
         { status: 401 }
-      )
+      );
     }
 
-    const validPassword = await compare(body.password, user.password)
+    const validPassword = await compare(body.password, user.password);
     if (!validPassword) {
       return NextResponse.json(
         { error: 'Invalid credentials' },
         { status: 401 }
-      )
+      );
     }
 
     // Check if user is active
@@ -44,7 +46,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Account is inactive' },
         { status: 403 }
-      )
+      );
     }
 
     // Convert dates to ISO strings
@@ -52,15 +54,15 @@ export async function POST(request: NextRequest) {
       ...user,
       lastPasswordChange: user.lastPasswordChange.toISOString(),
       passwordExpiresAt: user.passwordExpiresAt.toISOString(),
-    }
+    };
 
-    const { password: _, ...userWithoutPassword } = userWithFormattedDates
-    const token = await signToken(userWithoutPassword)
+    const { password: _, ...userWithoutPassword } = userWithFormattedDates;
+    const token = await signToken(userWithoutPassword);
 
     const response = NextResponse.json<AuthResponse>({
       user: userWithoutPassword,
       token,
-    })
+    });
 
     // Set httpOnly cookie
     response.cookies.set(TOKEN_COOKIE, token, {
@@ -68,14 +70,14 @@ export async function POST(request: NextRequest) {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60, // 7 days
-    })
+    });
 
-    return response
+    return response;
   } catch (error) {
-    console.error('Login error:', error)
+    console.error('Login error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
-    )
+    );
   }
 }

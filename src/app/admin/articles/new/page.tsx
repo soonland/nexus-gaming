@@ -1,31 +1,39 @@
-'use client'
+'use client';
 
-import { Container, Heading, Card, CardHeader, CardBody } from '@chakra-ui/react'
-import ArticleForm from '../_components/ArticleForm'
-import { useArticles } from '@/hooks/useArticles'
-import type { ArticleForm as IArticleForm } from '@/types'
+import {
+  Container,
+  Heading,
+  Card,
+  CardHeader,
+  CardBody,
+} from '@chakra-ui/react';
+
+import { useArticles } from '@/hooks/useArticles';
+import type { ArticleForm as IArticleForm } from '@/types';
+
+import ArticleForm from '../_components/ArticleForm';
 
 export default function NewArticlePage() {
-  const { createArticle, isCreating } = useArticles()
+  const { createArticle, isCreating } = useArticles();
 
   const handleSubmit = async (data: IArticleForm) => {
-    await createArticle(data)
-  }
+    await createArticle(data);
+  };
 
   return (
-    <Container maxW="container.lg" py={8}>
+    <Container maxW='container.lg' py={8}>
       <Card>
         <CardHeader>
-          <Heading size="lg">Nouvel article</Heading>
+          <Heading size='lg'>Nouvel article</Heading>
         </CardHeader>
         <CardBody>
           <ArticleForm
-            onSubmit={handleSubmit}
             isLoading={isCreating}
-            mode="create"
+            mode='create'
+            onSubmit={handleSubmit}
           />
         </CardBody>
       </Card>
     </Container>
-  )
+  );
 }

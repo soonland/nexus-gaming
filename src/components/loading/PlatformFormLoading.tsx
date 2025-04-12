@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import {
   Container,
@@ -8,37 +8,37 @@ import {
   FormLabel,
   Box,
   useColorModeValue,
-} from '@chakra-ui/react'
+} from '@chakra-ui/react';
 
 export default function PlatformFormLoading() {
-  const borderColor = useColorModeValue('gray.200', 'gray.700')
+  const borderColor = useColorModeValue('gray.200', 'gray.700');
 
   return (
-    <Container maxW="container.md" py={8}>
-      <VStack spacing={8} align="stretch">
-        <Skeleton height="36px" width="300px" />
+    <Container maxW='container.md' py={8}>
+      <VStack align='stretch' spacing={8}>
+        <Skeleton height='36px' width='300px' />
 
-        <Box borderWidth="1px" borderColor={borderColor} rounded="lg" p={6}>
+        <Box borderColor={borderColor} borderWidth='1px' p={6} rounded='lg'>
           <VStack spacing={4}>
             <FormControl>
               <FormLabel>Nom</FormLabel>
-              <Skeleton height="40px" />
+              <Skeleton height='40px' />
             </FormControl>
 
             <FormControl>
               <FormLabel>Fabricant</FormLabel>
-              <Skeleton height="40px" />
+              <Skeleton height='40px' />
             </FormControl>
 
             <FormControl>
               <FormLabel>Date de sortie</FormLabel>
-              <Skeleton height="40px" />
+              <Skeleton height='40px' />
             </FormControl>
 
-            <Skeleton height="40px" width="200px" alignSelf="flex-end" />
+            <Skeleton alignSelf='flex-end' height='40px' width='200px' />
           </VStack>
         </Box>
       </VStack>
     </Container>
-  )
+  );
 }

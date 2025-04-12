@@ -1,7 +1,13 @@
-'use client'
+'use client';
 
-import { useState, useRef } from 'react'
-import { useSearchParams } from 'next/navigation'
+import {
+  SearchIcon,
+  AddIcon,
+  EditIcon,
+  DeleteIcon,
+  ExternalLinkIcon,
+  CloseIcon,
+} from '@chakra-ui/icons';
 import {
   Box,
   Button,
@@ -31,80 +37,75 @@ import {
   AlertDialogHeader,
   AlertDialogOverlay,
   useDisclosure,
-} from '@chakra-ui/react'
-import {
-  SearchIcon,
-  AddIcon,
-  EditIcon,
-  DeleteIcon,
-  ExternalLinkIcon,
-  CloseIcon,
-} from '@chakra-ui/icons'
-import Link from 'next/link'
-import { useGames } from '@/hooks/useGames'
-import { DateDisplay } from '@/components/common/DateDisplay'
-import GameListLoading from '@/components/loading/GameListLoading'
+} from '@chakra-ui/react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { useState, useRef } from 'react';
+
+import { DateDisplay } from '@/components/common/DateDisplay';
+import GameListLoading from '@/components/loading/GameListLoading';
+import { useGames } from '@/hooks/useGames';
 
 export default function GamesPage() {
-  const toast = useToast()
-  const searchParams = useSearchParams()
-  const [page, setPage] = useState(parseInt(searchParams.get('page') ?? '1'))
-  const [limit] = useState(10)
-  const [searchTerm, setSearchTerm] = useState('')
+  const toast = useToast();
+  const searchParams = useSearchParams();
+  const [page, setPage] = useState(parseInt(searchParams.get('page') ?? '1'));
+  const [limit] = useState(10);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const { data, deleteGame, isLoading, isDeleting } = useGames({
     page: page.toString(),
     limit: limit.toString(),
     search: searchTerm,
-  })
-  const borderColor = useColorModeValue('gray.200', 'gray.700')
-  const deleteDialog = useDisclosure()
-  const cancelRef = useRef<HTMLButtonElement>(null)
-  const [gameToDelete, setGameToDelete] = useState<string | null>(null)
+  });
+  const borderColor = useColorModeValue('gray.200', 'gray.700');
+  const deleteDialog = useDisclosure();
+  const cancelRef = useRef<HTMLButtonElement>(null);
+  const [gameToDelete, setGameToDelete] = useState<string | null>(null);
 
   // Filtrage des jeux
-  const filteredGames = data?.games || []
+  const filteredGames = data?.games || [];
 
   const handleDeleteClick = (id: string) => {
-    setGameToDelete(id)
-    deleteDialog.onOpen()
-  }
+    setGameToDelete(id);
+    deleteDialog.onOpen();
+  };
 
   const handleDeleteConfirm = async () => {
-    if (!gameToDelete) return
+    if (!gameToDelete) return;
 
     try {
-      await deleteGame(gameToDelete)
+      await deleteGame(gameToDelete);
       toast({
         title: 'Jeu supprimé',
         status: 'success',
         duration: 3000,
-      })
-      deleteDialog.onClose()
-      setGameToDelete(null)
+      });
+      deleteDialog.onClose();
+      setGameToDelete(null);
     } catch (error) {
       toast({
         title: 'Erreur',
-        description: "Une erreur est survenue lors de la suppression",
+        description: 'Une erreur est survenue lors de la suppression',
         status: 'error',
         duration: 5000,
-      })
+      });
     }
-  }
+  };
 
   if (isLoading) {
-    return <GameListLoading />
+    return <GameListLoading />;
   }
 
   return (
-    <Container maxW="container.xl" py={8}>
-      <VStack spacing={8} align="stretch">
-        <HStack justify="space-between">
-          <Heading size="lg">Gestion des jeux</Heading>
+    <Container maxW='container.xl' py={8}>
+      <VStack align='stretch' spacing={8}>
+        <HStack justify='space-between'>
+          <Heading size='lg'>Gestion des jeux</Heading>
           <Button
             as={Link}
-            href="/admin/games/new"
-            colorScheme="blue"
+            colorScheme='blue'
+            href='/admin/games/new'
             leftIcon={<AddIcon />}
           >
             Nouveau jeu
@@ -113,28 +114,33 @@ export default function GamesPage() {
 
         <Box>
           <HStack mb={4}>
-            <InputGroup maxW="sm">
-              <InputLeftElement pointerEvents="none">
-                <SearchIcon color="gray.300" />
+            <InputGroup maxW='sm'>
+              <InputLeftElement pointerEvents='none'>
+                <SearchIcon color='gray.300' />
               </InputLeftElement>
               <Input
-                placeholder="Rechercher..."
+                placeholder='Rechercher...'
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={e => setSearchTerm(e.target.value)}
               />
             </InputGroup>
             {searchTerm && (
               <IconButton
+                aria-label='Clear search'
                 icon={<CloseIcon />}
-                aria-label="Clear search"
-                size="sm"
+                size='sm'
                 onClick={() => setSearchTerm('')}
               />
             )}
           </HStack>
 
-          <Box overflowX="auto" borderWidth="1px" borderColor={borderColor} rounded="lg">
-            <Table variant="simple">
+          <Box
+            borderColor={borderColor}
+            borderWidth='1px'
+            overflowX='auto'
+            rounded='lg'
+          >
+            <Table variant='simple'>
               <Thead>
                 <Tr>
                   <Th>Titre</Th>
@@ -142,28 +148,28 @@ export default function GamesPage() {
                   <Th>Éditeur</Th>
                   <Th>Date de sortie</Th>
                   <Th>Plateformes</Th>
-                  <Th width="150px">Actions</Th>
+                  <Th width='150px'>Actions</Th>
                 </Tr>
               </Thead>
               <Tbody>
-                {filteredGames.map((game) => (
+                {filteredGames.map(game => (
                   <Tr key={game.id}>
                     <Td>{game.title}</Td>
                     <Td>{game.developer.name}</Td>
                     <Td>{game.publisher.name}</Td>
                     <Td>
                       {game.releaseDate && (
-                        <DateDisplay date={game.releaseDate} format="long" />
+                        <DateDisplay date={game.releaseDate} format='long' />
                       )}
                     </Td>
                     <Td>
                       <Wrap>
-                        {game.platforms.map((platform) => (
+                        {game.platforms.map(platform => (
                           <WrapItem key={platform.id}>
                             <Badge
-                              colorScheme="blue"
-                              variant="subtle"
-                              fontSize="xs"
+                              colorScheme='blue'
+                              fontSize='xs'
+                              variant='subtle'
                             >
                               {platform.name}
                             </Badge>
@@ -174,30 +180,30 @@ export default function GamesPage() {
                     <Td>
                       <HStack spacing={2}>
                         <IconButton
+                          aria-label='Modifier'
                           as={Link}
+                          colorScheme='blue'
                           href={`/admin/games/${game.id}/edit`}
                           icon={<EditIcon />}
-                          aria-label="Modifier"
-                          size="sm"
-                          colorScheme="blue"
+                          size='sm'
                         />
                         <IconButton
+                          aria-label='Voir'
                           as={Link}
+                          colorScheme='green'
                           href={`/games/${game.id}`}
                           icon={<ExternalLinkIcon />}
-                          aria-label="Voir"
-                          size="sm"
-                          colorScheme="green"
-                          target="_blank"
-                          rel="noopener noreferrer"
+                          rel='noopener noreferrer'
+                          size='sm'
+                          target='_blank'
                         />
                         <IconButton
+                          aria-label='Supprimer'
+                          colorScheme='red'
                           icon={<DeleteIcon />}
-                          aria-label="Supprimer"
-                          size="sm"
-                          colorScheme="red"
-                          onClick={() => handleDeleteClick(game.id)}
                           isLoading={isDeleting}
+                          size='sm'
+                          onClick={() => handleDeleteClick(game.id)}
                         />
                       </HStack>
                     </Td>
@@ -208,11 +214,11 @@ export default function GamesPage() {
           </Box>
 
           {data?.pagination && data.pagination.pages > 1 && (
-            <HStack justify="center" spacing={2} mt={4}>
+            <HStack justify='center' mt={4} spacing={2}>
               {Array.from({ length: data.pagination.pages }, (_, i) => (
                 <Button
                   key={i + 1}
-                  size="sm"
+                  size='sm'
                   variant={page === i + 1 ? 'solid' : 'outline'}
                   onClick={() => setPage(i + 1)}
                 >
@@ -233,17 +239,18 @@ export default function GamesPage() {
           <AlertDialogContent>
             <AlertDialogHeader>Supprimer le jeu</AlertDialogHeader>
             <AlertDialogBody>
-              Êtes-vous sûr de vouloir supprimer ce jeu ? Cette action ne peut pas être annulée.
+              Êtes-vous sûr de vouloir supprimer ce jeu ? Cette action ne peut
+              pas être annulée.
             </AlertDialogBody>
             <AlertDialogFooter>
               <Button ref={cancelRef} onClick={deleteDialog.onClose}>
                 Annuler
               </Button>
               <Button
-                colorScheme="red"
-                onClick={handleDeleteConfirm}
-                ml={3}
+                colorScheme='red'
                 isLoading={isDeleting}
+                ml={3}
+                onClick={handleDeleteConfirm}
               >
                 Supprimer
               </Button>
@@ -252,5 +259,5 @@ export default function GamesPage() {
         </AlertDialogOverlay>
       </AlertDialog>
     </Container>
-  )
+  );
 }

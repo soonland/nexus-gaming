@@ -1,15 +1,17 @@
-'use client'
+'use client';
 
-import React, { createContext, useCallback, useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { AuthUser, LoginCredentials } from '@/types/auth'
+import { useRouter } from 'next/navigation';
+import type React from 'react';
+import { createContext, useCallback, useEffect, useState } from 'react';
+
+import type { AuthUser, LoginCredentials } from '@/types/auth';
 
 interface AuthContextType {
-  user: AuthUser | null
-  isLoading: boolean
-  login: (credentials: LoginCredentials) => Promise<void>
-  logout: () => Promise<void>
-  refresh: () => Promise<void>
+  user: AuthUser | null;
+  isLoading: boolean;
+  login: (credentials: LoginCredentials) => Promise<void>;
+  logout: () => Promise<void>;
+  refresh: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType>({
@@ -18,73 +20,76 @@ export const AuthContext = createContext<AuthContextType>({
   login: async () => {},
   logout: async () => {},
   refresh: async () => {},
-})
+});
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const router = useRouter()
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
 
-  const login = useCallback(async (credentials: LoginCredentials) => {
-    try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(credentials),
-      })
+  const login = useCallback(
+    async (credentials: LoginCredentials) => {
+      try {
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(credentials),
+        });
 
-      if (!response.ok) {
-        throw new Error('Login failed')
+        if (!response.ok) {
+          throw new Error('Login failed');
+        }
+
+        const data = await response.json();
+        setUser(data.user);
+        router.push('/games');
+      } catch (error) {
+        console.error('Login error:', error);
+        throw error;
       }
-
-      const data = await response.json()
-      setUser(data.user)
-      router.push('/games')
-    } catch (error) {
-      console.error('Login error:', error)
-      throw error
-    }
-  }, [router])
+    },
+    [router]
+  );
 
   const logout = useCallback(async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' })
-      setUser(null)
-      router.push('/login')
+      await fetch('/api/auth/logout', { method: 'POST' });
+      setUser(null);
+      router.push('/login');
     } catch (error) {
-      console.error('Logout error:', error)
+      console.error('Logout error:', error);
     }
-  }, [router])
+  }, [router]);
 
   const refresh = useCallback(async () => {
     try {
-      const response = await fetch('/api/auth/me')
+      const response = await fetch('/api/auth/me');
       if (response.ok) {
-        const data = await response.json()
-        setUser(data.user)
+        const data = await response.json();
+        setUser(data.user);
       }
     } catch (error) {
-      console.error('Auth check error:', error)
+      console.error('Auth check error:', error);
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        await refresh()
+        await refresh();
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
+    };
 
-    checkAuth()
-  }, [refresh])
+    checkAuth();
+  }, [refresh]);
 
   return (
     <AuthContext.Provider value={{ user, isLoading, login, logout, refresh }}>
       {children}
     </AuthContext.Provider>
-  )
-}
+  );
+};

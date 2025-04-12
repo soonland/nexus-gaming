@@ -1,6 +1,6 @@
-'use client'
+'use client';
 
-import { useState, useMemo, useRef } from 'react'
+import { AddIcon, EditIcon, DeleteIcon, SearchIcon } from '@chakra-ui/icons';
 import {
   Box,
   Button,
@@ -27,69 +27,65 @@ import {
   AlertDialogHeader,
   AlertDialogOverlay,
   useDisclosure,
-} from '@chakra-ui/react'
-import {
-  AddIcon,
-  EditIcon,
-  DeleteIcon,
-  SearchIcon,
-} from '@chakra-ui/icons'
-import Link from 'next/link'
-import { useCompanies } from '@/hooks/useCompanies'
+} from '@chakra-ui/react';
+import Link from 'next/link';
+import { useState, useMemo, useRef } from 'react';
+
+import { useCompanies } from '@/hooks/useCompanies';
 
 export default function CompaniesPage() {
-  const toast = useToast()
-  const [searchTerm, setSearchTerm] = useState('')
-  const { companies, deleteCompany, isLoading } = useCompanies()
-  const deleteDialog = useDisclosure()
-  const cancelRef = useRef<HTMLButtonElement>(null)
-  const [companyToDelete, setCompanyToDelete] = useState<string | null>(null)
+  const toast = useToast();
+  const [searchTerm, setSearchTerm] = useState('');
+  const { companies, deleteCompany, isLoading } = useCompanies();
+  const deleteDialog = useDisclosure();
+  const cancelRef = useRef<HTMLButtonElement>(null);
+  const [companyToDelete, setCompanyToDelete] = useState<string | null>(null);
 
   const filteredCompanies = useMemo(() => {
-    if (!companies) return []
-    
+    if (!companies) return [];
+
     return companies.filter(company => {
-      const searchString = searchTerm.toLowerCase()
-      return company.name.toLowerCase().includes(searchString)
-    })
-  }, [companies, searchTerm])
+      const searchString = searchTerm.toLowerCase();
+      return company.name.toLowerCase().includes(searchString);
+    });
+  }, [companies, searchTerm]);
 
   const handleDeleteClick = (id: string) => {
-    setCompanyToDelete(id)
-    deleteDialog.onOpen()
-  }
+    setCompanyToDelete(id);
+    deleteDialog.onOpen();
+  };
 
   const handleDeleteConfirm = async () => {
-    if (!companyToDelete) return
+    if (!companyToDelete) return;
 
     try {
-      await deleteCompany(companyToDelete)
+      await deleteCompany(companyToDelete);
       toast({
         title: 'Société supprimée',
         status: 'success',
         duration: 3000,
-      })
-      deleteDialog.onClose()
-      setCompanyToDelete(null)
+      });
+      deleteDialog.onClose();
+      setCompanyToDelete(null);
     } catch (error) {
       toast({
         title: 'Erreur',
-        description: "Une erreur est survenue lors de la suppression",
+        description: 'Une erreur est survenue lors de la suppression',
         status: 'error',
         duration: 5000,
-      })
+      });
     }
-  }
+  };
 
   return (
-    <Container maxW="container.xl" py={8}>
-      <VStack spacing={8} align="stretch">
-        <HStack justify="space-between">
-          <Heading size="lg">Gestion des sociétés</Heading>
+    <Container maxW='container.xl' py={8}>
+      <VStack align='stretch' spacing={8}>
+        <HStack justify='space-between'>
+          <Heading size='lg'>Gestion des sociétés</Heading>
           <Button
             as={Link}
-            href="/admin/companies/new"
-            colorScheme="blue"
+            colorScheme='blue'
+            href='/admin/companies/new'
             leftIcon={<AddIcon />}
           >
             Ajouter une société
@@ -97,49 +93,49 @@ export default function CompaniesPage() {
         </HStack>
 
         <Box>
-          <InputGroup maxW="md" mb={4}>
-            <InputLeftElement pointerEvents="none">
-              <SearchIcon color="gray.300" />
+          <InputGroup maxW='md' mb={4}>
+            <InputLeftElement pointerEvents='none'>
+              <SearchIcon color='gray.300' />
             </InputLeftElement>
             <Input
-              placeholder="Rechercher une société..."
+              placeholder='Rechercher une société...'
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={e => setSearchTerm(e.target.value)}
             />
           </InputGroup>
 
-          <Table variant="simple">
+          <Table variant='simple'>
             <Thead>
               <Tr>
                 <Th>Nom</Th>
                 <Th>Type</Th>
                 <Th>Jeux</Th>
-                <Th width="100px">Actions</Th>
+                <Th width='100px'>Actions</Th>
               </Tr>
             </Thead>
             <Tbody>
-              {filteredCompanies.map((company) => (
+              {filteredCompanies.map(company => (
                 <Tr key={company.id}>
                   <Td>{company.name}</Td>
                   <Td>
                     <HStack spacing={2}>
                       {company.isDeveloper && (
-                        <Badge colorScheme="blue">Développeur</Badge>
+                        <Badge colorScheme='blue'>Développeur</Badge>
                       )}
                       {company.isPublisher && (
-                        <Badge colorScheme="green">Éditeur</Badge>
+                        <Badge colorScheme='green'>Éditeur</Badge>
                       )}
                     </HStack>
                   </Td>
                   <Td>
                     <HStack spacing={2}>
                       {(company._count?.gamesAsDev ?? 0) > 0 && (
-                        <Badge colorScheme="blue">
+                        <Badge colorScheme='blue'>
                           {company._count?.gamesAsDev} dév.
                         </Badge>
                       )}
                       {(company._count?.gamesAsPub ?? 0) > 0 && (
-                        <Badge colorScheme="green">
+                        <Badge colorScheme='green'>
                           {company._count?.gamesAsPub} pub.
                         </Badge>
                       )}
@@ -148,18 +144,18 @@ export default function CompaniesPage() {
                   <Td>
                     <HStack spacing={2}>
                       <IconButton
+                        aria-label='Modifier'
                         as={Link}
+                        colorScheme='blue'
                         href={`/admin/companies/${company.id}/edit`}
                         icon={<EditIcon />}
-                        aria-label="Modifier"
-                        size="sm"
-                        colorScheme="blue"
+                        size='sm'
                       />
                       <IconButton
+                        aria-label='Supprimer'
+                        colorScheme='red'
                         icon={<DeleteIcon />}
-                        aria-label="Supprimer"
-                        size="sm"
-                        colorScheme="red"
+                        size='sm'
                         onClick={() => handleDeleteClick(company.id)}
                       />
                     </HStack>
@@ -180,17 +176,18 @@ export default function CompaniesPage() {
           <AlertDialogContent>
             <AlertDialogHeader>Supprimer la société</AlertDialogHeader>
             <AlertDialogBody>
-              Êtes-vous sûr de vouloir supprimer cette société ? Cette action ne peut pas être annulée.
+              Êtes-vous sûr de vouloir supprimer cette société ? Cette action ne
+              peut pas être annulée.
             </AlertDialogBody>
             <AlertDialogFooter>
               <Button ref={cancelRef} onClick={deleteDialog.onClose}>
                 Annuler
               </Button>
               <Button
-                colorScheme="red"
-                onClick={handleDeleteConfirm}
-                ml={3}
+                colorScheme='red'
                 isLoading={isLoading}
+                ml={3}
+                onClick={handleDeleteConfirm}
               >
                 Supprimer
               </Button>
@@ -199,5 +196,5 @@ export default function CompaniesPage() {
         </AlertDialogOverlay>
       </AlertDialog>
     </Container>
-  )
+  );
 }

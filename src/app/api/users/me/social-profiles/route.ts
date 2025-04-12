@@ -1,22 +1,23 @@
-import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
-import { UserSocialProfileData } from "@/types/social";
-import { cleanUsername, generatePlatformUrl } from "@/lib/social";
-import { getCurrentUser } from "@/lib/jwt";
+import { NextResponse } from 'next/server';
+
+import { getCurrentUser } from '@/lib/jwt';
+import prisma from '@/lib/prisma';
+import { cleanUsername, generatePlatformUrl } from '@/lib/social';
+import type { UserSocialProfileData } from '@/types/social';
 
 export async function GET() {
   const user = await getCurrentUser();
   if (!user) {
-    return new NextResponse("Unauthorized", { status: 401 });
+    return new NextResponse('Unauthorized', { status: 401 });
   }
 
   const userWithProfiles = await prisma.user.findUnique({
     where: { id: user.id },
-    include: { socialProfiles: true }
+    include: { socialProfiles: true },
   });
 
   if (!userWithProfiles) {
-    return new NextResponse("User not found", { status: 404 });
+    return new NextResponse('User not found', { status: 404 });
   }
 
   return NextResponse.json(userWithProfiles.socialProfiles);
@@ -25,7 +26,7 @@ export async function GET() {
 export async function POST(request: Request) {
   const user = await getCurrentUser();
   if (!user) {
-    return new NextResponse("Unauthorized", { status: 401 });
+    return new NextResponse('Unauthorized', { status: 401 });
   }
 
   try {
@@ -40,7 +41,9 @@ export async function POST(request: Request) {
     });
 
     if (existingProfile) {
-      return new NextResponse("Profile already exists for this platform", { status: 400 });
+      return new NextResponse('Profile already exists for this platform', {
+        status: 400,
+      });
     }
 
     const profile = await prisma.userSocialProfile.create({
@@ -54,7 +57,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(profile);
   } catch (error) {
-    console.error("Error creating social profile:", error);
-    return new NextResponse("Internal server error", { status: 500 });
+    console.error('Error creating social profile:', error);
+    return new NextResponse('Internal server error', { status: 500 });
   }
 }

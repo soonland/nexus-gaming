@@ -1,6 +1,5 @@
-'use client'
+'use client';
 
-import React from 'react'
 import {
   Box,
   Container,
@@ -9,77 +8,73 @@ import {
   HStack,
   Badge,
   Image,
-} from '@chakra-ui/react'
+} from '@chakra-ui/react';
+import type React from 'react';
 
 interface HeroProps {
-  title: string
-  image?: string
+  title: string;
+  image?: string;
   badges?: Array<{
-    id: string
-    label: string
-    colorScheme?: string
-  }>
-  metadata?: React.ReactNode
-  height?: { base: string; md: string }
+    id: string;
+    label: string;
+    colorScheme?: string;
+  }>;
+  metadata?: React.ReactNode;
+  height?: { base: string; md: string };
 }
 
-export function Hero({ 
-  title, 
-  image, 
-  badges = [], 
+export const Hero = ({
+  title,
+  image,
+  badges = [],
   metadata,
-  height = { base: '300px', md: '400px' }
-}: HeroProps) {
+  height = { base: '300px', md: '400px' },
+}: HeroProps) => {
   return (
-    <Box
-      position="relative"
-      height={height}
-      overflow="hidden"
-      mb={8}
-    >
+    <Box height={height} mb={8} overflow='hidden' position='relative'>
       <Box
-        position="absolute"
-        top={0}
-        left={0}
-        right={0}
+        bgGradient='linear(to-t, blackAlpha.800, blackAlpha.400)'
         bottom={0}
-        bgGradient="linear(to-t, blackAlpha.800, blackAlpha.400)"
+        left={0}
+        position='absolute'
+        right={0}
+        top={0}
         zIndex={1}
       />
       <Image
-        src={image || 'images/placeholder-game.png'}
         alt={title}
-        width="100%"
-        height="100%"
-        objectFit="cover"
+        height='100%'
+        objectFit='cover'
+        src={image || 'images/placeholder-game.png'}
+        width='100%'
       />
-      <Container maxW="container.xl" position="relative" zIndex={2} height="100%">
+      <Container
+        height='100%'
+        maxW='container.xl'
+        position='relative'
+        zIndex={2}
+      >
         <Stack
-          spacing={4}
-          position="absolute"
           bottom={8}
+          color='white'
           left={0}
+          position='absolute'
           right={0}
-          color="white"
+          spacing={4}
         >
           {badges.length > 0 && (
-            <HStack wrap="wrap" spacing={2}>
-              {badges.map((badge) => (
-                <Badge 
-                  key={badge.id} 
-                  colorScheme={badge.colorScheme || 'blue'}
-                >
+            <HStack spacing={2} wrap='wrap'>
+              {badges.map(badge => (
+                <Badge key={badge.id} colorScheme={badge.colorScheme || 'blue'}>
                   {badge.label}
                 </Badge>
               ))}
             </HStack>
           )}
-          <Heading size="2xl">{title}</Heading>
-          {metadata && (
-            <Box>{metadata}</Box>
-          )}
+          <Heading size='2xl'>{title}</Heading>
+          {metadata && <Box>{metadata}</Box>}
         </Stack>
       </Container>
     </Box>
-  )
-}
+  );
+};

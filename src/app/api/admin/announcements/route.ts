@@ -1,15 +1,16 @@
-import { NextResponse } from 'next/server'
-import prisma from '@/lib/prisma'
-import { canManageAnnouncements } from '@/lib/permissions'
-import { getCurrentUser } from '@/lib/jwt'
-import { AnnouncementType } from '@prisma/client'
+import { AnnouncementType } from '@prisma/client';
+import { NextResponse } from 'next/server';
+
+import { getCurrentUser } from '@/lib/jwt';
+import { canManageAnnouncements } from '@/lib/permissions';
+import prisma from '@/lib/prisma';
 
 // GET - Liste des annonces
 export async function GET() {
   try {
-    const user = await getCurrentUser()
+    const user = await getCurrentUser();
     if (!user || !canManageAnnouncements(user.role)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
     const announcements = await prisma.adminAnnouncement.findMany({
@@ -29,34 +30,34 @@ export async function GET() {
       orderBy: {
         createdAt: 'desc',
       },
-    })
+    });
 
-    return NextResponse.json(announcements)
+    return NextResponse.json(announcements);
   } catch (error) {
-    console.error('Error fetching announcements:', error)
+    console.error('Error fetching announcements:', error);
     return NextResponse.json(
       { error: 'Error fetching announcements' },
       { status: 500 }
-    )
+    );
   }
 }
 
 // POST - Créer une annonce
 export async function POST(request: Request) {
   try {
-    const user = await getCurrentUser()
+    const user = await getCurrentUser();
     if (!user || !canManageAnnouncements(user.role)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    const data = await request.json()
-    const { message, type, expiresAt } = data
+    const data = await request.json();
+    const { message, type, expiresAt } = data;
 
     if (!message || !type || !Object.values(AnnouncementType).includes(type)) {
       return NextResponse.json(
         { error: 'Message and valid type are required' },
         { status: 400 }
-      )
+      );
     }
 
     const announcement = await prisma.adminAnnouncement.create({
@@ -79,34 +80,34 @@ export async function POST(request: Request) {
           },
         },
       },
-    })
+    });
 
-    return NextResponse.json(announcement, { status: 201 })
+    return NextResponse.json(announcement, { status: 201 });
   } catch (error) {
-    console.error('Error creating announcement:', error)
+    console.error('Error creating announcement:', error);
     return NextResponse.json(
       { error: 'Error creating announcement' },
       { status: 500 }
-    )
+    );
   }
 }
 
 // PUT - Mettre à jour une annonce
 export async function PUT(request: Request) {
   try {
-    const user = await getCurrentUser()
+    const user = await getCurrentUser();
     if (!user || !canManageAnnouncements(user.role)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    const data = await request.json()
-    const { id, isActive } = data
+    const data = await request.json();
+    const { id, isActive } = data;
 
     if (!id || typeof isActive !== 'boolean') {
       return NextResponse.json(
         { error: 'ID and isActive status are required' },
         { status: 400 }
-      )
+      );
     }
 
     const announcement = await prisma.adminAnnouncement.update({
@@ -125,46 +126,46 @@ export async function PUT(request: Request) {
           },
         },
       },
-    })
+    });
 
-    return NextResponse.json(announcement)
+    return NextResponse.json(announcement);
   } catch (error) {
-    console.error('Error updating announcement:', error)
+    console.error('Error updating announcement:', error);
     return NextResponse.json(
       { error: 'Error updating announcement' },
       { status: 500 }
-    )
+    );
   }
 }
 
 // DELETE - Supprimer une annonce
 export async function DELETE(request: Request) {
   try {
-    const user = await getCurrentUser()
+    const user = await getCurrentUser();
     if (!user || !canManageAnnouncements(user.role)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    const { searchParams } = new URL(request.url)
-    const id = searchParams.get('id')
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
 
     if (!id) {
       return NextResponse.json(
         { error: 'Announcement ID is required' },
         { status: 400 }
-      )
+      );
     }
 
     await prisma.adminAnnouncement.delete({
       where: { id },
-    })
+    });
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting announcement:', error)
+    console.error('Error deleting announcement:', error);
     return NextResponse.json(
       { error: 'Error deleting announcement' },
       { status: 500 }
-    )
+    );
   }
 }

@@ -1,24 +1,24 @@
-import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
-import { UserSocialProfileData } from "@/types/social";
-import { cleanUsername, generatePlatformUrl } from "@/lib/social";
-import { getCurrentUser } from "@/lib/jwt";
+import { NextResponse } from 'next/server';
+
+import { getCurrentUser } from '@/lib/jwt';
+import prisma from '@/lib/prisma';
+import { cleanUsername, generatePlatformUrl } from '@/lib/social';
+import type { UserSocialProfileData } from '@/types/social';
 
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
-) {  
+) {
   const user = await getCurrentUser();
   if (!user) {
-    return new NextResponse("Unauthorized", { status: 401 });
+    return new NextResponse('Unauthorized', { status: 401 });
   }
 
   const { id } = await params;
   if (!id) {
-    return new NextResponse("Profile ID is required", { status: 400 });
+    return new NextResponse('Profile ID is required', { status: 400 });
   }
   try {
-
     const body: UserSocialProfileData = await request.json();
     const cleanedUsername = cleanUsername(body.username);
 
@@ -30,7 +30,7 @@ export async function PUT(
     });
 
     if (!profile) {
-      return new NextResponse("Profile not found", { status: 404 });
+      return new NextResponse('Profile not found', { status: 404 });
     }
 
     const existingProfile = await prisma.userSocialProfile.findFirst({
@@ -42,7 +42,9 @@ export async function PUT(
     });
 
     if (existingProfile) {
-      return new NextResponse("Profile already exists for this platform", { status: 400 });
+      return new NextResponse('Profile already exists for this platform', {
+        status: 400,
+      });
     }
 
     const updatedProfile = await prisma.userSocialProfile.update({
@@ -56,8 +58,8 @@ export async function PUT(
 
     return NextResponse.json(updatedProfile);
   } catch (error) {
-    console.error("Error updating social profile:", error);
-    return new NextResponse("Internal server error", { status: 500 });
+    console.error('Error updating social profile:', error);
+    return new NextResponse('Internal server error', { status: 500 });
   }
 }
 
@@ -68,7 +70,7 @@ export async function DELETE(
   const { id } = await params;
   const user = await getCurrentUser();
   if (!user) {
-    return new NextResponse("Unauthorized", { status: 401 });
+    return new NextResponse('Unauthorized', { status: 401 });
   }
 
   try {
@@ -80,7 +82,7 @@ export async function DELETE(
     });
 
     if (!profile) {
-      return new NextResponse("Profile not found", { status: 404 });
+      return new NextResponse('Profile not found', { status: 404 });
     }
 
     await prisma.userSocialProfile.delete({
@@ -89,7 +91,7 @@ export async function DELETE(
 
     return new NextResponse(null, { status: 204 });
   } catch (error) {
-    console.error("Error deleting social profile:", error);
-    return new NextResponse("Internal server error", { status: 500 });
+    console.error('Error deleting social profile:', error);
+    return new NextResponse('Internal server error', { status: 500 });
   }
 }

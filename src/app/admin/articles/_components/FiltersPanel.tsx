@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import {
   Box,
@@ -13,37 +13,38 @@ import {
   Text,
   VStack,
   HStack,
-  useColorModeValue
-} from '@chakra-ui/react'
-import { BiReset } from 'react-icons/bi'
-import type { ArticleStatus, CategoryData } from '@/types'
-import type { Role } from '@prisma/client'
+  useColorModeValue,
+} from '@chakra-ui/react';
+import type { Role } from '@prisma/client';
+import { BiReset } from 'react-icons/bi';
+
+import type { ArticleStatus, CategoryData } from '@/types';
 
 interface User {
-  id: string
-  username: string
-  email: string
-  role: Role
-  isActive: boolean
+  id: string;
+  username: string;
+  email: string;
+  role: Role;
+  isActive: boolean;
 }
 
 interface FiltersProps {
-  isVisible: boolean
-  selectedUser: string
-  selectedCategory: string
-  selectedStatuses: ArticleStatus[]
-  users: any
-  categories: CategoryData[]
-  statusCounts: { [key: string]: number }
-  hasActiveFilters: boolean
-  filteredCount: number
-  totalCount: number
-  isLoadingUsers: boolean
-  isLoadingCategories: boolean
-  onUserChange: (value: string) => void
-  onCategoryChange: (value: string) => void
-  onStatusesChange: (values: ArticleStatus[]) => void
-  onReset: () => void
+  isVisible: boolean;
+  selectedUser: string;
+  selectedCategory: string;
+  selectedStatuses: ArticleStatus[];
+  users: any;
+  categories: CategoryData[];
+  statusCounts: { [key: string]: number };
+  hasActiveFilters: boolean;
+  filteredCount: number;
+  totalCount: number;
+  isLoadingUsers: boolean;
+  isLoadingCategories: boolean;
+  onUserChange: (value: string) => void;
+  onCategoryChange: (value: string) => void;
+  onStatusesChange: (values: ArticleStatus[]) => void;
+  onReset: () => void;
 }
 
 export const FiltersPanel = ({
@@ -62,72 +63,69 @@ export const FiltersPanel = ({
   onUserChange,
   onCategoryChange,
   onStatusesChange,
-  onReset
+  onReset,
 }: FiltersProps) => {
-  const bg = useColorModeValue('gray.50', 'gray.900')
+  const bg = useColorModeValue('gray.50', 'gray.900');
 
-  if (!isVisible) return null
+  if (!isVisible) return null;
 
   return (
-    <Box
-      mt={4}
-      p={4}
-      borderWidth="1px"
-      borderRadius="lg"
-      bg={bg}
-      shadow="sm"
-    >
-      <Grid templateColumns="repeat(2, 1fr)" gap={4}>
+    <Box bg={bg} borderRadius='lg' borderWidth='1px' mt={4} p={4} shadow='sm'>
+      <Grid gap={4} templateColumns='repeat(2, 1fr)'>
         <FormControl>
           <FormLabel>Auteur</FormLabel>
           <Select
-            placeholder="Tous les auteurs"
+            _hover={{ borderColor: selectedUser ? 'blue.600' : undefined }}
+            borderColor={selectedUser ? 'blue.500' : undefined}
+            placeholder='Tous les auteurs'
             value={selectedUser}
-            onChange={(e) => onUserChange(e.target.value)}
-            borderColor={selectedUser ? "blue.500" : undefined}
-            _hover={{ borderColor: selectedUser ? "blue.600" : undefined }}
+            onChange={e => onUserChange(e.target.value)}
           >
-            {!isLoadingUsers && users?.users?.filter((user: User) => user.role !== 'USER').map((user: User) => (
-              <option key={user.id} value={user.id}>
-                {user.username}
-              </option>
-            ))}
+            {!isLoadingUsers &&
+              users?.users
+                ?.filter((user: User) => user.role !== 'USER')
+                .map((user: User) => (
+                  <option key={user.id} value={user.id}>
+                    {user.username}
+                  </option>
+                ))}
           </Select>
         </FormControl>
         <FormControl>
           <FormLabel>Catégorie</FormLabel>
           <Select
-            placeholder="Toutes les catégories"
+            _hover={{ borderColor: selectedCategory ? 'blue.600' : undefined }}
+            borderColor={selectedCategory ? 'blue.500' : undefined}
+            placeholder='Toutes les catégories'
             value={selectedCategory}
-            onChange={(e) => onCategoryChange(e.target.value)}
-            borderColor={selectedCategory ? "blue.500" : undefined}
-            _hover={{ borderColor: selectedCategory ? "blue.600" : undefined }}
+            onChange={e => onCategoryChange(e.target.value)}
           >
-            {!isLoadingCategories && categories?.map((category: CategoryData) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
+            {!isLoadingCategories &&
+              categories?.map((category: CategoryData) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
           </Select>
         </FormControl>
         <GridItem colSpan={2}>
           <FormControl>
             <FormLabel>Statut</FormLabel>
-            <CheckboxGroup 
+            <CheckboxGroup
               value={selectedStatuses}
-              onChange={(values) => onStatusesChange(values as ArticleStatus[])}
+              onChange={values => onStatusesChange(values as ArticleStatus[])}
             >
-              <HStack spacing={4} wrap="wrap">
-                <Checkbox value="DRAFT" colorScheme="yellow">
+              <HStack spacing={4} wrap='wrap'>
+                <Checkbox colorScheme='yellow' value='DRAFT'>
                   <Text>🔸 Brouillon ({statusCounts.DRAFT})</Text>
                 </Checkbox>
-                <Checkbox value="PENDING_APPROVAL" colorScheme="orange">
+                <Checkbox colorScheme='orange' value='PENDING_APPROVAL'>
                   <Text>🔶 En attente ({statusCounts.PENDING_APPROVAL})</Text>
                 </Checkbox>
-                <Checkbox value="PUBLISHED" colorScheme="green">
+                <Checkbox colorScheme='green' value='PUBLISHED'>
                   <Text>🟢 Publié ({statusCounts.PUBLISHED})</Text>
                 </Checkbox>
-                <Checkbox value="ARCHIVED" colorScheme="gray">
+                <Checkbox colorScheme='gray' value='ARCHIVED'>
                   <Text>⚪ Archivé ({statusCounts.ARCHIVED})</Text>
                 </Checkbox>
               </HStack>
@@ -135,24 +133,25 @@ export const FiltersPanel = ({
           </FormControl>
         </GridItem>
       </Grid>
-      <Box mt={6} pt={4} borderTopWidth={1}>
-        <VStack spacing={4} align="stretch">
-          <Text fontSize="sm" color="gray.500">
-            {filteredCount} article{filteredCount > 1 ? 's' : ''} trouvé{filteredCount > 1 ? 's' : ''}
+      <Box borderTopWidth={1} mt={6} pt={4}>
+        <VStack align='stretch' spacing={4}>
+          <Text color='gray.500' fontSize='sm'>
+            {filteredCount} article{filteredCount > 1 ? 's' : ''} trouvé
+            {filteredCount > 1 ? 's' : ''}
             {hasActiveFilters && ` sur ${totalCount}`}
           </Text>
           <Button
-            leftIcon={<BiReset />}
-            variant="outline"
-            size="sm"
-            onClick={onReset}
-            colorScheme="red"
+            colorScheme='red'
             isDisabled={!hasActiveFilters}
+            leftIcon={<BiReset />}
+            size='sm'
+            variant='outline'
+            onClick={onReset}
           >
             Réinitialiser les filtres
           </Button>
         </VStack>
       </Box>
     </Box>
-  )
-}
+  );
+};

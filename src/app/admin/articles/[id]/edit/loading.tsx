@@ -1,7 +1,7 @@
-'use client'
+'use client';
 
-import ArticleFormLoading from '@/components/loading/ArticleFormLoading'
+import ArticleFormLoading from '@/components/loading/ArticleFormLoading';
 
 export default function EditArticleLoadingPage() {
-  return <ArticleFormLoading />
+  return <ArticleFormLoading />;
 }

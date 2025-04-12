@@ -1,6 +1,7 @@
-import { NextResponse } from 'next/server'
-import prisma from '@/lib/prisma'
-import type { PlatformForm } from '@/types'
+import { NextResponse } from 'next/server';
+
+import prisma from '@/lib/prisma';
+import type { PlatformForm } from '@/types';
 
 // GET - Détails d'une plateforme
 export async function GET(
@@ -8,13 +9,13 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json(
         { error: 'Platform ID is required' },
         { status: 400 }
-      )
+      );
     }
 
     const platform = await prisma.platform.findUnique({
@@ -35,13 +36,13 @@ export async function GET(
           },
         },
       },
-    })
+    });
 
     if (!platform) {
       return NextResponse.json(
         { error: 'Platform not found' },
         { status: 404 }
-      )
+      );
     }
 
     const formattedPlatform = {
@@ -51,17 +52,17 @@ export async function GET(
       releaseDate: platform.releaseDate ? new Date(platform.releaseDate) : null,
       games: platform.games.map(game => ({
         ...game,
-        releaseDate: game.releaseDate ? new Date(game.releaseDate) : null
-      }))
-    }
+        releaseDate: game.releaseDate ? new Date(game.releaseDate) : null,
+      })),
+    };
 
-    return NextResponse.json(formattedPlatform)
+    return NextResponse.json(formattedPlatform);
   } catch (error) {
-    console.error('Error fetching platform:', error)
+    console.error('Error fetching platform:', error);
     return NextResponse.json(
       { error: 'Error fetching platform' },
       { status: 500 }
-    )
+    );
   }
 }
 
@@ -71,22 +72,22 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params
-    const body = await request.json() as PlatformForm
-    const { name, manufacturer, releaseDate } = body
+    const { id } = await params;
+    const body = (await request.json()) as PlatformForm;
+    const { name, manufacturer, releaseDate } = body;
 
     if (!id) {
       return NextResponse.json(
         { error: 'Platform ID is required' },
         { status: 400 }
-      )
+      );
     }
 
     if (!name || !manufacturer) {
       return NextResponse.json(
         { error: 'Name and manufacturer are required' },
         { status: 400 }
-      )
+      );
     }
 
     const platform = await prisma.platform.update({
@@ -112,7 +113,7 @@ export async function PATCH(
           },
         },
       },
-    })
+    });
 
     const formattedPlatform = {
       ...platform,
@@ -121,17 +122,17 @@ export async function PATCH(
       releaseDate: platform.releaseDate ? new Date(platform.releaseDate) : null,
       games: platform.games.map(game => ({
         ...game,
-        releaseDate: game.releaseDate ? new Date(game.releaseDate) : null
-      }))
-    }
+        releaseDate: game.releaseDate ? new Date(game.releaseDate) : null,
+      })),
+    };
 
-    return NextResponse.json(formattedPlatform)
+    return NextResponse.json(formattedPlatform);
   } catch (error) {
-    console.error('Error updating platform:', error)
+    console.error('Error updating platform:', error);
     return NextResponse.json(
       { error: 'Error updating platform' },
       { status: 500 }
-    )
+    );
   }
 }
 
@@ -141,25 +142,25 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json(
         { error: 'Platform ID is required' },
         { status: 400 }
-      )
+      );
     }
 
     await prisma.platform.delete({
       where: { id },
-    })
+    });
 
-    return new NextResponse(null, { status: 204 })
+    return new NextResponse(null, { status: 204 });
   } catch (error) {
-    console.error('Error deleting platform:', error)
+    console.error('Error deleting platform:', error);
     return NextResponse.json(
       { error: 'Error deleting platform' },
       { status: 500 }
-    )
+    );
   }
 }

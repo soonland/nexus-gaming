@@ -1,4 +1,4 @@
-'use client'
+'use client';
 import {
   Box,
   Container,
@@ -12,87 +12,96 @@ import {
   AlertIcon,
   Skeleton,
   useColorModeValue,
-  Heading
-} from '@chakra-ui/react'
-import { Hero } from '@/components/common/Hero'
-import { FaUser } from 'react-icons/fa'
-import { BsController, BsArrowLeft } from 'react-icons/bs'
-import { useParams, useRouter } from 'next/navigation'
-import { GameCard } from '@/components/games/GameCard'
-import { DateDisplay } from '@/components/common/DateDisplay'
-import { useArticle } from '@/hooks/useArticle'
-import type { GameData } from '@/types'
+  Heading,
+} from '@chakra-ui/react';
+import { useParams, useRouter } from 'next/navigation';
+import { BsController, BsArrowLeft } from 'react-icons/bs';
+import { FaUser } from 'react-icons/fa';
+
+import { DateDisplay } from '@/components/common/DateDisplay';
+import { Hero } from '@/components/common/Hero';
+import { GameCard } from '@/components/games/GameCard';
+import { useArticle } from '@/hooks/useArticle';
+import type { GameData } from '@/types';
 
 export default function ArticlePage() {
-  const params = useParams()
-  const router = useRouter()
-  const id = params.id as string
-  const { data: article, isLoading, error } = useArticle(id)
+  const params = useParams();
+  const router = useRouter();
+  const id = params.id as string;
+  const { data: article, isLoading, error } = useArticle(id);
 
-  const bgColor = useColorModeValue('white', 'gray.800')
-  const borderColor = useColorModeValue('gray.200', 'gray.700')
+  const bgColor = useColorModeValue('white', 'gray.800');
+  const borderColor = useColorModeValue('gray.200', 'gray.700');
 
   if (error) {
     return (
-      <Container maxW="container.xl" py={8}>
-        <Alert status="error">
+      <Container maxW='container.xl' py={8}>
+        <Alert status='error'>
           <AlertIcon />
           Error loading article
         </Alert>
       </Container>
-    )
+    );
   }
 
   if (isLoading) {
     return (
-      <Container maxW="container.xl" py={8}>
+      <Container maxW='container.xl' py={8}>
         <Stack spacing={6}>
-          <Skeleton height="400px" />
-          <Skeleton height="40px" />
+          <Skeleton height='400px' />
+          <Skeleton height='40px' />
           <Stack spacing={2}>
-            <Skeleton height="20px" />
-            <Skeleton height="20px" />
-            <Skeleton height="20px" />
+            <Skeleton height='20px' />
+            <Skeleton height='20px' />
+            <Skeleton height='20px' />
           </Stack>
         </Stack>
       </Container>
-    )
+    );
   }
 
-  if (!article) return null
+  if (!article) return null;
 
   return (
     <Box>
       <Hero
-        title={article.title}
+        badges={
+          article.category
+            ? [
+                {
+                  id: crypto.randomUUID(), // Use random ID since category doesn't have id in type
+                  label: article.category.name,
+                  colorScheme: 'blue',
+                },
+              ]
+            : []
+        }
         image={article.games[0]?.coverImage || undefined}
-        badges={article.category ? [{
-          id: crypto.randomUUID(), // Use random ID since category doesn't have id in type
-          label: article.category.name,
-          colorScheme: 'blue'
-        }] : []}
         metadata={
           <HStack spacing={6}>
             <HStack>
               <Icon as={FaUser} />
               <Text>{article.user.username}</Text>
             </HStack>
-            <DateDisplay 
-              date={article.publishedAt ? new Date(article.publishedAt) : new Date()}
-              color="white" 
+            <DateDisplay
+              color='white'
+              date={
+                article.publishedAt ? new Date(article.publishedAt) : new Date()
+              }
             />
           </HStack>
         }
+        title={article.title}
       />
 
       {/* Content Section */}
-      <Container maxW="container.xl" py={8}>
+      <Container maxW='container.xl' py={8}>
         <Stack spacing={8}>
           <Button
+            alignSelf='flex-start'
             leftIcon={<BsArrowLeft />}
-            variant="ghost"
+            variant='ghost'
             onClick={() => router.back()}
-            alignSelf="flex-start"
           >
             Retour aux articles
           </Button>
@@ -100,13 +109,13 @@ export default function ArticlePage() {
           {/* Article Content */}
           <Box
             bg={bgColor}
-            p={8}
-            rounded="lg"
-            border="1px"
+            border='1px'
             borderColor={borderColor}
-            shadow="sm"
+            p={8}
+            rounded='lg'
+            shadow='sm'
           >
-            <Text whiteSpace="pre-wrap">{article.content}</Text>
+            <Text whiteSpace='pre-wrap'>{article.content}</Text>
           </Box>
 
           {/* Games Section */}
@@ -114,10 +123,10 @@ export default function ArticlePage() {
             <Box>
               <HStack mb={4}>
                 <Icon as={BsController} />
-                <Heading size="md">Jeux mentionnés</Heading>
+                <Heading size='md'>Jeux mentionnés</Heading>
               </HStack>
               <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
-                {article.games.map((gameDetails) => {
+                {article.games.map(gameDetails => {
                   const game: Partial<GameData> = {
                     ...gameDetails,
                     platforms: [],
@@ -131,8 +140,8 @@ export default function ArticlePage() {
                       updatedAt: new Date(),
                       _count: {
                         gamesAsDev: 0,
-                        gamesAsPub: 0
-                      }
+                        gamesAsPub: 0,
+                      },
                     },
                     publisher: {
                       id: '',
@@ -143,13 +152,13 @@ export default function ArticlePage() {
                       updatedAt: new Date(),
                       _count: {
                         gamesAsDev: 0,
-                        gamesAsPub: 0
-                      }
+                        gamesAsPub: 0,
+                      },
                     },
                     releaseDate: null,
-                    description: ''
-                  }
-                  return <GameCard key={game.id} game={game} />
+                    description: '',
+                  };
+                  return <GameCard key={game.id} game={game} />;
                 })}
               </SimpleGrid>
             </Box>
@@ -157,5 +166,5 @@ export default function ArticlePage() {
         </Stack>
       </Container>
     </Box>
-  )
+  );
 }

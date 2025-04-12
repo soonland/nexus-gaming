@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server'
-import prisma from '@/lib/prisma'
+import { NextResponse } from 'next/server';
+
+import prisma from '@/lib/prisma';
 
 // GET - Détails d'une société
 export async function GET(
@@ -7,13 +8,13 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json(
         { error: 'Company ID is required' },
         { status: 400 }
-      )
+      );
     }
 
     const company = await prisma.company.findUnique({
@@ -32,22 +33,19 @@ export async function GET(
           },
         },
       },
-    })
+    });
 
     if (!company) {
-      return NextResponse.json(
-        { error: 'Company not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'Company not found' }, { status: 404 });
     }
 
-    return NextResponse.json(company)
+    return NextResponse.json(company);
   } catch (error) {
-    console.error('Error fetching company:', error)
+    console.error('Error fetching company:', error);
     return NextResponse.json(
       { error: 'Error fetching company' },
       { status: 500 }
-    )
+    );
   }
 }
 
@@ -57,15 +55,12 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params
-    const body = await request.json()
-    const { name, isDeveloper, isPublisher } = body
+    const { id } = await params;
+    const body = await request.json();
+    const { name, isDeveloper, isPublisher } = body;
 
     if (!name) {
-      return NextResponse.json(
-        { error: 'Name is required' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Name is required' }, { status: 400 });
     }
 
     const company = await prisma.company.update({
@@ -75,15 +70,15 @@ export async function PATCH(
         isDeveloper: isDeveloper ?? false,
         isPublisher: isPublisher ?? false,
       },
-    })
+    });
 
-    return NextResponse.json(company)
+    return NextResponse.json(company);
   } catch (error) {
-    console.error('Error updating company:', error)
+    console.error('Error updating company:', error);
     return NextResponse.json(
       { error: 'Error updating company' },
       { status: 500 }
-    )
+    );
   }
 }
 
@@ -93,18 +88,18 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params
+    const { id } = await params;
 
     await prisma.company.delete({
       where: { id },
-    })
+    });
 
-    return new NextResponse(null, { status: 204 })
+    return new NextResponse(null, { status: 204 });
   } catch (error) {
-    console.error('Error deleting company:', error)
+    console.error('Error deleting company:', error);
     return NextResponse.json(
       { error: 'Error deleting company' },
       { status: 500 }
-    )
+    );
   }
 }

@@ -1,7 +1,7 @@
-'use client'
+'use client';
 
-import ArticleListLoading from '@/components/loading/ArticleListLoading'
+import ArticleListLoading from '@/components/loading/ArticleListLoading';
 
 export default function ArticlesLoadingPage() {
-  return <ArticleListLoading />
+  return <ArticleListLoading />;
 }

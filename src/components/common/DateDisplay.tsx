@@ -1,59 +1,51 @@
-'use client'
+'use client';
 
-import { Text, Tooltip } from '@chakra-ui/react'
-import { formatters } from '@/lib/dayjs'
+import { Text, Tooltip } from '@chakra-ui/react';
+
+import { formatters } from '@/lib/dayjs';
 
 interface DateDisplayProps {
-  date: Date | string
-  format?: 'relative' | 'short' | 'long' | 'calendar'
-  withTooltip?: boolean
-  tooltipFormat?: 'relative' | 'short' | 'long' | 'calendar'
-  customFormat?: string
-  color?: string
+  date: Date | string;
+  format?: 'relative' | 'short' | 'long' | 'calendar';
+  withTooltip?: boolean;
+  tooltipFormat?: 'relative' | 'short' | 'long' | 'calendar';
+  customFormat?: string;
+  color?: string;
 }
 
-export function DateDisplay({
+export const DateDisplay = ({
   date,
   format = 'relative',
   withTooltip = true,
   tooltipFormat,
   customFormat,
   color = 'gray.500',
-}: DateDisplayProps) {
+}: DateDisplayProps) => {
   // Si un format personnalisé est fourni, l'utiliser
-  const formattedDate = customFormat 
+  const formattedDate = customFormat
     ? formatters.custom(date, customFormat)
-    : formatters[format](date)
+    : formatters[format](date);
 
   // Pour le tooltip, utiliser le format spécifié ou choisir un format complémentaire
-  const tooltipDate = tooltipFormat 
+  const tooltipDate = tooltipFormat
     ? formatters[tooltipFormat](date)
-    : format === 'relative' 
+    : format === 'relative'
       ? formatters.calendar(date)
-      : formatters.relative(date)
+      : formatters.relative(date);
 
   const content = (
-    <Text 
-      as="time" 
-      dateTime={formattedDate} 
-      color={color} 
-      fontSize="sm"
-    >
+    <Text as='time' color={color} dateTime={formattedDate} fontSize='sm'>
       {formattedDate}
     </Text>
-  )
+  );
 
   if (withTooltip) {
     return (
-      <Tooltip 
-        label={tooltipDate} 
-        hasArrow 
-        placement="top"
-      >
+      <Tooltip hasArrow label={tooltipDate} placement='top'>
         {content}
       </Tooltip>
-    )
+    );
   }
 
-  return content
-}
+  return content;
+};

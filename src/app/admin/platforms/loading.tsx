@@ -1,5 +1,5 @@
-import PlatformListLoading from '@/components/loading/PlatformListLoading'
+import PlatformListLoading from '@/components/loading/PlatformListLoading';
 
 export default function Loading() {
-  return <PlatformListLoading />
+  return <PlatformListLoading />;
 }

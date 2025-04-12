@@ -1,6 +1,6 @@
-'use client'
+'use client';
 
-import { useState, useCallback, useMemo, useEffect } from 'react'
+import { AddIcon, SearchIcon } from '@chakra-ui/icons';
 import {
   Button,
   FormControl,
@@ -27,15 +27,16 @@ import {
   List,
   ListItem,
   Checkbox,
-} from '@chakra-ui/react'
-import { AddIcon, SearchIcon } from '@chakra-ui/icons'
-import { usePlatforms } from '@/hooks/usePlatforms'
-import type { PlatformData } from '@/types'
+} from '@chakra-ui/react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
+
+import { usePlatforms } from '@/hooks/usePlatforms';
+import type { PlatformData } from '@/types';
 
 interface PlatformSelectProps {
-  selectedIds: string[]
-  onChange: (ids: string[]) => void
-  error?: string
+  selectedIds: string[];
+  onChange: (ids: string[]) => void;
+  error?: string;
 }
 
 export default function PlatformSelect({
@@ -43,61 +44,65 @@ export default function PlatformSelect({
   onChange,
   error,
 }: PlatformSelectProps) {
-  const { isOpen, onOpen, onClose } = useDisclosure()
-  const { platforms = [] } = usePlatforms()
-  const [tempSelectedIds, setTempSelectedIds] = useState(selectedIds)
-  const [searchTerm, setSearchTerm] = useState('')
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { platforms = [] } = usePlatforms();
+  const [tempSelectedIds, setTempSelectedIds] = useState(selectedIds);
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Reset temp selection when modal opens
   useEffect(() => {
-    setTempSelectedIds(selectedIds)
-  }, [selectedIds, isOpen])
+    setTempSelectedIds(selectedIds);
+  }, [selectedIds, isOpen]);
 
   const handlePlatformToggle = useCallback((platformId: string) => {
     setTempSelectedIds(current =>
       current.includes(platformId)
         ? current.filter(id => id !== platformId)
         : [...current, platformId]
-    )
-  }, [])
+    );
+  }, []);
 
   const handleSave = () => {
-    onChange(tempSelectedIds)
-    onClose()
-  }
+    onChange(tempSelectedIds);
+    onClose();
+  };
 
   const handleClose = () => {
-    setTempSelectedIds(selectedIds)
-    onClose()
-  }
+    setTempSelectedIds(selectedIds);
+    onClose();
+  };
 
   const removePlatform = (platformId: string) => {
-    onChange(selectedIds.filter(id => id !== platformId))
-  }
+    onChange(selectedIds.filter(id => id !== platformId));
+  };
 
-  const selectedPlatforms = useMemo(() => 
-    (platforms || []).filter((platform: PlatformData) => selectedIds.includes(platform.id)),
+  const selectedPlatforms = useMemo(
+    () =>
+      (platforms || []).filter((platform: PlatformData) =>
+        selectedIds.includes(platform.id)
+      ),
     [platforms, selectedIds]
-  )
+  );
 
   const filteredPlatforms = useMemo(() => {
-    if (!searchTerm) return platforms || []
-    const term = searchTerm.toLowerCase()
-    return (platforms || []).filter((platform: PlatformData) =>
-      platform.name.toLowerCase().includes(term) ||
-      platform.manufacturer.toLowerCase().includes(term)
-    )
-  }, [platforms, searchTerm])
+    if (!searchTerm) return platforms || [];
+    const term = searchTerm.toLowerCase();
+    return (platforms || []).filter(
+      (platform: PlatformData) =>
+        platform.name.toLowerCase().includes(term) ||
+        platform.manufacturer.toLowerCase().includes(term)
+    );
+  }, [platforms, searchTerm]);
 
   return (
     <FormControl isInvalid={!!error}>
-      <VStack align="stretch" spacing={3}>
+      <VStack align='stretch' spacing={3}>
         <Button
-          size="sm"
-          onClick={onOpen}
-          colorScheme="blue"
-          variant="outline"
+          colorScheme='blue'
           leftIcon={<AddIcon />}
+          size='sm'
+          variant='outline'
+          onClick={onOpen}
         >
           Sélectionner des plateformes
         </Button>
@@ -106,10 +111,10 @@ export default function PlatformSelect({
           {selectedPlatforms.map((platform: PlatformData) => (
             <WrapItem key={platform.id}>
               <Tag
-                size="md"
-                borderRadius="full"
-                variant="subtle"
-                colorScheme="blue"
+                borderRadius='full'
+                colorScheme='blue'
+                size='md'
+                variant='subtle'
               >
                 <TagLabel>{platform.name}</TagLabel>
                 <TagCloseButton onClick={() => removePlatform(platform.id)} />
@@ -119,21 +124,21 @@ export default function PlatformSelect({
         </Wrap>
       </VStack>
 
-      <Modal isOpen={isOpen} onClose={handleClose} size="xl">
+      <Modal isOpen={isOpen} size='xl' onClose={handleClose}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Sélectionner des plateformes</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <VStack spacing={4} align="stretch">
+            <VStack align='stretch' spacing={4}>
               <InputGroup>
-                <InputLeftElement pointerEvents="none">
-                  <SearchIcon color="gray.300" />
+                <InputLeftElement pointerEvents='none'>
+                  <SearchIcon color='gray.300' />
                 </InputLeftElement>
                 <Input
-                  placeholder="Rechercher une plateforme..."
+                  placeholder='Rechercher une plateforme...'
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={e => setSearchTerm(e.target.value)}
                 />
               </InputGroup>
 
@@ -146,7 +151,7 @@ export default function PlatformSelect({
                     >
                       <HStack>
                         <Text>{platform.name}</Text>
-                        <Text color="gray.500" fontSize="sm">
+                        <Text color='gray.500' fontSize='sm'>
                           ({platform.manufacturer})
                         </Text>
                       </HStack>
@@ -158,13 +163,15 @@ export default function PlatformSelect({
           </ModalBody>
           <ModalFooter>
             <HStack spacing={4}>
-              <Text color="gray.500">
-                {tempSelectedIds.length} plateforme{tempSelectedIds.length > 1 ? 's' : ''} sélectionnée{tempSelectedIds.length > 1 ? 's' : ''}
+              <Text color='gray.500'>
+                {tempSelectedIds.length} plateforme
+                {tempSelectedIds.length > 1 ? 's' : ''} sélectionnée
+                {tempSelectedIds.length > 1 ? 's' : ''}
               </Text>
-              <Button variant="ghost" onClick={handleClose}>
+              <Button variant='ghost' onClick={handleClose}>
                 Annuler
               </Button>
-              <Button colorScheme="blue" onClick={handleSave}>
+              <Button colorScheme='blue' onClick={handleSave}>
                 Confirmer la sélection
               </Button>
             </HStack>
@@ -174,5 +181,5 @@ export default function PlatformSelect({
 
       {error && <FormErrorMessage>{error}</FormErrorMessage>}
     </FormControl>
-  )
+  );
 }

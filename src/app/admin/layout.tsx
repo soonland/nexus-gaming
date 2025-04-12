@@ -1,24 +1,25 @@
-'use client'
+'use client';
 
-import { AdminAnnouncementBanner } from '@/components/admin/AdminAnnouncementBanner'
-import { Box } from '@chakra-ui/react'
-import { ReactNode } from 'react'
-import { useAuth } from '@/hooks/useAuth'
-import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { Box } from '@chakra-ui/react';
+import { useRouter } from 'next/navigation';
+import type { ReactNode } from 'react';
+import { useEffect } from 'react';
+
+import { AdminAnnouncementBanner } from '@/components/admin/AdminAnnouncementBanner';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
-  const { user, isLoading } = useAuth()
-  const router = useRouter()
+  const { user, isLoading } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
     if (!isLoading && (!user || !['ADMIN', 'SYSADMIN'].includes(user.role))) {
-      router.push('/')
+      router.push('/');
     }
-  }, [user, isLoading, router])
+  }, [user, isLoading, router]);
 
   if (isLoading || !user || !['ADMIN', 'SYSADMIN'].includes(user.role)) {
-    return null
+    return null;
   }
 
   return (
@@ -26,5 +27,5 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       <AdminAnnouncementBanner />
       <Box>{children}</Box>
     </Box>
-  )
+  );
 }

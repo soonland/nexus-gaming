@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import {
   Box,
@@ -11,72 +11,74 @@ import {
   Text,
   Button,
   useColorModeValue,
-} from '@chakra-ui/react'
-import { FiBell } from 'react-icons/fi'
-import Link from 'next/link'
-import { usePasswordExpiration } from '@/hooks/usePasswordExpiration'
+} from '@chakra-ui/react';
+import Link from 'next/link';
+import { FiBell } from 'react-icons/fi';
 
-export function NotificationBell() {
-  const passwordExpiration = usePasswordExpiration()
-  const textColor = useColorModeValue('gray.600', 'gray.300')
+import { usePasswordExpiration } from '@/hooks/usePasswordExpiration';
 
-  const hasNotifications = passwordExpiration?.isExpiringSoon || passwordExpiration?.isExpired
+export const NotificationBell = () => {
+  const passwordExpiration = usePasswordExpiration();
+  const textColor = useColorModeValue('gray.600', 'gray.300');
+
+  const hasNotifications =
+    passwordExpiration?.isExpiringSoon || passwordExpiration?.isExpired;
 
   return (
-    <Popover placement="bottom-end">
+    <Popover placement='bottom-end'>
       <PopoverTrigger>
-        <Box position="relative">
+        <Box position='relative'>
           <IconButton
-            aria-label="Notifications"
+            aria-label='Notifications'
             icon={<FiBell size={20} />}
-            variant="ghost"
-            position="relative"
+            position='relative'
+            variant='ghost'
           />
           {hasNotifications && (
             <Box
-              position="absolute"
-              top="-1"
-              right="-1"
-              w="3"
-              h="3"
-              bg="red.500"
-              borderRadius="full"
-              border="2px solid white"
+              bg='red.500'
+              border='2px solid white'
+              borderRadius='full'
+              h='3'
+              position='absolute'
+              right='-1'
+              top='-1'
+              w='3'
             />
           )}
         </Box>
       </PopoverTrigger>
-      <PopoverContent width="300px">
+      <PopoverContent width='300px'>
         <PopoverBody py={4}>
           {hasNotifications ? (
-            <VStack spacing={4} align="stretch">
+            <VStack align='stretch' spacing={4}>
               <Box>
-                <Text fontWeight="medium" fontSize="sm">
+                <Text fontSize='sm' fontWeight='medium'>
                   {passwordExpiration?.isExpired
                     ? 'Votre mot de passe a expiré'
-                    : `Votre mot de passe expire dans ${passwordExpiration?.daysUntilExpiration} jours`
-                  }
+                    : `Votre mot de passe expire dans ${passwordExpiration?.daysUntilExpiration} jours`}
                 </Text>
-                <Text fontSize="sm" color={textColor}>
-                  Pour votre sécurité, veuillez mettre à jour votre mot de passe.
+                <Text color={textColor} fontSize='sm'>
+                  Pour votre sécurité, veuillez mettre à jour votre mot de
+                  passe.
                 </Text>
               </Box>
               <Button
                 as={Link}
-                href="/profile"
-                size="sm"
                 colorScheme={passwordExpiration?.isExpired ? 'red' : 'blue'}
+                href='/profile'
+                size='sm'
               >
                 Changer le mot de passe
               </Button>
             </VStack>
           ) : (
-            <Text color="gray.500" fontSize="sm">
+            <Text color='gray.500' fontSize='sm'>
               Aucune notification
             </Text>
           )}
         </PopoverBody>
       </PopoverContent>
     </Popover>
-  )
-}
+  );
+};

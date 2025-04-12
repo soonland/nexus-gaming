@@ -1,4 +1,4 @@
-import { SocialPlatform } from '@prisma/client';
+import type { SocialPlatform } from '@prisma/client';
 
 export interface UserSocialProfileData {
   platform: SocialPlatform;

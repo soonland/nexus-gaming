@@ -1,6 +1,5 @@
-'use client'
+'use client';
 
-import { DateDisplay } from '@/components/common/DateDisplay'
 import {
   Box,
   Card,
@@ -13,99 +12,102 @@ import {
   HStack,
   Icon,
   useColorModeValue,
-} from '@chakra-ui/react'
-import { BsCalendar4 } from 'react-icons/bs'
-import { FaUser } from 'react-icons/fa'
-import Link from 'next/link'
-import type { ArticleData } from '@/types'
+} from '@chakra-ui/react';
+import Link from 'next/link';
+import { BsCalendar4 } from 'react-icons/bs';
+import { FaUser } from 'react-icons/fa';
+
+import { DateDisplay } from '@/components/common/DateDisplay';
+import type { ArticleData } from '@/types';
 
 interface ArticleCardProps {
-  article: ArticleData & { publishedAt: Date }
+  article: ArticleData & { publishedAt: Date };
 }
 
-export function ArticleCard({ article }: ArticleCardProps) {
-  const bgColor = useColorModeValue('white', 'gray.800')
+export const ArticleCard = ({ article }: ArticleCardProps) => {
+  const bgColor = useColorModeValue('white', 'gray.800');
   // Use first game's cover image or a placeholder
-  const coverImage = article.games[0]?.coverImage || '/images/placeholder-game.png'
-  const categoryColor = useColorModeValue('blue.500', 'blue.300')
+  const coverImage =
+    article.games[0]?.coverImage || '/images/placeholder-game.png';
+  const categoryColor = useColorModeValue('blue.500', 'blue.300');
   const overlayGradient = useColorModeValue(
     'linear(to-t, blackAlpha.600, blackAlpha.300)',
     'linear(to-t, blackAlpha.700, blackAlpha.400)'
-  )
+  );
 
   return (
     <Card
-      as={Link}
-      href={`/articles/${article.id}`}
-      bg={bgColor}
-      h="100%"
-      transition="transform 0.2s"
       _hover={{ transform: 'translateY(-4px)', textDecoration: 'none' }}
-      overflow="hidden"
+      as={Link}
+      bg={bgColor}
+      h='100%'
+      href={`/articles/${article.id}`}
+      overflow='hidden'
+      transition='transform 0.2s'
     >
-        <Box position="relative" height="200px" overflow="hidden">
-          <Box
-            position="absolute"
-            top={0}
-            left={0}
-            right={0}
-            bottom={0}
-            bgGradient={overlayGradient}
-            zIndex={1}
-          />
-          <Image
-            src={coverImage}
-            alt={article.title}
-            height="100%"
-            width="100%"
-            objectFit="cover"
-            onError={(e) => {
-              const img = e.target as HTMLImageElement
-              img.src = '/images/placeholder-game.png'
-            }}
-          />
-          {article.category && (
-            <Badge
-              position="absolute"
-              top={4}
-              left={4}
-              zIndex={2}
-              colorScheme="blue"
-              display="flex"
-              alignItems="center"
-              gap={1}
-              px={2}
-              py={1}
-            >
-              <Box as="span" w="2px" h="12px" bg={categoryColor} mr={2} />
-              {article.category.name}
-            </Badge>
-          )}
-        </Box>
+      <Box height='200px' overflow='hidden' position='relative'>
+        <Box
+          bgGradient={overlayGradient}
+          bottom={0}
+          left={0}
+          position='absolute'
+          right={0}
+          top={0}
+          zIndex={1}
+        />
+        <Image
+          alt={article.title}
+          height='100%'
+          objectFit='cover'
+          src={coverImage}
+          width='100%'
+          onError={e => {
+            const img = e.target as HTMLImageElement;
+            img.src = '/images/placeholder-game.png';
+          }}
+        />
+        {article.category && (
+          <Badge
+            alignItems='center'
+            colorScheme='blue'
+            display='flex'
+            gap={1}
+            left={4}
+            position='absolute'
+            px={2}
+            py={1}
+            top={4}
+            zIndex={2}
+          >
+            <Box as='span' bg={categoryColor} h='12px' mr={2} w='2px' />
+            {article.category.name}
+          </Badge>
+        )}
+      </Box>
       <CardBody>
         <Stack spacing={3}>
-          <Heading size="md" noOfLines={2}>
+          <Heading noOfLines={2} size='md'>
             {article.title}
           </Heading>
-          <Text fontSize="sm" color="gray.600" noOfLines={3}>
+          <Text color='gray.600' fontSize='sm' noOfLines={3}>
             {article.content}
           </Text>
-          <HStack color="gray.500" spacing={4} fontSize="sm">
+          <HStack color='gray.500' fontSize='sm' spacing={4}>
             <HStack>
               <Icon as={FaUser} />
               <Text>{article.user.username}</Text>
             </HStack>
             <HStack>
               <Icon as={BsCalendar4} />
-              <DateDisplay 
-                date={article.publishedAt} 
-                format="relative"
-                tooltipFormat="calendar"
+              <DateDisplay
+                date={article.publishedAt}
+                format='relative'
+                tooltipFormat='calendar'
               />
             </HStack>
           </HStack>
         </Stack>
       </CardBody>
     </Card>
-  )
-}
+  );
+};

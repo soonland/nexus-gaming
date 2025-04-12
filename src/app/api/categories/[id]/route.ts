@@ -1,39 +1,40 @@
-import { NextResponse } from 'next/server'
-import prisma from '@/lib/prisma'
-import { getCurrentUser } from '@/lib/jwt'
+import { NextResponse } from 'next/server';
+
+import { getCurrentUser } from '@/lib/jwt';
+import prisma from '@/lib/prisma';
 
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json(
         { error: 'Category ID is required' },
         { status: 400 }
-      )
+      );
     }
 
     const category = await prisma.category.findUnique({
       where: { id },
-    })
+    });
 
     if (!category) {
       return NextResponse.json(
         { error: 'Category not found' },
         { status: 404 }
-      )
+      );
     }
 
-    return NextResponse.json(category)
+    return NextResponse.json(category);
   } catch (error) {
-    console.error('Error fetching category:', error)
+    console.error('Error fetching category:', error);
     return NextResponse.json(
       { error: 'Error fetching category' },
       { status: 500 }
-    )
+    );
   }
 }
 
@@ -42,16 +43,13 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params
+    const { id } = await params;
 
-    const body = await request.json()
-    const { name } = body
+    const body = await request.json();
+    const { name } = body;
 
     if (!name) {
-      return NextResponse.json(
-        { error: 'Name is required' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Name is required' }, { status: 400 });
     }
 
     const category = await prisma.category.update({
@@ -59,15 +57,15 @@ export async function PATCH(
       data: {
         name,
       },
-    })
+    });
 
-    return NextResponse.json(category)
+    return NextResponse.json(category);
   } catch (error) {
-    console.error('Error updating category:', error)
+    console.error('Error updating category:', error);
     return NextResponse.json(
       { error: 'Error updating category' },
       { status: 500 }
-    )
+    );
   }
 }
 
@@ -76,26 +74,23 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params
-    const user = await getCurrentUser()
+    const { id } = await params;
+    const user = await getCurrentUser();
 
     if (!user || (user.role !== 'ADMIN' && user.role !== 'SYSADMIN')) {
-      return NextResponse.json(
-        { error: 'Not authorized' },
-        { status: 403 }
-      )
+      return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
     }
 
     await prisma.category.delete({
       where: { id },
-    })
+    });
 
-    return new NextResponse(null, { status: 204 })
+    return new NextResponse(null, { status: 204 });
   } catch (error) {
-    console.error('Error deleting category:', error)
+    console.error('Error deleting category:', error);
     return NextResponse.json(
       { error: 'Error deleting category' },
       { status: 500 }
-    )
+    );
   }
 }

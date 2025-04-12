@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import {
   Card,
@@ -10,53 +10,54 @@ import {
   HStack,
   Icon,
   useColorModeValue,
-} from '@chakra-ui/react'
-import { FaUser } from 'react-icons/fa'
-import Link from 'next/link'
-import type { Category, User } from '@prisma/client'
-import { DateDisplay } from '@/components/common/DateDisplay'
+} from '@chakra-ui/react';
+import type { Category, User } from '@prisma/client';
+import Link from 'next/link';
+import { FaUser } from 'react-icons/fa';
+
+import { DateDisplay } from '@/components/common/DateDisplay';
 
 interface ArticlePreviewProps {
   article: {
-    id: string
-    title: string
-    content: string
-    publishedAt: Date | string
-    category: Pick<Category, 'name'> | null
-    user: Pick<User, 'username'>
-  }
+    id: string;
+    title: string;
+    content: string;
+    publishedAt: Date | string;
+    category: Pick<Category, 'name'> | null;
+    user: Pick<User, 'username'>;
+  };
 }
 
-export function ArticlePreview({ article }: ArticlePreviewProps) {
+export const ArticlePreview = ({ article }: ArticlePreviewProps) => {
   if (!article.user) {
-    console.error('Article is missing user data:', article)
+    console.error('Article is missing user data:', article);
   }
-  const bgColor = useColorModeValue('white', 'gray.800')
+  const bgColor = useColorModeValue('white', 'gray.800');
 
   return (
     <Card
-      as={Link}
-      href={`/articles/${article.id}`}
-      bg={bgColor}
-      h="100%"
-      transition="transform 0.2s"
       _hover={{ transform: 'translateY(-4px)', textDecoration: 'none' }}
-      overflow="hidden"
+      as={Link}
+      bg={bgColor}
+      h='100%'
+      href={`/articles/${article.id}`}
+      overflow='hidden'
+      transition='transform 0.2s'
     >
       <CardBody>
         <Stack spacing={4}>
           {article.category && (
-            <Badge colorScheme="blue" alignSelf="flex-start">
+            <Badge alignSelf='flex-start' colorScheme='blue'>
               {article.category.name}
             </Badge>
           )}
-          <Heading size="md" noOfLines={2}>
+          <Heading noOfLines={2} size='md'>
             {article.title}
           </Heading>
-          <Text fontSize="sm" color="gray.600" noOfLines={3}>
+          <Text color='gray.600' fontSize='sm' noOfLines={3}>
             {article.content}
           </Text>
-          <HStack fontSize="sm" color="gray.500">
+          <HStack color='gray.500' fontSize='sm'>
             <HStack>
               <Icon as={FaUser} />
               <Text>{article.user.username}</Text>
@@ -66,5 +67,5 @@ export function ArticlePreview({ article }: ArticlePreviewProps) {
         </Stack>
       </CardBody>
     </Card>
-  )
-}
+  );
+};

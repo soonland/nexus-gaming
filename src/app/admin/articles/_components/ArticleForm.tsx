@@ -1,6 +1,5 @@
-'use client'
+'use client';
 
-import { useEffect } from 'react'
 import {
   Box,
   Button,
@@ -14,14 +13,17 @@ import {
   HStack,
   useToast,
   Select,
-} from '@chakra-ui/react'
-import { useRouter } from 'next/navigation'
-import { useForm } from 'react-hook-form'
-import { useCategories } from '@/hooks/useCategories'
-import GameSelector from './GameSelector'
-import { useAuth } from '@/hooks/useAuth'
-import { Role } from '@prisma/client'
-import type { ArticleForm as IArticleForm, ArticleStatus } from '@/types'
+} from '@chakra-ui/react';
+import type { Role } from '@prisma/client';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+
+import { useAuth } from '@/hooks/useAuth';
+import { useCategories } from '@/hooks/useCategories';
+import type { ArticleForm as IArticleForm, ArticleStatus } from '@/types';
+
+import GameSelector from './GameSelector';
 
 const getAvailableStatuses = (role?: Role): ArticleStatus[] => {
   switch (role) {
@@ -37,10 +39,10 @@ const getAvailableStatuses = (role?: Role): ArticleStatus[] => {
 };
 
 interface ArticleFormProps {
-  initialData?: Partial<IArticleForm> & { user?: { username: string } }
-  onSubmit: (data: IArticleForm) => Promise<void>
-  isLoading?: boolean
-  mode?: 'create' | 'edit'
+  initialData?: Partial<IArticleForm> & { user?: { username: string } };
+  onSubmit: (data: IArticleForm) => Promise<void>;
+  isLoading?: boolean;
+  mode?: 'create' | 'edit';
 }
 
 export default function ArticleForm({
@@ -49,12 +51,12 @@ export default function ArticleForm({
   isLoading,
   mode = 'create',
 }: ArticleFormProps) {
-  const router = useRouter()
-  const toast = useToast()
-  const { categories } = useCategories()
-  const { user } = useAuth()
-  const availableStatuses = getAvailableStatuses(user?.role)
-  
+  const router = useRouter();
+  const toast = useToast();
+  const { categories } = useCategories();
+  const { user } = useAuth();
+  const availableStatuses = getAvailableStatuses(user?.role);
+
   const {
     register,
     handleSubmit,
@@ -70,10 +72,10 @@ export default function ArticleForm({
       status: initialData?.status || 'DRAFT',
       publishedAt: initialData?.publishedAt,
     },
-  })
+  });
 
-  const status = watch('status')
-  const gameIds = watch('gameIds') ?? []
+  const status = watch('status');
+  const gameIds = watch('gameIds') ?? [];
 
   // Vérification si le statut actuel est autorisé
   useEffect(() => {
@@ -86,66 +88,70 @@ export default function ArticleForm({
     try {
       // Si l'article est publié et qu'il n'y a pas de date de publication, on la définit
       if (data.status === 'PUBLISHED' && !data.publishedAt) {
-        data.publishedAt = new Date().toISOString()
+        data.publishedAt = new Date().toISOString();
       }
-      
-      await onSubmit(data)
+
+      await onSubmit(data);
       toast({
         title: mode === 'create' ? 'Article créé' : 'Article mis à jour',
         status: 'success',
         duration: 3000,
-      })
-      router.push('/admin/articles')
+      });
+      router.push('/admin/articles');
     } catch (error) {
       toast({
         title: 'Erreur',
-        description: "Une erreur est survenue",
+        description: 'Une erreur est survenue',
         status: 'error',
         duration: 5000,
-      })
+      });
     }
-  }
+  };
 
   return (
-    <Box as="form" onSubmit={handleSubmit(onSubmitForm)}>
+    <Box as='form' onSubmit={handleSubmit(onSubmitForm)}>
       <Stack spacing={6}>
-          <HStack spacing={4} width="100%">
-            {/* Champ auteur en lecture seule */}
-            <FormControl flex="1">
-              <FormLabel>Auteur</FormLabel>
-              <Input
-                value={mode === 'create' ? user?.username : initialData?.user?.username}
-                isReadOnly
-                bg="gray.50"
-                _dark={{ bg: 'gray.700' }}
-              />
+        <HStack spacing={4} width='100%'>
+          {/* Champ auteur en lecture seule */}
+          <FormControl flex='1'>
+            <FormLabel>Auteur</FormLabel>
+            <Input
+              isReadOnly
+              _dark={{ bg: 'gray.700' }}
+              bg='gray.50'
+              value={
+                mode === 'create' ? user?.username : initialData?.user?.username
+              }
+            />
+            <FormHelperText>&nbsp;</FormHelperText>
+          </FormControl>
+
+          <FormControl flex='1' isInvalid={!!errors.categoryId}>
+            <FormLabel>Catégorie</FormLabel>
+            <Select
+              {...register('categoryId', {
+                required: 'La catégorie est requise',
+              })}
+              placeholder='Sélectionner une catégorie'
+            >
+              {categories?.map(category => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </Select>
+            {errors.categoryId ? (
+              <FormErrorMessage>{errors.categoryId.message}</FormErrorMessage>
+            ) : (
               <FormHelperText>&nbsp;</FormHelperText>
-            </FormControl>
+            )}
+          </FormControl>
 
-            <FormControl isInvalid={!!errors.categoryId} flex="1">
-              <FormLabel>Catégorie</FormLabel>
-              <Select
-                {...register('categoryId', { required: 'La catégorie est requise' })}
-                placeholder="Sélectionner une catégorie"
-              >
-                {categories?.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
-              </Select>
-              {errors.categoryId ? (
-                <FormErrorMessage>{errors.categoryId.message}</FormErrorMessage>
-              ) : (
-                <FormHelperText>&nbsp;</FormHelperText>
-              )}
-            </FormControl>
-
-            <FormControl flex="1">
-              <FormLabel>Statut de l'article</FormLabel>
+          <FormControl flex='1'>
+            <FormLabel>Statut de l'article</FormLabel>
             <Select
               value={status}
-              onChange={(e) => {
+              onChange={e => {
                 setValue('status', e.target.value as ArticleStatus);
                 if (e.target.value === 'PUBLISHED' && !watch('publishedAt')) {
                   setValue('publishedAt', new Date().toISOString());
@@ -153,74 +159,73 @@ export default function ArticleForm({
               }}
             >
               {availableStatuses.includes('DRAFT') && (
-                <option value="DRAFT">🔸 Brouillon</option>
+                <option value='DRAFT'>🔸 Brouillon</option>
               )}
               {availableStatuses.includes('PENDING_APPROVAL') && (
-                <option value="PENDING_APPROVAL">🔶 En attente d'approbation</option>
+                <option value='PENDING_APPROVAL'>
+                  🔶 En attente d'approbation
+                </option>
               )}
               {availableStatuses.includes('PUBLISHED') && (
-                <option value="PUBLISHED">🟢 Publié</option>
+                <option value='PUBLISHED'>🟢 Publié</option>
               )}
               {availableStatuses.includes('ARCHIVED') && (
-                <option value="ARCHIVED">⚪ Archivé</option>
+                <option value='ARCHIVED'>⚪ Archivé</option>
               )}
             </Select>
-              <FormHelperText>
-                {status === 'DRAFT' && "L'article n'est visible que par vous"}
-                {status === 'PENDING_APPROVAL' && "En attente de validation par un modérateur"}
-                {status === 'PUBLISHED' && "L'article est visible publiquement"}
-                {status === 'ARCHIVED' && "L'article n'est plus visible"}
-              </FormHelperText>
-            </FormControl>
-          </HStack>
-
-          <FormControl isInvalid={!!errors.title}>
-            <FormLabel>Titre</FormLabel>
-            <Input
-              {...register('title', { required: 'Le titre est requis' })}
-              placeholder="Titre de l'article"
-            />
-            {errors.title && (
-              <FormErrorMessage>{errors.title.message}</FormErrorMessage>
-            )}
+            <FormHelperText>
+              {status === 'DRAFT' && "L'article n'est visible que par vous"}
+              {status === 'PENDING_APPROVAL' &&
+                'En attente de validation par un modérateur'}
+              {status === 'PUBLISHED' && "L'article est visible publiquement"}
+              {status === 'ARCHIVED' && "L'article n'est plus visible"}
+            </FormHelperText>
           </FormControl>
+        </HStack>
 
-          <FormControl isInvalid={!!errors.content}>
-            <FormLabel>Contenu</FormLabel>
-            <Textarea
-              {...register('content', { required: 'Le contenu est requis' })}
-              placeholder="Contenu de l'article"
-              minH="300px"
-            />
-            {errors.content && (
-              <FormErrorMessage>{errors.content.message}</FormErrorMessage>
-            )}
-          </FormControl>
+        <FormControl isInvalid={!!errors.title}>
+          <FormLabel>Titre</FormLabel>
+          <Input
+            {...register('title', { required: 'Le titre est requis' })}
+            placeholder="Titre de l'article"
+          />
+          {errors.title && (
+            <FormErrorMessage>{errors.title.message}</FormErrorMessage>
+          )}
+        </FormControl>
 
-          <FormControl>
-            <FormLabel>Jeux associés</FormLabel>
-            <GameSelector
-              selectedIds={gameIds}
-              onChange={(ids) => setValue('gameIds', ids)}
-            />
-          </FormControl>
+        <FormControl isInvalid={!!errors.content}>
+          <FormLabel>Contenu</FormLabel>
+          <Textarea
+            {...register('content', { required: 'Le contenu est requis' })}
+            minH='300px'
+            placeholder="Contenu de l'article"
+          />
+          {errors.content && (
+            <FormErrorMessage>{errors.content.message}</FormErrorMessage>
+          )}
+        </FormControl>
 
-          <HStack justify="flex-end" spacing={4} pt={4}>
-            <Button
-              onClick={() => router.push('/admin/articles')}
-              variant="ghost"
-            >
-              Annuler
-            </Button>
-            <Button
-              type="submit"
-              colorScheme="blue"
-              isLoading={isLoading}
-            >
-              {mode === 'create' ? 'Créer' : 'Mettre à jour'}
-            </Button>
-          </HStack>
+        <FormControl>
+          <FormLabel>Jeux associés</FormLabel>
+          <GameSelector
+            selectedIds={gameIds}
+            onChange={ids => setValue('gameIds', ids)}
+          />
+        </FormControl>
+
+        <HStack justify='flex-end' pt={4} spacing={4}>
+          <Button
+            variant='ghost'
+            onClick={() => router.push('/admin/articles')}
+          >
+            Annuler
+          </Button>
+          <Button colorScheme='blue' isLoading={isLoading} type='submit'>
+            {mode === 'create' ? 'Créer' : 'Mettre à jour'}
+          </Button>
+        </HStack>
       </Stack>
     </Box>
-  )
+  );
 }

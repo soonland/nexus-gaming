@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import {
   Box,
@@ -8,17 +8,17 @@ import {
   Button,
   Stack,
   FormErrorMessage,
-} from '@chakra-ui/react'
-import { useForm } from 'react-hook-form'
+} from '@chakra-ui/react';
+import { useForm } from 'react-hook-form';
 
 interface CategoryFormProps {
   initialData?: {
-    name: string
-  }
-  onSubmit: (data: { name: string }) => Promise<void>
-  onCancel: () => void
-  isLoading?: boolean
-  mode?: 'create' | 'edit'
+    name: string;
+  };
+  onSubmit: (data: { name: string }) => Promise<void>;
+  onCancel: () => void;
+  isLoading?: boolean;
+  mode?: 'create' | 'edit';
 }
 
 export default function CategoryForm({
@@ -28,7 +28,6 @@ export default function CategoryForm({
   isLoading,
   mode = 'create',
 }: CategoryFormProps) {
-
   const {
     register,
     handleSubmit,
@@ -37,49 +36,48 @@ export default function CategoryForm({
     defaultValues: {
       name: initialData?.name || '',
     },
-  })
+  });
 
   const onSubmitForm = async (data: { name: string }) => {
-    await onSubmit(data)
-  }
+    await onSubmit(data);
+  };
 
   return (
-    <Box as="form" onSubmit={handleSubmit(onSubmitForm)}>
+    <Box as='form' onSubmit={handleSubmit(onSubmitForm)}>
       <Stack spacing={6}>
-          <FormControl isInvalid={!!errors.name}>
-            <FormLabel>Nom</FormLabel>
-            <Input
-              {...register('name', { required: 'Le nom est requis' })}
-              placeholder="Nom de la catégorie"
-            />
-            {errors.name && (
-              <FormErrorMessage>{errors.name.message}</FormErrorMessage>
-            )}
-          </FormControl>
+        <FormControl isInvalid={!!errors.name}>
+          <FormLabel>Nom</FormLabel>
+          <Input
+            {...register('name', { required: 'Le nom est requis' })}
+            placeholder='Nom de la catégorie'
+          />
+          {errors.name && (
+            <FormErrorMessage>{errors.name.message}</FormErrorMessage>
+          )}
+        </FormControl>
 
-          <Stack
-            direction="row"
-            spacing={4}
-            justify="flex-end"
-            width="100%"
-            pt={4}
+        <Stack
+          direction='row'
+          justify='flex-end'
+          pt={4}
+          spacing={4}
+          width='100%'
+        >
+          <Button variant='ghost' onClick={onCancel}>
+            Annuler
+          </Button>
+          <Button
+            colorScheme='blue'
+            isLoading={isLoading}
+            loadingText={
+              mode === 'create' ? 'Création...' : 'Enregistrement...'
+            }
+            type='submit'
           >
-            <Button
-              onClick={onCancel}
-              variant="ghost"
-            >
-              Annuler
-            </Button>
-            <Button
-              type="submit"
-              colorScheme="blue"
-              isLoading={isLoading}
-              loadingText={mode === 'create' ? 'Création...' : 'Enregistrement...'}
-            >
-              {mode === 'create' ? 'Créer' : 'Mettre à jour'}
-            </Button>
-          </Stack>
+            {mode === 'create' ? 'Créer' : 'Mettre à jour'}
+          </Button>
+        </Stack>
       </Stack>
     </Box>
-  )
+  );
 }
