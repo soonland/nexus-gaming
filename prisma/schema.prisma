@@ -136,7 +136,7 @@ model AdminAnnouncement {
   id          String    @id @default(uuid())
   message     String
   type        AnnouncementType
-  isActive    Boolean   @default(true)
+  isActive    String   @default("active")
   expiresAt   DateTime?
   createdAt   DateTime  @default(now())
   createdBy   User      @relation(fields: [createdById], references: [id])

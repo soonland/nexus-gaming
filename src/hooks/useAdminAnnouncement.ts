@@ -8,13 +8,15 @@ export interface IAdminAnnouncement {
   id: string;
   message: string;
   type: AnnouncementType;
-  isActive: boolean;
+  isActive: ActiveStatus;
   expiresAt: string | null;
   createdAt: string;
   createdBy: {
     username: string;
   };
 }
+
+export type ActiveStatus = 'active' | 'inactive';
 
 interface ICreateAnnouncementData {
   message: string;
@@ -62,7 +64,7 @@ export function useAdminAnnouncement(id?: string) {
     message: string;
     type: AnnouncementType;
     expiresAt?: Date | null;
-    isActive: boolean;
+    isActive: ActiveStatus;
   }
 
   const updateAnnouncement = useMutation({
@@ -72,7 +74,7 @@ export function useAdminAnnouncement(id?: string) {
         expiresAt: data.expiresAt
           ? dayjs(data.expiresAt).toISOString()
           : undefined,
-        isActive: Boolean(data.isActive),
+        isActive: data.isActive,
       });
       return response.data;
     },
@@ -95,11 +97,17 @@ export function useAdminAnnouncement(id?: string) {
   });
 
   const toggleAnnouncementStatus = useMutation({
-    mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) => {
+    mutationFn: async ({
+      id,
+      isActive,
+    }: {
+      id: string;
+      isActive: ActiveStatus;
+    }) => {
       const response = await axios.patch(
         `/api/admin/announcements/${id}/status`,
         {
-          isActive: Boolean(isActive),
+          isActive,
         }
       );
       return response.data;

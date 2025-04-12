@@ -17,12 +17,13 @@ import { useRouter } from 'next/navigation';
 import { useForm, Controller } from 'react-hook-form';
 
 import { ChakraDateTimePicker } from '@/components/common/ChakraDateTimePicker';
+import type { ActiveStatus } from '@/hooks/useAdminAnnouncement';
 
 interface IAnnouncementForm {
   message: string;
   type: AnnouncementType;
   expiresAt?: Date | null;
-  isActive: boolean;
+  isActive: ActiveStatus;
 }
 
 interface IAnnouncementFormProps {
@@ -53,7 +54,7 @@ const AnnouncementForm = ({
       expiresAt: initialData?.expiresAt
         ? new Date(initialData.expiresAt)
         : null,
-      isActive: initialData?.isActive ?? true,
+      isActive: initialData?.isActive ?? 'active',
     },
   });
 
@@ -121,13 +122,9 @@ const AnnouncementForm = ({
 
         <FormControl>
           <FormLabel>Statut</FormLabel>
-          <Select
-            {...register('isActive', {
-              setValueAs: (value: string) => value === 'true',
-            })}
-          >
-            <option value='true'>Active</option>
-            <option value='false'>Inactive</option>
+          <Select {...register('isActive')}>
+            <option value='active'>Active</option>
+            <option value='inactive'>Inactive</option>
           </Select>
         </FormControl>
 

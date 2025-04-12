@@ -26,6 +26,7 @@ import { FiList, FiInfo, FiAlertCircle, FiAlertTriangle } from 'react-icons/fi';
 import { useAdminAnnouncement } from '@/hooks/useAdminAnnouncement';
 import type { IAdminAnnouncement } from '@/hooks/useAdminAnnouncement';
 import { useAuth } from '@/hooks/useAuth';
+import dayjs from '@/lib/dayjs';
 
 const typeToAlertProps = {
   [AnnouncementType.INFO]: {
@@ -103,7 +104,11 @@ export const AdminAnnouncementBanner = () => {
   }
 
   // Ne montrer que les annonces actives
-  const activeAnnouncements = announcements.filter(a => a.isActive);
+  const activeAnnouncements = announcements.filter(
+    a =>
+      a.isActive === 'active' &&
+      (a.expiresAt === null || dayjs().isBefore(a.expiresAt))
+  );
   if (!activeAnnouncements.length) {
     return null;
   }
