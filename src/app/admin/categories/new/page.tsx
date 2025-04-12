@@ -13,7 +13,7 @@ import { useRouter } from 'next/navigation';
 import CategoryForm from '@/app/admin/categories/_components/CategoryForm';
 import { useCategories } from '@/hooks/useCategories';
 
-export default function NewCategoryPage() {
+const NewCategoryPage = () => {
   const { createCategory, isCreating } = useCategories();
   const router = useRouter();
   const toast = useToast();
@@ -54,4 +54,6 @@ export default function NewCategoryPage() {
       </Card>
     </Container>
   );
-}
+};
+
+export default NewCategoryPage;

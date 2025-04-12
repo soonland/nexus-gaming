@@ -11,13 +11,13 @@ import {
 } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
 
-export default function NewCompanyError({
+const NewCompanyError = ({
   error,
   reset,
 }: {
   error: Error;
   reset: () => void;
-}) {
+}) => {
   const router = useRouter();
 
   return (
@@ -56,4 +56,6 @@ export default function NewCompanyError({
       </VStack>
     </Container>
   );
-}
+};
+
+export default NewCompanyError;

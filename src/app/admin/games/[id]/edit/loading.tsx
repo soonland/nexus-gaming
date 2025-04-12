@@ -2,6 +2,8 @@
 
 import GameFormLoading from '@/components/loading/GameFormLoading';
 
-export default function EditGameLoading() {
+const EditGameLoading = () => {
   return <GameFormLoading />;
-}
+};
+
+export default EditGameLoading;

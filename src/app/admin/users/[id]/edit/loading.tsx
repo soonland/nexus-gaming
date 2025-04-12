@@ -1,6 +1,6 @@
 import { Container, Heading, VStack, Skeleton, Box } from '@chakra-ui/react';
 
-export default function EditUserLoading() {
+const EditUserLoading = () => {
   return (
     <Container maxW='container.md' py={8}>
       <VStack align='stretch' spacing={8}>
@@ -19,4 +19,6 @@ export default function EditUserLoading() {
       </VStack>
     </Container>
   );
-}
+};
+
+export default EditUserLoading;

@@ -17,7 +17,7 @@ import {
   WrapItem,
 } from '@chakra-ui/react';
 
-export default function GameListLoading() {
+const GameListLoading = () => {
   const borderColor = useColorModeValue('gray.200', 'gray.700');
 
   return (
@@ -94,4 +94,6 @@ export default function GameListLoading() {
       </VStack>
     </Container>
   );
-}
+};
+
+export default GameListLoading;

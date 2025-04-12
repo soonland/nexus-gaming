@@ -15,7 +15,7 @@ import {
 
 import type { GameData } from '@/types';
 
-interface GameSelectorListProps {
+interface IGameSelectorListProps {
   games?: Array<
     Pick<GameData, 'id' | 'title'> & { platforms?: Array<{ name: string }> }
   >;
@@ -25,13 +25,13 @@ interface GameSelectorListProps {
   onSearchChange: (value: string) => void;
 }
 
-export default function GameSelectorList({
+const GameSelectorList = ({
   games = [],
   selectedGames,
   onGameSelect,
   searchTerm,
   onSearchChange,
-}: GameSelectorListProps) {
+}: IGameSelectorListProps) => {
   const hoverBg = useColorModeValue('gray.50', 'gray.700');
 
   return (
@@ -78,4 +78,6 @@ export default function GameSelectorList({
       </Box>
     </Stack>
   );
-}
+};
+
+export default GameSelectorList;

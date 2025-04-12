@@ -40,7 +40,7 @@ import { useState, useMemo, useRef } from 'react';
 import { DateDisplay } from '@/components/common/DateDisplay';
 import { usePlatforms } from '@/hooks/usePlatforms';
 
-export default function PlatformsPage() {
+const PlatformsPage = () => {
   const toast = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const { platforms, deletePlatform, isDeleting } = usePlatforms();
@@ -214,4 +214,6 @@ export default function PlatformsPage() {
       </AlertDialog>
     </Container>
   );
-}
+};
+
+export default PlatformsPage;

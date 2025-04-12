@@ -2,7 +2,7 @@
 
 import { Container, Alert, AlertIcon } from '@chakra-ui/react';
 
-export default function ArticlesErrorPage() {
+const ArticlesErrorPage = () => {
   return (
     <Container maxW='container.xl' py={8}>
       <Alert status='error'>
@@ -11,4 +11,6 @@ export default function ArticlesErrorPage() {
       </Alert>
     </Container>
   );
-}
+};
+
+export default ArticlesErrorPage;

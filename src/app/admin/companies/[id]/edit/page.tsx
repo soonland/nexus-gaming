@@ -17,7 +17,7 @@ import { useCompanies, useCompany } from '@/hooks/useCompanies';
 
 import CompanyForm from '../../_components/CompanyForm';
 
-export default function EditCompanyPage() {
+const EditCompanyPage = () => {
   const params = useParams();
   const id = params.id as string;
   const { company, isLoading } = useCompany(id);
@@ -87,4 +87,6 @@ export default function EditCompanyPage() {
       </Card>
     </Container>
   );
-}
+};
+
+export default EditCompanyPage;

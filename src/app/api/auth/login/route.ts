@@ -4,13 +4,13 @@ import { NextResponse } from 'next/server';
 
 import { signToken } from '@/lib/jwt';
 import prisma from '@/lib/prisma';
-import type { AuthResponse, LoginCredentials } from '@/types/auth';
+import type { IAuthResponse, ILoginCredentials } from '@/types/auth';
 
 const TOKEN_COOKIE = 'auth_token';
 
 export async function POST(request: NextRequest) {
   try {
-    const body = (await request.json()) as LoginCredentials;
+    const body = (await request.json()) as ILoginCredentials;
 
     const user = await prisma.user.findUnique({
       where: { email: body.email },
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
     const { password: _, ...userWithoutPassword } = userWithFormattedDates;
     const token = await signToken(userWithoutPassword);
 
-    const response = NextResponse.json<AuthResponse>({
+    const response = NextResponse.json<IAuthResponse>({
       user: userWithoutPassword,
       token,
     });

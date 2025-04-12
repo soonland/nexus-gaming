@@ -2,7 +2,7 @@
 
 import { Container, Alert, AlertIcon } from '@chakra-ui/react';
 
-export default function NewCategoryErrorPage() {
+const NewCategoryErrorPage = () => {
   return (
     <Container maxW='container.md' py={8}>
       <Alert status='error'>
@@ -11,4 +11,6 @@ export default function NewCategoryErrorPage() {
       </Alert>
     </Container>
   );
-}
+};
+
+export default NewCategoryErrorPage;

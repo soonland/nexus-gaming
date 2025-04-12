@@ -1,5 +1,7 @@
 import PlatformListLoading from '@/components/loading/PlatformListLoading';
 
-export default function Loading() {
+const Loading = () => {
   return <PlatformListLoading />;
-}
+};
+
+export default Loading;

@@ -38,19 +38,19 @@ const getAvailableStatuses = (role?: Role): ArticleStatus[] => {
   }
 };
 
-interface ArticleFormProps {
+interface IArticleFormProps {
   initialData?: Partial<IArticleForm> & { user?: { username: string } };
   onSubmit: (data: IArticleForm) => Promise<void>;
   isLoading?: boolean;
   mode?: 'create' | 'edit';
 }
 
-export default function ArticleForm({
+const ArticleForm = ({
   initialData,
   onSubmit,
   isLoading,
   mode = 'create',
-}: ArticleFormProps) {
+}: IArticleFormProps) => {
   const router = useRouter();
   const toast = useToast();
   const { categories } = useCategories();
@@ -228,4 +228,6 @@ export default function ArticleForm({
       </Stack>
     </Box>
   );
-}
+};
+
+export default ArticleForm;

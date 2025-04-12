@@ -4,7 +4,7 @@ import dayjs from '@/lib/dayjs';
 
 import { useAuth } from './useAuth';
 
-interface PasswordExpirationInfo {
+interface IPasswordExpirationInfo {
   daysUntilExpiration: number;
   isExpired: boolean;
   isExpiringSoon: boolean;
@@ -12,7 +12,7 @@ interface PasswordExpirationInfo {
   lastPasswordChange: string;
 }
 
-export const usePasswordExpiration = (): PasswordExpirationInfo | null => {
+export const usePasswordExpiration = (): IPasswordExpirationInfo | null => {
   const { user } = useAuth();
 
   const expirationInfo = useMemo(() => {

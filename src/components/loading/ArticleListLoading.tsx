@@ -15,7 +15,7 @@ import {
   useColorModeValue,
 } from '@chakra-ui/react';
 
-export default function ArticleListLoading() {
+const ArticleListLoading = () => {
   const borderColor = useColorModeValue('gray.200', 'gray.700');
 
   return (
@@ -78,4 +78,6 @@ export default function ArticleListLoading() {
       </VStack>
     </Container>
   );
-}
+};
+
+export default ArticleListLoading;

@@ -17,7 +17,7 @@ import { useState } from 'react';
 import PasswordStrengthIndicator from '@/components/common/PasswordStrengthIndicator';
 import { useAuth } from '@/hooks/useAuth';
 
-interface UserFormData {
+interface IUserFormData {
   username: string;
   email: string;
   password?: string;
@@ -25,23 +25,19 @@ interface UserFormData {
   role: Role;
 }
 
-interface UserFormProps {
-  initialData?: Omit<UserFormData, 'password'> & { id?: string };
-  onSubmit: (data: UserFormData) => Promise<void>;
+interface IUserFormProps {
+  initialData?: Omit<IUserFormData, 'password'> & { id?: string };
+  onSubmit: (data: IUserFormData) => Promise<void>;
   isLoading: boolean;
 }
 
-export default function UserForm({
-  initialData,
-  onSubmit,
-  isLoading,
-}: UserFormProps) {
+const UserForm = ({ initialData, onSubmit, isLoading }: IUserFormProps) => {
   const { user: currentUser } = useAuth();
   const router = useRouter();
   const [errors, setErrors] = useState<
-    Partial<Record<keyof UserFormData, string>>
+    Partial<Record<keyof IUserFormData, string>>
   >({});
-  const [formData, setFormData] = useState<UserFormData>({
+  const [formData, setFormData] = useState<IUserFormData>({
     username: initialData?.username || '',
     email: initialData?.email || '',
     password: '',
@@ -84,7 +80,7 @@ export default function UserForm({
   };
 
   const validateForm = (): boolean => {
-    const newErrors: Partial<Record<keyof UserFormData, string>> = {};
+    const newErrors: Partial<Record<keyof IUserFormData, string>> = {};
 
     if (!formData.username) {
       newErrors.username = 'Username is required';
@@ -220,4 +216,6 @@ export default function UserForm({
       </Stack>
     </Box>
   );
-}
+};
+
+export default UserForm;

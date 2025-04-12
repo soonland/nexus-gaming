@@ -13,13 +13,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { BsArrowLeft } from 'react-icons/bs';
 
-export default function GameError({
-  error,
-  reset,
-}: {
-  error: Error;
-  reset: () => void;
-}) {
+const GameError = ({ error, reset }: { error: Error; reset: () => void }) => {
   const router = useRouter();
 
   return (
@@ -64,4 +58,6 @@ export default function GameError({
       </Stack>
     </Container>
   );
-}
+};
+
+export default GameError;

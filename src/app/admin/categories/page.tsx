@@ -39,7 +39,7 @@ import { useState, useMemo, useRef } from 'react';
 
 import { useCategories } from '@/hooks/useCategories';
 
-export default function CategoriesPage() {
+const CategoriesPage = () => {
   const toast = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const { categories, deleteCategory, isDeleting } = useCategories();
@@ -200,4 +200,6 @@ export default function CategoriesPage() {
       </AlertDialog>
     </Container>
   );
-}
+};
+
+export default CategoriesPage;

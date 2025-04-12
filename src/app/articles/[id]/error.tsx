@@ -13,13 +13,13 @@ import {
 import { useRouter } from 'next/navigation';
 import { BsArrowLeft } from 'react-icons/bs';
 
-export default function ArticleError({
+const ArticleError = ({
   error,
   reset,
 }: {
   error: Error;
   reset: () => void;
-}) {
+}) => {
   const router = useRouter();
 
   return (
@@ -64,4 +64,6 @@ export default function ArticleError({
       </Stack>
     </Container>
   );
-}
+};
+
+export default ArticleError;

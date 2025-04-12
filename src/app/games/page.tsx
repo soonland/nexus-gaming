@@ -12,7 +12,7 @@ import {
 import { GameCard } from '@/components/games/GameCard';
 import { useGames } from '@/hooks/useGames';
 
-export default function GamesPage() {
+const GamesPage = () => {
   const { data, isLoading, error } = useGames({ limit: '100' });
   const games = data?.games || [];
 
@@ -39,4 +39,6 @@ export default function GamesPage() {
       </SimpleGrid>
     </Container>
   );
-}
+};
+
+export default GamesPage;

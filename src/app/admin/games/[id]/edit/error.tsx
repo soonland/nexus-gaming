@@ -2,7 +2,7 @@
 
 import { Container, Alert, AlertIcon } from '@chakra-ui/react';
 
-export default function EditGameError() {
+const EditGameError = () => {
   return (
     <Container maxW='container.xl' py={8}>
       <Alert status='error'>
@@ -11,4 +11,6 @@ export default function EditGameError() {
       </Alert>
     </Container>
   );
-}
+};
+
+export default EditGameError;

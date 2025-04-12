@@ -22,11 +22,11 @@ import { BsCalendar4 } from 'react-icons/bs';
 import { DateDisplay } from '@/components/common/DateDisplay';
 import type { GameData } from '@/types';
 
-interface GameCardProps {
+interface IGameCardProps {
   game: Partial<GameData>;
 }
 
-export const GameCard = ({ game }: GameCardProps) => {
+export const GameCard = ({ game }: IGameCardProps) => {
   const bgColor = useColorModeValue('white', 'gray.800');
   const dateColor = useColorModeValue('blue.600', 'blue.300');
   const overlayGradient = useColorModeValue(

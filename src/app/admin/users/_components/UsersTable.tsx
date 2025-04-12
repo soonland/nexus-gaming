@@ -30,7 +30,7 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import dayjs from '@/lib/dayjs';
 
-interface User {
+interface IUser {
   id: string;
   username: string;
   email: string;
@@ -43,8 +43,8 @@ interface User {
   };
 }
 
-interface UsersTableProps {
-  users: User[];
+interface IUsersTableProps {
+  users: IUser[];
   onToggleStatus: (id: string, isActive: boolean) => void;
   onDelete: (id: string) => void;
 }
@@ -69,11 +69,7 @@ const StatusBadge = ({ isActive }: { isActive: boolean }) => (
   </Badge>
 );
 
-export default function UsersTable({
-  users,
-  onToggleStatus,
-  onDelete,
-}: UsersTableProps) {
+const UsersTable = ({ users, onToggleStatus, onDelete }: IUsersTableProps) => {
   const router = useRouter();
   const { user: currentUser } = useAuth();
 
@@ -165,4 +161,6 @@ export default function UsersTable({
       </Table>
     </Box>
   );
-}
+};
+
+export default UsersTable;

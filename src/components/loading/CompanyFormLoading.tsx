@@ -11,7 +11,7 @@ import {
   useColorModeValue,
 } from '@chakra-ui/react';
 
-export default function CompanyFormLoading() {
+const CompanyFormLoading = () => {
   const borderColor = useColorModeValue('gray.200', 'gray.700');
 
   return (
@@ -46,4 +46,6 @@ export default function CompanyFormLoading() {
       </Box>
     </Container>
   );
-}
+};
+
+export default CompanyFormLoading;

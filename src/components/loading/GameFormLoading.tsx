@@ -2,7 +2,7 @@
 
 import { Box, Container, VStack, Skeleton, Stack } from '@chakra-ui/react';
 
-export default function GameFormLoading() {
+const GameFormLoading = () => {
   return (
     <Container maxW='container.md' py={8}>
       <VStack align='stretch' spacing={8}>
@@ -50,4 +50,6 @@ export default function GameFormLoading() {
       </VStack>
     </Container>
   );
-}
+};
+
+export default GameFormLoading;

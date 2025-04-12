@@ -1,5 +1,7 @@
 import CompanyFormLoading from '@/components/loading/CompanyFormLoading';
 
-export default function Loading() {
+const Loading = () => {
   return <CompanyFormLoading />;
-}
+};
+
+export default Loading;

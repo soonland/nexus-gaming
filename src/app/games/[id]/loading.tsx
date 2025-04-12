@@ -7,7 +7,7 @@ import {
   HStack,
 } from '@chakra-ui/react';
 
-export default function GameLoading() {
+const GameLoading = () => {
   return (
     <Box>
       <Skeleton height={{ base: '300px', md: '400px' }} />
@@ -60,4 +60,6 @@ export default function GameLoading() {
       </Container>
     </Box>
   );
-}
+};
+
+export default GameLoading;

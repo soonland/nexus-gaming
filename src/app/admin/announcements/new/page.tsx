@@ -12,7 +12,7 @@ import { useAdminAnnouncement } from '@/hooks/useAdminAnnouncement';
 
 import AnnouncementForm from '../_components/AnnouncementForm';
 
-export default function NewAnnouncementPage() {
+const NewAnnouncementPage = () => {
   const { createAnnouncement } = useAdminAnnouncement();
 
   const handleSubmit = async (data: any) => {
@@ -35,4 +35,6 @@ export default function NewAnnouncementPage() {
       </Card>
     </Container>
   );
-}
+};
+
+export default NewAnnouncementPage;

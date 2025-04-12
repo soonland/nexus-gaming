@@ -25,19 +25,19 @@ import type { GameForm as IGameForm } from '@/types';
 import InlineCompanyCreation from './InlineCompanyCreation';
 import PlatformSelect from './PlatformSelect';
 
-interface GameFormProps {
+interface IGameFormProps {
   initialData?: Partial<IGameForm>;
   onSubmit: (data: IGameForm) => Promise<void>;
   isLoading?: boolean;
   mode: 'create' | 'edit';
 }
 
-export default function GameForm({
+const GameForm = ({
   initialData,
   onSubmit,
   isLoading,
   mode,
-}: GameFormProps) {
+}: IGameFormProps) => {
   const router = useRouter();
   const toast = useToast();
   const { companies = [] } = useCompanies();
@@ -248,4 +248,6 @@ export default function GameForm({
       </Stack>
     </Box>
   );
-}
+};
+
+export default GameForm;

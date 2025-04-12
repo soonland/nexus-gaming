@@ -14,14 +14,14 @@ import { FiSave, FiExternalLink, FiX } from 'react-icons/fi';
 
 import { useSocialProfiles } from '@/hooks/useSocialProfiles';
 
-interface PlatformField {
+interface IPlatformField {
   value: string;
   isDirty: boolean;
   profileId?: string;
 }
 
 type PlatformFields = {
-  [key in SocialPlatform]: PlatformField;
+  [key in SocialPlatform]: IPlatformField;
 };
 
 const GAMING_PLATFORMS = [
@@ -64,8 +64,8 @@ export const SocialProfilesSection = () => {
       setFields(prevFields => {
         const newFields = { ...prevFields };
         profiles.forEach(profile => {
-          if (newFields[profile.platform]) {
-            newFields[profile.platform] = {
+          if (newFields[profile.platform as SocialPlatform]) {
+            newFields[profile.platform as SocialPlatform] = {
               value: profile.username,
               isDirty: false,
               profileId: profile.id,

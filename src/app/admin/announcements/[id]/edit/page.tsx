@@ -16,7 +16,7 @@ import dayjs from '@/lib/dayjs';
 
 import AnnouncementForm from '../../_components/AnnouncementForm';
 
-export default function EditAnnouncementPage() {
+const EditAnnouncementPage = () => {
   const params = useParams();
   const id = params.id as string;
   const { announcement, updateAnnouncement } = useAdminAnnouncement(id);
@@ -57,4 +57,6 @@ export default function EditAnnouncementPage() {
       </Card>
     </Container>
   );
-}
+};
+
+export default EditAnnouncementPage;

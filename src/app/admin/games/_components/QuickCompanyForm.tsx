@@ -20,19 +20,19 @@ import React from 'react';
 import { useCompanies } from '@/hooks/useCompanies';
 import type { CompanyData } from '@/types';
 
-interface QuickCompanyFormProps {
+interface IQuickCompanyFormProps {
   isOpen: boolean;
   onClose: () => void;
   type: 'developer' | 'publisher';
   onSuccess: (newCompany: CompanyData) => void;
 }
 
-export default function QuickCompanyForm({
+const QuickCompanyForm = ({
   isOpen,
   onClose,
   type,
   onSuccess,
-}: QuickCompanyFormProps) {
+}: IQuickCompanyFormProps) => {
   const [name, setName] = React.useState('');
   const toast = useToast();
   const { createCompany, isCreating } = useCompanies();
@@ -109,4 +109,6 @@ export default function QuickCompanyForm({
       </ModalContent>
     </Modal>
   );
-}
+};
+
+export default QuickCompanyForm;

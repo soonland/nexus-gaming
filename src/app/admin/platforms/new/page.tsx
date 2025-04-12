@@ -13,7 +13,7 @@ import { usePlatforms } from '@/hooks/usePlatforms';
 
 import PlatformForm from '../_components/PlatformForm';
 
-export default function NewPlatformPage() {
+const NewPlatformPage = () => {
   const { createPlatform, isCreating } = usePlatforms();
   const router = useRouter();
 
@@ -38,4 +38,6 @@ export default function NewPlatformPage() {
       </Card>
     </Container>
   );
-}
+};
+
+export default NewPlatformPage;

@@ -3,7 +3,7 @@ import axios from 'axios';
 
 import type { GameData, GameForm } from '@/types';
 
-interface GamesResponse {
+interface IGamesResponse {
   games: GameData[];
   pagination: {
     total: number;
@@ -13,16 +13,16 @@ interface GamesResponse {
   };
 }
 
-interface GamesParams {
+interface IGamesParams {
   page?: string;
   limit?: string;
   search?: string;
 }
 
-export function useGames(params: GamesParams = {}) {
+export function useGames(params: IGamesParams = {}) {
   const queryClient = useQueryClient();
 
-  const { data, isLoading, error } = useQuery<GamesResponse>({
+  const { data, isLoading, error } = useQuery<IGamesResponse>({
     queryKey: ['games', params],
     queryFn: async () => {
       const queryParams = new URLSearchParams();

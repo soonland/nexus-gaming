@@ -11,6 +11,7 @@
   },
   "plugins": ["@typescript-eslint", "react", "prettier", "import"],
   "extends": [
+    "next",
     "next/core-web-vitals",
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
@@ -117,6 +118,7 @@
         }
       }
     ],
+    "import/named": "error",
 
     // General
     "no-console": [

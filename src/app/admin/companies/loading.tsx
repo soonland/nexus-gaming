@@ -1,5 +1,7 @@
 import CompanyListLoading from '@/components/loading/CompanyListLoading';
 
-export default function Loading() {
+const Loading = () => {
   return <CompanyListLoading />;
-}
+};
+
+export default Loading;

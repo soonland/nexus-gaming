@@ -24,7 +24,7 @@ import { GameCard } from '@/components/games/GameCard';
 import { useArticle } from '@/hooks/useArticle';
 import type { GameData } from '@/types';
 
-export default function ArticlePage() {
+const ArticlePage = () => {
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
@@ -167,4 +167,6 @@ export default function ArticlePage() {
       </Container>
     </Box>
   );
-}
+};
+
+export default ArticlePage;

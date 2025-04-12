@@ -11,7 +11,7 @@ import {
 } from '@chakra-ui/react';
 import { useForm } from 'react-hook-form';
 
-interface CategoryFormProps {
+interface ICategoryFormProps {
   initialData?: {
     name: string;
   };
@@ -21,13 +21,13 @@ interface CategoryFormProps {
   mode?: 'create' | 'edit';
 }
 
-export default function CategoryForm({
+const CategoryForm = ({
   initialData,
   onSubmit,
   onCancel,
   isLoading,
   mode = 'create',
-}: CategoryFormProps) {
+}: ICategoryFormProps) => {
   const {
     register,
     handleSubmit,
@@ -80,4 +80,6 @@ export default function CategoryForm({
       </Stack>
     </Box>
   );
-}
+};
+
+export default CategoryForm;

@@ -2,7 +2,7 @@
 
 import { Box, Container, Heading, Text } from '@chakra-ui/react';
 
-export default function Home() {
+const Home = () => {
   return (
     <Container maxW='container.xl' py={8}>
       <Box py={10} textAlign='center'>
@@ -15,4 +15,6 @@ export default function Home() {
       </Box>
     </Container>
   );
-}
+};
+
+export default Home;

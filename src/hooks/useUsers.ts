@@ -1,14 +1,14 @@
 import type { Role } from '@prisma/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
-interface CreateUserData {
+interface ICreateUserData {
   username: string;
   email: string;
   password: string;
   role: Role;
 }
 
-interface UpdateUserData {
+interface IUpdateUserData {
   username: string;
   email: string;
   password?: string;
@@ -28,7 +28,7 @@ const fetchUser = async (id: string) => {
   return response.json();
 };
 
-const createUser = async (data: CreateUserData) => {
+const createUser = async (data: ICreateUserData) => {
   const response = await fetch('/api/users', {
     method: 'POST',
     headers: {
@@ -43,7 +43,7 @@ const createUser = async (data: CreateUserData) => {
   return response.json();
 };
 
-const updateUser = async (id: string, data: UpdateUserData) => {
+const updateUser = async (id: string, data: IUpdateUserData) => {
   const response = await fetch(`/api/users/${id}`, {
     method: 'PUT',
     headers: {
@@ -113,7 +113,7 @@ export function useUpdateUser(id: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: UpdateUserData) => updateUser(id, data),
+    mutationFn: (data: IUpdateUserData) => updateUser(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       queryClient.invalidateQueries({ queryKey: ['user', id] });

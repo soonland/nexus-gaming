@@ -2,7 +2,7 @@
 
 import { Box, Progress, Text } from '@chakra-ui/react';
 
-interface PasswordStrengthIndicatorProps {
+interface IPasswordStrengthIndicatorProps {
   password: string;
 }
 
@@ -36,9 +36,9 @@ const getPasswordStrength = (password: string): [number, string, string] => {
   return [strength, strengthText, colorScheme];
 };
 
-export default function PasswordStrengthIndicator({
+const PasswordStrengthIndicator = ({
   password,
-}: PasswordStrengthIndicatorProps) {
+}: IPasswordStrengthIndicatorProps) => {
   const [strength, strengthText, colorScheme] = getPasswordStrength(password);
 
   return (
@@ -54,4 +54,6 @@ export default function PasswordStrengthIndicator({
       </Text>
     </Box>
   );
-}
+};
+
+export default PasswordStrengthIndicator;

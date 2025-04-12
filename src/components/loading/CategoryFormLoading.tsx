@@ -2,7 +2,7 @@
 
 import { Box, Container, VStack, Skeleton, Stack } from '@chakra-ui/react';
 
-export default function CategoryFormLoading() {
+const CategoryFormLoading = () => {
   return (
     <Container maxW='container.md' py={8}>
       <VStack align='stretch' spacing={8}>
@@ -30,4 +30,6 @@ export default function CategoryFormLoading() {
       </VStack>
     </Container>
   );
-}
+};
+
+export default CategoryFormLoading;

@@ -33,7 +33,7 @@ import { useState, useMemo, useRef } from 'react';
 
 import { useCompanies } from '@/hooks/useCompanies';
 
-export default function CompaniesPage() {
+const CompaniesPage = () => {
   const toast = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const { companies, deleteCompany, isLoading } = useCompanies();
@@ -197,4 +197,6 @@ export default function CompaniesPage() {
       </AlertDialog>
     </Container>
   );
-}
+};
+
+export default CompaniesPage;

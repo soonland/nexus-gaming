@@ -14,7 +14,7 @@ import { useCompanies } from '@/hooks/useCompanies';
 
 import CompanyForm from '../_components/CompanyForm';
 
-export default function NewCompanyPage() {
+const NewCompanyPage = () => {
   const { createCompany, isCreating } = useCompanies();
   const router = useRouter();
   const toast = useToast();
@@ -55,4 +55,6 @@ export default function NewCompanyPage() {
       </Card>
     </Container>
   );
-}
+};
+
+export default NewCompanyPage;

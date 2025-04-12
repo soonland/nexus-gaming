@@ -32,7 +32,7 @@ import { usePasswordExpiration } from '@/hooks/usePasswordExpiration';
 import dayjs from '@/lib/dayjs';
 import { useTheme } from '@/providers/ThemeProvider';
 
-export default function ProfilePage() {
+const ProfilePage = () => {
   const { user, refresh } = useAuth();
   const { colorMode, toggleColorMode } = useColorMode();
   const { theme, changeTheme } = useTheme();
@@ -274,4 +274,6 @@ export default function ProfilePage() {
       </VStack>
     </Container>
   );
-}
+};
+
+export default ProfilePage;

@@ -62,7 +62,7 @@ const getStatusBadge = (status: ArticleStatus) => {
   }
 };
 
-export default function ArticlesPage() {
+const ArticlesPage = () => {
   // Hooks
   const searchParams = useSearchParams();
   const toast = useToast();
@@ -346,4 +346,6 @@ export default function ArticlesPage() {
       </AlertDialog>
     </Container>
   );
-}
+};
+
+export default ArticlesPage;

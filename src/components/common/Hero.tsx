@@ -11,7 +11,7 @@ import {
 } from '@chakra-ui/react';
 import type React from 'react';
 
-interface HeroProps {
+interface IHeroProps {
   title: string;
   image?: string;
   badges?: Array<{
@@ -29,7 +29,7 @@ export const Hero = ({
   badges = [],
   metadata,
   height = { base: '300px', md: '400px' },
-}: HeroProps) => {
+}: IHeroProps) => {
   return (
     <Box height={height} mb={8} overflow='hidden' position='relative'>
       <Box

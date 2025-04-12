@@ -47,7 +47,7 @@ const getTypeBadge = (type: string) => {
   }
 };
 
-export default function AnnouncementsPage() {
+const AnnouncementsPage = () => {
   const { announcements, deleteAnnouncement, toggleAnnouncementStatus } =
     useAdminAnnouncement();
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -231,4 +231,6 @@ export default function AnnouncementsPage() {
       </AlertDialog>
     </>
   );
-}
+};
+
+export default AnnouncementsPage;

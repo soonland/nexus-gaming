@@ -25,7 +25,7 @@ import { DateDisplay } from '@/components/common/DateDisplay';
 import { Hero } from '@/components/common/Hero';
 import { useGame, type RelatedArticle } from '@/hooks/useGame';
 
-export default function GamePage() {
+const GamePage = () => {
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
@@ -155,4 +155,6 @@ export default function GamePage() {
       </Container>
     </Box>
   );
-}
+};
+
+export default GamePage;

@@ -13,7 +13,7 @@ import { ArticleCard } from '@/components/articles/ArticleCard';
 import { useArticles } from '@/hooks/useArticles';
 import type { ArticleData } from '@/types';
 
-export default function ArticlesPage() {
+const ArticlesPage = () => {
   const { data, isLoading, error } = useArticles({
     limit: '100',
     status: 'PUBLISHED',
@@ -50,4 +50,6 @@ export default function ArticlesPage() {
       </SimpleGrid>
     </Container>
   );
-}
+};
+
+export default ArticlesPage;

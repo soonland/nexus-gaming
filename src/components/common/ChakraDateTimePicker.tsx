@@ -18,7 +18,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 // Enregistrer la locale française
 registerLocale('fr', fr);
 
-interface ChakraDateTimePickerProps {
+interface IChakraDateTimePickerProps {
   selectedDate: Date | null;
   onChange: (date: Date | null) => void;
   showTimeSelect?: boolean;
@@ -76,7 +76,7 @@ export const ChakraDateTimePicker = ({
   showTimeSelect = true,
   minDate = new Date(),
   placeholderText,
-}: ChakraDateTimePickerProps) => {
+}: IChakraDateTimePickerProps) => {
   const [mounted, setMounted] = useState(false);
 
   // Fix pour l'hydration côté client

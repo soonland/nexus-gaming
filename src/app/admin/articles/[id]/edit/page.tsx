@@ -18,7 +18,7 @@ import type { ArticleForm as ArticleFormData } from '@/types';
 
 import ArticleForm from '../../_components/ArticleForm';
 
-export default function EditArticlePage() {
+const EditArticlePage = () => {
   const params = useParams();
   const id = params.id as string;
   const { article, isLoading: isLoadingArticle, error } = useArticle(id);
@@ -87,4 +87,6 @@ export default function EditArticlePage() {
       </Card>
     </Container>
   );
-}
+};
+
+export default EditArticlePage;

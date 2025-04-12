@@ -2,6 +2,8 @@
 
 import ArticleListLoading from '@/components/loading/ArticleListLoading';
 
-export default function ArticlesLoadingPage() {
+const ArticlesLoadingPage = () => {
   return <ArticleListLoading />;
-}
+};
+
+export default ArticlesLoadingPage;

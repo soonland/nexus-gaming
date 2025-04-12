@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/jwt';
 import prisma from '@/lib/prisma';
 import { cleanUsername, generatePlatformUrl } from '@/lib/social';
-import type { UserSocialProfileData } from '@/types/social';
+import type { IUserSocialProfileData } from '@/types/social';
 
 export async function GET() {
   const user = await getCurrentUser();
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const body: UserSocialProfileData = await request.json();
+    const body: IUserSocialProfileData = await request.json();
     const cleanedUsername = cleanUsername(body.username);
 
     const existingProfile = await prisma.userSocialProfile.findFirst({

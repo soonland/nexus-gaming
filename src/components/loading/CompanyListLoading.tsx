@@ -14,7 +14,7 @@ import {
   useColorModeValue,
 } from '@chakra-ui/react';
 
-export default function CompanyListLoading() {
+const CompanyListLoading = () => {
   const borderColor = useColorModeValue('gray.200', 'gray.700');
 
   return (
@@ -55,4 +55,6 @@ export default function CompanyListLoading() {
       </VStack>
     </Container>
   );
-}
+};
+
+export default CompanyListLoading;

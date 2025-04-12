@@ -4,21 +4,18 @@ import { FormControl, FormLabel, Select } from '@chakra-ui/react';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 
-interface Category {
+interface ICategory {
   id: string;
   name: string;
 }
 
-interface CategorySelectProps {
+interface ICategorySelectProps {
   value?: string;
   onChange: (categoryId: string | undefined) => void;
 }
 
-export default function CategorySelect({
-  value,
-  onChange,
-}: CategorySelectProps) {
-  const { data: categories, isLoading } = useQuery<Category[]>({
+const CategorySelect = ({ value, onChange }: ICategorySelectProps) => {
+  const { data: categories, isLoading } = useQuery<ICategory[]>({
     queryKey: ['categories'],
     queryFn: async () => {
       const response = await axios.get('/api/categories');
@@ -43,4 +40,6 @@ export default function CategorySelect({
       </Select>
     </FormControl>
   );
-}
+};
+
+export default CategorySelect;

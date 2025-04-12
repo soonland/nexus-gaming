@@ -10,7 +10,7 @@ import {
   useColorModeValue,
 } from '@chakra-ui/react';
 
-export default function PlatformFormLoading() {
+const PlatformFormLoading = () => {
   const borderColor = useColorModeValue('gray.200', 'gray.700');
 
   return (
@@ -41,4 +41,6 @@ export default function PlatformFormLoading() {
       </VStack>
     </Container>
   );
-}
+};
+
+export default PlatformFormLoading;

@@ -10,7 +10,7 @@ import {
   Container,
 } from '@chakra-ui/react';
 
-export default function UserListLoading() {
+const UserListLoading = () => {
   // Create an array of 5 loading rows
   const loadingRows = Array.from({ length: 5 }, (_, i) => (
     <Tr key={i}>
@@ -58,4 +58,6 @@ export default function UserListLoading() {
       </Box>
     </Container>
   );
-}
+};
+
+export default UserListLoading;

@@ -20,11 +20,11 @@ import { FaUser } from 'react-icons/fa';
 import { DateDisplay } from '@/components/common/DateDisplay';
 import type { ArticleData } from '@/types';
 
-interface ArticleCardProps {
+interface IArticleCardProps {
   article: ArticleData & { publishedAt: Date };
 }
 
-export const ArticleCard = ({ article }: ArticleCardProps) => {
+export const ArticleCard = ({ article }: IArticleCardProps) => {
   const bgColor = useColorModeValue('white', 'gray.800');
   // Use first game's cover image or a placeholder
   const coverImage =

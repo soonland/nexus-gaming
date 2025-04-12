@@ -20,7 +20,7 @@ import { BiReset } from 'react-icons/bi';
 
 import type { ArticleStatus, CategoryData } from '@/types';
 
-interface User {
+interface IUser {
   id: string;
   username: string;
   email: string;
@@ -28,7 +28,7 @@ interface User {
   isActive: boolean;
 }
 
-interface FiltersProps {
+interface IFiltersProps {
   isVisible: boolean;
   selectedUser: string;
   selectedCategory: string;
@@ -64,7 +64,7 @@ export const FiltersPanel = ({
   onCategoryChange,
   onStatusesChange,
   onReset,
-}: FiltersProps) => {
+}: IFiltersProps) => {
   const bg = useColorModeValue('gray.50', 'gray.900');
 
   if (!isVisible) return null;
@@ -83,8 +83,8 @@ export const FiltersPanel = ({
           >
             {!isLoadingUsers &&
               users?.users
-                ?.filter((user: User) => user.role !== 'USER')
-                .map((user: User) => (
+                ?.filter((user: IUser) => user.role !== 'USER')
+                .map((user: IUser) => (
                   <option key={user.id} value={user.id}>
                     {user.username}
                   </option>

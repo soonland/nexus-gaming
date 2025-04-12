@@ -33,17 +33,17 @@ import { useState, useCallback, useMemo, useEffect } from 'react';
 import { usePlatforms } from '@/hooks/usePlatforms';
 import type { PlatformData } from '@/types';
 
-interface PlatformSelectProps {
+interface IPlatformSelectProps {
   selectedIds: string[];
   onChange: (ids: string[]) => void;
   error?: string;
 }
 
-export default function PlatformSelect({
+const PlatformSelect = ({
   selectedIds,
   onChange,
   error,
-}: PlatformSelectProps) {
+}: IPlatformSelectProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { platforms = [] } = usePlatforms();
   const [tempSelectedIds, setTempSelectedIds] = useState(selectedIds);
@@ -182,4 +182,6 @@ export default function PlatformSelect({
       {error && <FormErrorMessage>{error}</FormErrorMessage>}
     </FormControl>
   );
-}
+};
+
+export default PlatformSelect;

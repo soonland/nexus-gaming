@@ -6,7 +6,7 @@ import {
   Box,
 } from '@chakra-ui/react';
 
-export default function ArticleLoading() {
+const ArticleLoading = () => {
   return (
     <Box>
       <Skeleton height={{ base: '300px', md: '400px' }} />
@@ -28,4 +28,6 @@ export default function ArticleLoading() {
       </Container>
     </Box>
   );
-}
+};
+
+export default ArticleLoading;

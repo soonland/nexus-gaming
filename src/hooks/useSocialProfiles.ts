@@ -1,8 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
-import type { UserSocialProfile, UserSocialProfileData } from '@/types/social';
+import type {
+  IUserSocialProfile,
+  IUserSocialProfileData,
+} from '@/types/social';
 
-async function fetchSocialProfiles(): Promise<UserSocialProfile[]> {
+async function fetchSocialProfiles(): Promise<IUserSocialProfile[]> {
   const response = await fetch('/api/users/me/social-profiles');
   if (!response.ok) {
     throw new Error('Failed to fetch social profiles');
@@ -11,8 +14,8 @@ async function fetchSocialProfiles(): Promise<UserSocialProfile[]> {
 }
 
 async function createSocialProfile(
-  data: UserSocialProfileData
-): Promise<UserSocialProfile> {
+  data: IUserSocialProfileData
+): Promise<IUserSocialProfile> {
   const response = await fetch('/api/users/me/social-profiles', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -26,8 +29,8 @@ async function createSocialProfile(
 
 async function updateSocialProfile(
   id: string,
-  data: UserSocialProfileData
-): Promise<UserSocialProfile> {
+  data: IUserSocialProfileData
+): Promise<IUserSocialProfile> {
   const response = await fetch(`/api/users/me/social-profiles/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
@@ -69,7 +72,7 @@ export function useSocialProfiles() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UserSocialProfileData }) =>
+    mutationFn: ({ id, data }: { id: string; data: IUserSocialProfileData }) =>
       updateSocialProfile(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey });

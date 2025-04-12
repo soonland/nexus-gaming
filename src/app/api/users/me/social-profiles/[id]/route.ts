@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/jwt';
 import prisma from '@/lib/prisma';
 import { cleanUsername, generatePlatformUrl } from '@/lib/social';
-import type { UserSocialProfileData } from '@/types/social';
+import type { IUserSocialProfileData } from '@/types/social';
 
 export async function PUT(
   request: Request,
@@ -19,7 +19,7 @@ export async function PUT(
     return new NextResponse('Profile ID is required', { status: 400 });
   }
   try {
-    const body: UserSocialProfileData = await request.json();
+    const body: IUserSocialProfileData = await request.json();
     const cleanedUsername = cleanUsername(body.username);
 
     const profile = await prisma.userSocialProfile.findFirst({

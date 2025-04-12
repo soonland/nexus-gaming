@@ -14,7 +14,7 @@ import { useUser, useUpdateUser } from '@/hooks/useUsers';
 
 import UserForm from '../../_components/UserForm';
 
-export default function EditUserPage() {
+const EditUserPage = () => {
   const params = useParams();
   const id = params.id as string;
   const router = useRouter();
@@ -72,4 +72,6 @@ export default function EditUserPage() {
       </Card>
     </Container>
   );
-}
+};
+
+export default EditUserPage;

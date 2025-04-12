@@ -13,7 +13,7 @@ const themeLabels: Record<ThemeName, string> = {
   retro: 'Retro (Orange)',
 };
 
-interface ThemeSelectorProps {
+interface IThemeSelectorProps {
   currentTheme: ThemeName;
   onThemeChange: (theme: ThemeName) => void;
 }
@@ -21,7 +21,7 @@ interface ThemeSelectorProps {
 export const ThemeSelector = ({
   currentTheme,
   onThemeChange,
-}: ThemeSelectorProps) => {
+}: IThemeSelectorProps) => {
   const themes: ThemeName[] = ['default', 'gaming', 'nature', 'retro'];
 
   return (

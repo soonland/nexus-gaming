@@ -12,7 +12,7 @@ import { useGames } from '@/hooks/useGames';
 
 import GameForm from '../_components/GameForm';
 
-export default function NewGamePage() {
+const NewGamePage = () => {
   const { createGame, isCreating } = useGames();
 
   return (
@@ -31,4 +31,6 @@ export default function NewGamePage() {
       </Card>
     </Container>
   );
-}
+};
+
+export default NewGamePage;

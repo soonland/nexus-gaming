@@ -17,7 +17,7 @@ import { FaUser } from 'react-icons/fa';
 
 import { DateDisplay } from '@/components/common/DateDisplay';
 
-interface ArticlePreviewProps {
+interface IArticlePreviewProps {
   article: {
     id: string;
     title: string;
@@ -28,7 +28,7 @@ interface ArticlePreviewProps {
   };
 }
 
-export const ArticlePreview = ({ article }: ArticlePreviewProps) => {
+export const ArticlePreview = ({ article }: IArticlePreviewProps) => {
   if (!article.user) {
     console.error('Article is missing user data:', article);
   }

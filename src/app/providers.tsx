@@ -1,12 +1,10 @@
 'use client';
 
+import { CacheProvider } from '@chakra-ui/next-js';
 import type React from 'react';
 
 import { AppLayout } from '@/components/layout/AppLayout';
-
 import '@/lib/dayjs';
-import { CacheProvider } from '@chakra-ui/next-js';
-
 import { AuthProvider } from '@/providers/AuthProvider';
 import { QueryProvider } from '@/providers/QueryProvider';
 import { ThemeProvider } from '@/providers/ThemeProvider';

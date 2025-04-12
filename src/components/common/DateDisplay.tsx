@@ -4,7 +4,7 @@ import { Text, Tooltip } from '@chakra-ui/react';
 
 import { formatters } from '@/lib/dayjs';
 
-interface DateDisplayProps {
+interface IDateDisplayProps {
   date: Date | string;
   format?: 'relative' | 'short' | 'long' | 'calendar';
   withTooltip?: boolean;
@@ -20,7 +20,7 @@ export const DateDisplay = ({
   tooltipFormat,
   customFormat,
   color = 'gray.500',
-}: DateDisplayProps) => {
+}: IDateDisplayProps) => {
   // Si un format personnalisé est fourni, l'utiliser
   const formattedDate = customFormat
     ? formatters.custom(date, customFormat)

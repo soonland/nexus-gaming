@@ -17,7 +17,7 @@ import React from 'react';
 
 import { useAuth } from '@/hooks/useAuth';
 
-export default function LoginPage() {
+const LoginPage = () => {
   const { login, user } = useAuth();
   const router = useRouter();
   const toast = useToast();
@@ -112,4 +112,6 @@ export default function LoginPage() {
       </Box>
     </Container>
   );
-}
+};
+
+export default LoginPage;

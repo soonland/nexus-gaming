@@ -24,7 +24,7 @@ import { AnnouncementType } from '@prisma/client';
 import { FiList, FiInfo, FiAlertCircle, FiAlertTriangle } from 'react-icons/fi';
 
 import { useAdminAnnouncement } from '@/hooks/useAdminAnnouncement';
-import type { AdminAnnouncement } from '@/hooks/useAdminAnnouncement';
+import type { IAdminAnnouncement } from '@/hooks/useAdminAnnouncement';
 import { useAuth } from '@/hooks/useAuth';
 
 const typeToAlertProps = {
@@ -54,7 +54,7 @@ const typeToAlertProps = {
 const AnnouncementSummary = ({
   announcements,
 }: {
-  announcements: AdminAnnouncement[];
+  announcements: IAdminAnnouncement[];
 }) => {
   const counts = Object.values(AnnouncementType).reduce(
     (acc, type) => ({

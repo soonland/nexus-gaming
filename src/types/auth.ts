@@ -11,17 +11,17 @@ export type AuthUser = {
   passwordExpiresAt: string;
 };
 
-export interface LoginCredentials {
+export interface ILoginCredentials {
   email: string;
   password: string;
 }
 
-export interface AuthResponse {
+export interface IAuthResponse {
   user: AuthUser;
   token: string;
 }
 
-export interface JWTPayload extends JoseJWTPayload {
+export interface IJWTPayload extends JoseJWTPayload {
   sub: string; // user id
   email: string;
   username: string;

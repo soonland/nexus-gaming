@@ -18,17 +18,17 @@ import React from 'react';
 import { useCompanies } from '@/hooks/useCompanies';
 import type { CompanyData } from '@/types';
 
-interface InlineCompanyCreationProps {
+interface IInlineCompanyCreationProps {
   type: 'developer' | 'publisher';
   onSuccess: (newCompany: CompanyData) => void;
   onCancel: () => void;
 }
 
-export default function InlineCompanyCreation({
+const InlineCompanyCreation = ({
   type,
   onSuccess,
   onCancel,
-}: InlineCompanyCreationProps) {
+}: IInlineCompanyCreationProps) => {
   const [formData, setFormData] = React.useState({
     name: '',
     isDeveloper: type === 'developer',
@@ -168,4 +168,6 @@ export default function InlineCompanyCreation({
       </VStack>
     </Box>
   );
-}
+};
+
+export default InlineCompanyCreation;

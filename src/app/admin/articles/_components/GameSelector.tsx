@@ -28,17 +28,13 @@ import { useGames } from '@/hooks/useGames';
 
 import GameSelectorList from './GameSelectorList';
 
-interface GameSelectorProps {
+interface IGameSelectorProps {
   selectedIds: string[];
   onChange: (ids: string[]) => void;
   error?: string;
 }
 
-export default function GameSelector({
-  selectedIds,
-  onChange,
-  error,
-}: GameSelectorProps) {
+const GameSelector = ({ selectedIds, onChange, error }: IGameSelectorProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { data } = useGames({ limit: '100' }); // Get all games for selector
   const [tempSelectedIds, setTempSelectedIds] = useState(selectedIds);
@@ -152,4 +148,6 @@ export default function GameSelector({
       {error && <FormErrorMessage>{error}</FormErrorMessage>}
     </FormControl>
   );
-}
+};
+
+export default GameSelector;

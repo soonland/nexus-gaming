@@ -17,7 +17,7 @@ import type { PlatformForm as PlatformFormType } from '@/types';
 
 import PlatformForm from '../../_components/PlatformForm';
 
-export default function EditPlatformPage() {
+const EditPlatformPage = () => {
   const params = useParams();
   const id = params.id as string;
   const { platform, isLoading } = usePlatform(id);
@@ -69,4 +69,6 @@ export default function EditPlatformPage() {
       </Card>
     </Container>
   );
-}
+};
+
+export default EditPlatformPage;

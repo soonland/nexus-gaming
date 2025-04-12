@@ -11,13 +11,13 @@ import {
 } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
 
-export default function PlatformsError({
+const PlatformsError = ({
   error,
   reset,
 }: {
   error: Error;
   reset: () => void;
-}) {
+}) => {
   const router = useRouter();
 
   return (
@@ -53,4 +53,6 @@ export default function PlatformsError({
       </VStack>
     </Container>
   );
-}
+};
+
+export default PlatformsError;

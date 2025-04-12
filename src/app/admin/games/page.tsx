@@ -46,7 +46,7 @@ import { DateDisplay } from '@/components/common/DateDisplay';
 import GameListLoading from '@/components/loading/GameListLoading';
 import { useGames } from '@/hooks/useGames';
 
-export default function GamesPage() {
+const GamesPage = () => {
   const toast = useToast();
   const searchParams = useSearchParams();
   const [page, setPage] = useState(parseInt(searchParams.get('page') ?? '1'));
@@ -260,4 +260,6 @@ export default function GamesPage() {
       </AlertDialog>
     </Container>
   );
-}
+};
+
+export default GamesPage;

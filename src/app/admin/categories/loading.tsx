@@ -4,7 +4,7 @@ import { Container, VStack, HStack, Skeleton } from '@chakra-ui/react';
 
 import CategoryListLoading from '@/components/loading/CategoryListLoading';
 
-export default function CategoriesLoadingPage() {
+const CategoriesLoadingPage = () => {
   return (
     <Container maxW='container.xl' py={8}>
       <VStack align='stretch' spacing={8}>
@@ -21,4 +21,6 @@ export default function CategoriesLoadingPage() {
       </VStack>
     </Container>
   );
-}
+};
+
+export default CategoriesLoadingPage;

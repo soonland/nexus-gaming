@@ -3,7 +3,7 @@ import axios from 'axios';
 
 import type { ArticleData, ArticleForm } from '@/types';
 
-interface ArticlesResponse {
+interface IArticlesResponse {
   articles: ArticleData[];
   pagination: {
     total: number;
@@ -13,17 +13,17 @@ interface ArticlesResponse {
   };
 }
 
-interface ArticlesParams {
+interface IArticlesParams {
   page?: string;
   limit?: string;
   search?: string;
   status?: string;
 }
 
-export function useArticles(params: ArticlesParams = {}) {
+export function useArticles(params: IArticlesParams = {}) {
   const queryClient = useQueryClient();
 
-  const { data, isLoading, error } = useQuery<ArticlesResponse>({
+  const { data, isLoading, error } = useQuery<IArticlesResponse>({
     queryKey: ['articles', params],
     queryFn: async () => {
       const queryParams = new URLSearchParams();

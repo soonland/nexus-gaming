@@ -16,7 +16,7 @@ import CategoryForm from '@/app/admin/categories/_components/CategoryForm';
 import CategoryFormLoading from '@/components/loading/CategoryFormLoading';
 import { useCategories, useCategory } from '@/hooks/useCategories';
 
-export default function EditCategoryPage() {
+const EditCategoryPage = () => {
   const params = useParams();
   const id = params.id as string;
   const { category, isLoading: isLoadingCategory, error } = useCategory(id);
@@ -91,4 +91,6 @@ export default function EditCategoryPage() {
       </Card>
     </Container>
   );
-}
+};
+
+export default EditCategoryPage;

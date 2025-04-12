@@ -13,7 +13,7 @@ import { useCreateUser } from '@/hooks/useUsers';
 
 import UserForm from '../_components/UserForm';
 
-export default function NewUserPage() {
+const NewUserPage = () => {
   const toast = useToast();
   const createUser = useCreateUser();
 
@@ -49,4 +49,6 @@ export default function NewUserPage() {
       </Card>
     </Container>
   );
-}
+};
+
+export default NewUserPage;

@@ -2,7 +2,7 @@
 
 import { Container, VStack, Skeleton, Stack } from '@chakra-ui/react';
 
-export default function ArticleFormLoading() {
+const ArticleFormLoading = () => {
   return (
     <Container maxW='container.lg' py={8}>
       <VStack align='stretch' spacing={8}>
@@ -48,4 +48,6 @@ export default function ArticleFormLoading() {
       </VStack>
     </Container>
   );
-}
+};
+
+export default ArticleFormLoading;

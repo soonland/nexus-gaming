@@ -8,7 +8,7 @@ import { useEffect } from 'react';
 import { AdminAnnouncementBanner } from '@/components/admin/AdminAnnouncementBanner';
 import { useAuth } from '@/hooks/useAuth';
 
-export default function AdminLayout({ children }: { children: ReactNode }) {
+const AdminLayout = ({ children }: { children: ReactNode }) => {
   const { user, isLoading } = useAuth();
   const router = useRouter();
 
@@ -28,4 +28,6 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       <Box>{children}</Box>
     </Box>
   );
-}
+};
+
+export default AdminLayout;

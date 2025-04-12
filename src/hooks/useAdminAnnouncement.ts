@@ -4,7 +4,7 @@ import axios from 'axios';
 
 import dayjs from '@/lib/dayjs';
 
-export interface AdminAnnouncement {
+export interface IAdminAnnouncement {
   id: string;
   message: string;
   type: AnnouncementType;
@@ -16,7 +16,7 @@ export interface AdminAnnouncement {
   };
 }
 
-interface CreateAnnouncementData {
+interface ICreateAnnouncementData {
   message: string;
   type: AnnouncementType;
   expiresAt?: Date | null;
@@ -25,7 +25,7 @@ interface CreateAnnouncementData {
 export function useAdminAnnouncement(id?: string) {
   const queryClient = useQueryClient();
 
-  const { data: announcements = [] } = useQuery<AdminAnnouncement[]>({
+  const { data: announcements = [] } = useQuery<IAdminAnnouncement[]>({
     queryKey: ['adminAnnouncements'],
     queryFn: async () => {
       const { data } = await axios.get('/api/admin/announcements');
@@ -33,7 +33,7 @@ export function useAdminAnnouncement(id?: string) {
     },
   });
 
-  const { data: announcement } = useQuery<AdminAnnouncement>({
+  const { data: announcement } = useQuery<IAdminAnnouncement>({
     queryKey: ['announcement', id],
     queryFn: async () => {
       const { data } = await axios.get(`/api/admin/announcements/${id}`);
@@ -43,7 +43,7 @@ export function useAdminAnnouncement(id?: string) {
   });
 
   const createAnnouncement = useMutation({
-    mutationFn: async (data: CreateAnnouncementData) => {
+    mutationFn: async (data: ICreateAnnouncementData) => {
       const response = await axios.post('/api/admin/announcements', {
         ...data,
         expiresAt: data.expiresAt
@@ -57,7 +57,7 @@ export function useAdminAnnouncement(id?: string) {
     },
   });
 
-  interface UpdateAnnouncementData {
+  interface IUpdateAnnouncementData {
     id: string;
     message: string;
     type: AnnouncementType;
@@ -66,7 +66,7 @@ export function useAdminAnnouncement(id?: string) {
   }
 
   const updateAnnouncement = useMutation({
-    mutationFn: async (data: UpdateAnnouncementData) => {
+    mutationFn: async (data: IUpdateAnnouncementData) => {
       const response = await axios.put(`/api/admin/announcements/${data.id}`, {
         ...data,
         expiresAt: data.expiresAt

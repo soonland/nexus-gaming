@@ -10,13 +10,13 @@ import {
 } from '@chakra-ui/react';
 import { useEffect } from 'react';
 
-export default function UserListError({
+const UserListError = ({
   error,
   reset,
 }: {
   error: Error;
   reset: () => void;
-}) {
+}) => {
   useEffect(() => {
     console.error('Users page error:', error);
   }, [error]);
@@ -47,4 +47,6 @@ export default function UserListError({
       </Alert>
     </Container>
   );
-}
+};
+
+export default UserListError;

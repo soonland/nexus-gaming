@@ -18,26 +18,26 @@ import { useForm, Controller } from 'react-hook-form';
 
 import { ChakraDateTimePicker } from '@/components/common/ChakraDateTimePicker';
 
-interface AnnouncementForm {
+interface IAnnouncementForm {
   message: string;
   type: AnnouncementType;
   expiresAt?: Date | null;
   isActive: boolean;
 }
 
-interface AnnouncementFormProps {
-  initialData?: Partial<AnnouncementForm>;
-  onSubmit: (data: AnnouncementForm) => Promise<void>;
+interface IAnnouncementFormProps {
+  initialData?: Partial<IAnnouncementForm>;
+  onSubmit: (data: IAnnouncementForm) => Promise<void>;
   isLoading?: boolean;
   mode?: 'create' | 'edit';
 }
 
-export default function AnnouncementForm({
+const AnnouncementForm = ({
   initialData,
   onSubmit,
   isLoading,
   mode = 'create',
-}: AnnouncementFormProps) {
+}: IAnnouncementFormProps) => {
   const router = useRouter();
   const toast = useToast();
 
@@ -46,7 +46,7 @@ export default function AnnouncementForm({
     handleSubmit,
     control,
     formState: { errors },
-  } = useForm<AnnouncementForm>({
+  } = useForm<IAnnouncementForm>({
     defaultValues: {
       message: initialData?.message || '',
       type: initialData?.type || AnnouncementType.INFO,
@@ -57,7 +57,7 @@ export default function AnnouncementForm({
     },
   });
 
-  const onSubmitForm = async (data: AnnouncementForm) => {
+  const onSubmitForm = async (data: IAnnouncementForm) => {
     try {
       await onSubmit(data);
       toast({
@@ -145,4 +145,6 @@ export default function AnnouncementForm({
       </Stack>
     </Box>
   );
-}
+};
+
+export default AnnouncementForm;

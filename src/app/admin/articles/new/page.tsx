@@ -13,7 +13,7 @@ import type { ArticleForm as IArticleForm } from '@/types';
 
 import ArticleForm from '../_components/ArticleForm';
 
-export default function NewArticlePage() {
+const NewArticlePage = () => {
   const { createArticle, isCreating } = useArticles();
 
   const handleSubmit = async (data: IArticleForm) => {
@@ -36,4 +36,6 @@ export default function NewArticlePage() {
       </Card>
     </Container>
   );
-}
+};
+
+export default NewArticlePage;

@@ -18,7 +18,7 @@ import type { GameForm as IGameForm } from '@/types';
 
 import GameForm from '../../_components/GameForm';
 
-export default function EditGamePage() {
+const EditGamePage = () => {
   const params = useParams();
   const id = params.id as string;
   const { game, isLoading } = useGame(id);
@@ -76,4 +76,6 @@ export default function EditGamePage() {
       </Card>
     </Container>
   );
-}
+};
+
+export default EditGamePage;

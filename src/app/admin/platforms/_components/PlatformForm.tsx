@@ -15,19 +15,19 @@ import { useForm, Controller } from 'react-hook-form';
 import { ChakraDateTimePicker } from '@/components/common/ChakraDateTimePicker';
 import type { PlatformForm as IPlatformForm } from '@/types';
 
-interface PlatformFormProps {
+interface IPlatformFormProps {
   initialData?: IPlatformForm;
   onSubmit: (data: IPlatformForm) => Promise<void>;
   isLoading?: boolean;
   mode: 'create' | 'edit';
 }
 
-export default function PlatformForm({
+const PlatformForm = ({
   initialData,
   onSubmit,
   isLoading,
   mode,
-}: PlatformFormProps) {
+}: IPlatformFormProps) => {
   const router = useRouter();
   const toast = useToast();
 
@@ -131,4 +131,6 @@ export default function PlatformForm({
       </Stack>
     </Box>
   );
-}
+};
+
+export default PlatformForm;

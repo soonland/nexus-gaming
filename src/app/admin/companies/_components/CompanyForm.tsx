@@ -11,28 +11,28 @@ import {
 } from '@chakra-ui/react';
 import React from 'react';
 
-interface CompanyFormData {
+interface ICompanyFormData {
   name: string;
   isDeveloper: boolean;
   isPublisher: boolean;
 }
 
-interface CompanyFormProps {
-  initialData?: CompanyFormData;
-  onSubmit: (data: CompanyFormData) => Promise<void>;
+interface ICompanyFormProps {
+  initialData?: ICompanyFormData;
+  onSubmit: (data: ICompanyFormData) => Promise<void>;
   onCancel: () => void;
   isLoading?: boolean;
   mode: 'create' | 'edit';
 }
 
-export default function CompanyForm({
+const CompanyForm = ({
   initialData,
   onSubmit,
   onCancel,
   isLoading,
   mode,
-}: CompanyFormProps) {
-  const [formData, setFormData] = React.useState<CompanyFormData>({
+}: ICompanyFormProps) => {
+  const [formData, setFormData] = React.useState<ICompanyFormData>({
     name: initialData?.name || '',
     isDeveloper: initialData?.isDeveloper || false,
     isPublisher: initialData?.isPublisher || false,
@@ -109,4 +109,6 @@ export default function CompanyForm({
       </Stack>
     </Box>
   );
-}
+};
+
+export default CompanyForm;

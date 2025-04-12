@@ -10,7 +10,7 @@ import {
 import { createCustomTheme, themeColorMap } from '@/theme';
 import type { ThemeName } from '@/theme';
 
-interface ThemePreviewProps {
+interface IThemePreviewProps {
   themeName: ThemeName;
   isSelected: boolean;
   onClick: () => void;
@@ -20,7 +20,7 @@ export const ThemePreview = ({
   themeName,
   isSelected,
   onClick,
-}: ThemePreviewProps) => {
+}: IThemePreviewProps) => {
   const borderColor = useColorModeValue('gray.200', 'gray.600');
   const selectedBorderColor = useColorModeValue('blue.500', 'blue.300');
   const bgColor = useColorModeValue('white', 'gray.800');

@@ -2,6 +2,8 @@
 
 import GameFormLoading from '@/components/loading/GameFormLoading';
 
-export default function NewGameLoading() {
+const NewGameLoading = () => {
   return <GameFormLoading />;
-}
+};
+
+export default NewGameLoading;

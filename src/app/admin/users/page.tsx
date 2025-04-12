@@ -28,7 +28,7 @@ import { useUsers, useDeleteUser, useToggleUserStatus } from '@/hooks/useUsers';
 
 import UsersTable from './_components/UsersTable';
 
-export default function UserListPage() {
+const UserListPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const toast = useToast();
@@ -246,4 +246,6 @@ export default function UserListPage() {
       </AlertDialog>
     </Container>
   );
-}
+};
+
+export default UserListPage;

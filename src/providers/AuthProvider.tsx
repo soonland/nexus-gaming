@@ -4,17 +4,17 @@ import { useRouter } from 'next/navigation';
 import type React from 'react';
 import { createContext, useCallback, useEffect, useState } from 'react';
 
-import type { AuthUser, LoginCredentials } from '@/types/auth';
+import type { AuthUser, ILoginCredentials } from '@/types/auth';
 
-interface AuthContextType {
+interface IAuthContextType {
   user: AuthUser | null;
   isLoading: boolean;
-  login: (credentials: LoginCredentials) => Promise<void>;
+  login: (credentials: ILoginCredentials) => Promise<void>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
 }
 
-export const AuthContext = createContext<AuthContextType>({
+export const AuthContext = createContext<IAuthContextType>({
   user: null,
   isLoading: true,
   login: async () => {},
@@ -28,7 +28,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
 
   const login = useCallback(
-    async (credentials: LoginCredentials) => {
+    async (credentials: ILoginCredentials) => {
       try {
         const response = await fetch('/api/auth/login', {
           method: 'POST',

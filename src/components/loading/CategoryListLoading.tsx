@@ -13,7 +13,7 @@ import {
   useColorModeValue,
 } from '@chakra-ui/react';
 
-export default function CategoryListLoading() {
+const CategoryListLoading = () => {
   const borderColor = useColorModeValue('gray.200', 'gray.700');
 
   return (
@@ -52,4 +52,6 @@ export default function CategoryListLoading() {
       </Table>
     </Box>
   );
-}
+};
+
+export default CategoryListLoading;
