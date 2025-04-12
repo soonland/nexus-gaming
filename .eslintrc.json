@@ -9,7 +9,7 @@
     },
     "project": "./tsconfig.json"
   },
-  "plugins": ["@typescript-eslint", "react"],
+  "plugins": ["@typescript-eslint", "react", "prettier"],
   "extends": [
     "next/core-web-vitals",
     "eslint:recommended",
@@ -17,7 +17,8 @@
     "plugin:@typescript-eslint/recommended-requiring-type-checking",
     "plugin:react/recommended",
     "plugin:react/jsx-runtime",
-    "plugin:react-hooks/recommended"
+    "plugin:react-hooks/recommended",
+    "plugin:prettier/recommended"
   ],
   "env": {
     "browser": true,
@@ -65,7 +66,10 @@
         "allow": ["warn", "error", "info"]
       }
     ],
-    "no-var": "error"
+    "no-var": "error",
+
+    // Prettier
+    "prettier/prettier": "error"
   },
   "ignorePatterns": [
     "node_modules/",
