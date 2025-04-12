@@ -53,12 +53,10 @@ export async function PUT(request: NextRequest) {
       data: {
         password: await hashPassword(newPassword),
         lastPasswordChange: new Date(),
-        passwordExpiresAt: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000), // 90 days
       },
       select: {
         id: true,
         lastPasswordChange: true,
-        passwordExpiresAt: true,
       },
     });
 
@@ -66,7 +64,6 @@ export async function PUT(request: NextRequest) {
       user: {
         ...updatedUser,
         lastPasswordChange: updatedUser.lastPasswordChange.toISOString(),
-        passwordExpiresAt: updatedUser.passwordExpiresAt.toISOString(),
       },
     });
   } catch (error) {

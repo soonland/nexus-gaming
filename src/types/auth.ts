@@ -8,7 +8,7 @@ export type AuthUser = {
   role: Role;
   isActive: boolean;
   lastPasswordChange: string;
-  passwordExpiresAt: string;
+  lastLogin?: string;
 };
 
 export interface ILoginCredentials {
@@ -28,5 +28,5 @@ export interface IJWTPayload extends JoseJWTPayload {
   role: string;
   isActive: boolean;
   lastPasswordChange: string;
-  passwordExpiresAt: string;
+  lastLogin?: string;
 }

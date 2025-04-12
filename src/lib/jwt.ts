@@ -15,7 +15,6 @@ export async function signToken(user: AuthUser): Promise<string> {
     role: user.role,
     isActive: user.isActive,
     lastPasswordChange: user.lastPasswordChange,
-    passwordExpiresAt: user.passwordExpiresAt,
   };
 
   const token = await new SignJWT(payload)
@@ -58,6 +57,5 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
     role: payload.role as Role,
     isActive: payload.isActive,
     lastPasswordChange: payload.lastPasswordChange,
-    passwordExpiresAt: payload.passwordExpiresAt,
   };
 }

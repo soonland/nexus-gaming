@@ -45,7 +45,7 @@ model User {
   articles         Article[]
   socialProfiles   UserSocialProfile[]
   lastPasswordChange DateTime  @default(now())
-  passwordExpiresAt  DateTime  @default(dbgenerated("now() + interval '90 days'"))
+  lastLogin        DateTime?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
   announcements    AdminAnnouncement[]
