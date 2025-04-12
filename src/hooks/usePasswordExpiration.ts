@@ -6,8 +6,7 @@ import { useAuth } from './useAuth';
 
 interface IPasswordExpirationInfo {
   daysUntilExpiration: number;
-  isExpired: boolean;
-  isExpiringSoon: boolean;
+  warningLevel: 'none' | 'info' | 'warning' | 'urgent' | 'expired';
   expirationDate: string;
   lastPasswordChange: string;
 }
@@ -16,24 +15,32 @@ export const usePasswordExpiration = (): IPasswordExpirationInfo | null => {
   const { user } = useAuth();
 
   const expirationInfo = useMemo(() => {
-    if (!user?.passwordExpiresAt || !user?.lastPasswordChange) {
+    if (!user?.lastPasswordChange) {
       return null;
     }
 
     const now = dayjs();
-    const expirationDate = dayjs(user.passwordExpiresAt);
-    // Ensure we don't show negative days and handle future dates
-    const daysUntilExpiration = expirationDate.isBefore(now)
-      ? 0
-      : Math.min(90, expirationDate.diff(now, 'day'));
+    const lastChange = dayjs(user.lastPasswordChange);
+    const expirationDate = lastChange.add(90, 'days');
+    const daysUntilExpiration = Math.max(0, expirationDate.diff(now, 'day'));
+    let warningLevel: IPasswordExpirationInfo['warningLevel'] = 'none';
+    if (daysUntilExpiration <= 0) {
+      warningLevel = 'expired';
+    } else if (daysUntilExpiration <= 3) {
+      warningLevel = 'urgent';
+    } else if (daysUntilExpiration <= 5) {
+      warningLevel = 'warning';
+    } else if (daysUntilExpiration <= 7) {
+      warningLevel = 'info';
+    }
+
     return {
       daysUntilExpiration,
-      isExpired: daysUntilExpiration <= 0,
-      isExpiringSoon: daysUntilExpiration > 0 && daysUntilExpiration <= 7,
-      expirationDate: user.passwordExpiresAt,
+      warningLevel,
+      expirationDate: expirationDate.toISOString(),
       lastPasswordChange: user.lastPasswordChange,
     };
-  }, [user?.passwordExpiresAt, user?.lastPasswordChange]);
+  }, [user?.lastPasswordChange]);
 
   return expirationInfo;
 };

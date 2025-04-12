@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
         role: true,
         isActive: true,
         lastPasswordChange: true,
-        passwordExpiresAt: true,
+        lastLogin: true,
       },
     });
 
@@ -49,14 +49,29 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Update lastLogin
+    const updatedUser = await prisma.user.update({
+      where: { id: user.id },
+      data: { lastLogin: new Date() },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        role: true,
+        isActive: true,
+        lastPasswordChange: true,
+        lastLogin: true,
+      },
+    });
+
     // Convert dates to ISO strings
     const userWithFormattedDates = {
-      ...user,
-      lastPasswordChange: user.lastPasswordChange.toISOString(),
-      passwordExpiresAt: user.passwordExpiresAt.toISOString(),
+      ...updatedUser,
+      lastPasswordChange: updatedUser.lastPasswordChange.toISOString(),
+      lastLogin: updatedUser.lastLogin?.toISOString(),
     };
 
-    const { password: _, ...userWithoutPassword } = userWithFormattedDates;
+    const userWithoutPassword = userWithFormattedDates;
     const token = await signToken(userWithoutPassword);
 
     const response = NextResponse.json<IAuthResponse>({

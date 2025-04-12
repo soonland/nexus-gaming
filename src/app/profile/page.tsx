@@ -21,6 +21,7 @@ import {
   AlertIcon,
   AlertTitle,
   AlertDescription,
+  Progress,
 } from '@chakra-ui/react';
 import { useState } from 'react';
 
@@ -114,27 +115,62 @@ const ProfilePage = () => {
             <VStack align='stretch' spacing={4}>
               {/* Avertissement d'expiration du mot de passe */}
               {passwordExpiration &&
-                (passwordExpiration.isExpired ||
-                  passwordExpiration.isExpiringSoon) && (
+                passwordExpiration.warningLevel !== 'none' && (
                   <Alert
-                    status={passwordExpiration.isExpired ? 'error' : 'warning'}
+                    status={
+                      passwordExpiration.warningLevel === 'expired'
+                        ? 'error'
+                        : passwordExpiration.warningLevel === 'urgent'
+                          ? 'error'
+                          : passwordExpiration.warningLevel === 'warning'
+                            ? 'warning'
+                            : 'info'
+                    }
                     variant='left-accent'
                   >
                     <AlertIcon />
                     <Box>
                       <AlertTitle>
-                        {passwordExpiration.isExpired
+                        {passwordExpiration.warningLevel === 'expired'
                           ? 'Mot de passe expiré!'
-                          : 'Expiration imminente!'}
+                          : passwordExpiration.warningLevel === 'urgent'
+                            ? 'Expiration imminente!'
+                            : passwordExpiration.warningLevel === 'warning'
+                              ? 'Expiration approche'
+                              : 'Pensez à mettre à jour'}
                       </AlertTitle>
                       <AlertDescription>
                         <VStack align='stretch' spacing={1}>
                           <Text color={textColor}>
-                            {passwordExpiration.isExpired
+                            {passwordExpiration.warningLevel === 'expired'
                               ? 'Votre mot de passe a expiré. Veuillez le changer immédiatement.'
-                              : `Votre mot de passe expirera dans ${passwordExpiration.daysUntilExpiration} jours. Changez-le dès maintenant pour éviter toute interruption.`}
+                              : `Votre mot de passe expire dans ${passwordExpiration.daysUntilExpiration} jours. Changez-le dès maintenant pour éviter toute interruption.`}
                           </Text>
-                          <Text color={textColor} fontSize='sm'>
+                          <Box mt={3}>
+                            <Text fontSize='xs' mb={1}>
+                              Progression
+                            </Text>
+                            <Progress
+                              borderRadius='full'
+                              colorScheme={
+                                passwordExpiration.warningLevel === 'expired'
+                                  ? 'red'
+                                  : passwordExpiration.warningLevel === 'urgent'
+                                    ? 'red'
+                                    : passwordExpiration.warningLevel ===
+                                        'warning'
+                                      ? 'orange'
+                                      : 'blue'
+                              }
+                              size='sm'
+                              value={
+                                ((90 - passwordExpiration.daysUntilExpiration) /
+                                  90) *
+                                100
+                              }
+                            />
+                          </Box>
+                          <Text color={textColor} fontSize='sm' mt={2}>
                             Dernier changement:{' '}
                             {dayjs(
                               passwordExpiration.lastPasswordChange

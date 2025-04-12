@@ -22,7 +22,6 @@ export async function GET() {
         role: true,
         isActive: true,
         lastPasswordChange: true,
-        passwordExpiresAt: true,
       },
     });
 
@@ -35,7 +34,6 @@ export async function GET() {
       user: {
         ...user,
         lastPasswordChange: user.lastPasswordChange.toISOString(),
-        passwordExpiresAt: user.passwordExpiresAt.toISOString(),
       },
     });
   } catch (error) {

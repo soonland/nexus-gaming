@@ -32,7 +32,6 @@ export async function GET(
         createdAt: true,
         updatedAt: true,
         lastPasswordChange: true,
-        passwordExpiresAt: true,
         _count: {
           select: { articles: true },
         },
@@ -48,7 +47,6 @@ export async function GET(
       user: {
         ...user,
         lastPasswordChange: user.lastPasswordChange?.toISOString(),
-        passwordExpiresAt: user.passwordExpiresAt?.toISOString(),
         createdAt: user.createdAt.toISOString(),
         updatedAt: user.updatedAt.toISOString(),
       },
@@ -140,9 +138,6 @@ export async function PUT(
     if (body.password) {
       updateData.password = await hashPassword(body.password);
       updateData.lastPasswordChange = new Date();
-      updateData.passwordExpiresAt = new Date(
-        Date.now() + 90 * 24 * 60 * 60 * 1000
-      ); // 90 days
     }
 
     const user = await prisma.user.update({
@@ -157,7 +152,6 @@ export async function PUT(
         createdAt: true,
         updatedAt: true,
         lastPasswordChange: true,
-        passwordExpiresAt: true,
       },
     });
 
@@ -166,7 +160,6 @@ export async function PUT(
       user: {
         ...user,
         lastPasswordChange: user.lastPasswordChange?.toISOString(),
-        passwordExpiresAt: user.passwordExpiresAt?.toISOString(),
         createdAt: user.createdAt.toISOString(),
         updatedAt: user.updatedAt.toISOString(),
       },
@@ -298,7 +291,6 @@ export async function PATCH(
         createdAt: true,
         updatedAt: true,
         lastPasswordChange: true,
-        passwordExpiresAt: true,
       },
     });
 
@@ -307,7 +299,6 @@ export async function PATCH(
       user: {
         ...updatedUser,
         lastPasswordChange: updatedUser.lastPasswordChange?.toISOString(),
-        passwordExpiresAt: updatedUser.passwordExpiresAt?.toISOString(),
         createdAt: updatedUser.createdAt.toISOString(),
         updatedAt: updatedUser.updatedAt.toISOString(),
       },

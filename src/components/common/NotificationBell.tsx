@@ -21,8 +21,19 @@ export const NotificationBell = () => {
   const passwordExpiration = usePasswordExpiration();
   const textColor = useColorModeValue('gray.600', 'gray.300');
 
-  const hasNotifications =
-    passwordExpiration?.isExpiringSoon || passwordExpiration?.isExpired;
+  const warningLevelConfig = {
+    expired: { color: 'red.500', text: 'Votre mot de passe a expiré' },
+    urgent: { color: 'red.500', text: 'Expiration imminente' },
+    warning: { color: 'orange.500', text: 'Expiration approche' },
+    info: { color: 'blue.500', text: 'Pensez à changer votre mot de passe' },
+    none: { color: undefined, text: undefined },
+  };
+
+  if (!passwordExpiration) {
+    return null;
+  }
+
+  const hasNotifications = passwordExpiration.warningLevel !== 'none';
 
   return (
     <Popover placement='bottom-end'>
@@ -36,7 +47,7 @@ export const NotificationBell = () => {
           />
           {hasNotifications && (
             <Box
-              bg='red.500'
+              bg={warningLevelConfig[passwordExpiration.warningLevel].color}
               border='2px solid white'
               borderRadius='full'
               h='3'
@@ -54,18 +65,24 @@ export const NotificationBell = () => {
             <VStack align='stretch' spacing={4}>
               <Box>
                 <Text fontSize='sm' fontWeight='medium'>
-                  {passwordExpiration?.isExpired
-                    ? 'Votre mot de passe a expiré'
-                    : `Votre mot de passe expire dans ${passwordExpiration?.daysUntilExpiration} jours`}
+                  {warningLevelConfig[passwordExpiration.warningLevel].text}
                 </Text>
                 <Text color={textColor} fontSize='sm'>
-                  Pour votre sécurité, veuillez mettre à jour votre mot de
-                  passe.
+                  {passwordExpiration.daysUntilExpiration > 0
+                    ? `Il vous reste ${passwordExpiration.daysUntilExpiration} jours pour changer votre mot de passe.`
+                    : 'Pour votre sécurité, veuillez mettre à jour votre mot de passe immédiatement.'}
                 </Text>
               </Box>
               <Button
                 as={Link}
-                colorScheme={passwordExpiration?.isExpired ? 'red' : 'blue'}
+                colorScheme={
+                  passwordExpiration.warningLevel === 'expired' ||
+                  passwordExpiration.warningLevel === 'urgent'
+                    ? 'red'
+                    : passwordExpiration.warningLevel === 'warning'
+                      ? 'orange'
+                      : 'blue'
+                }
                 href='/profile'
                 size='sm'
               >
