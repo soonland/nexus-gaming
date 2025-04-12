@@ -1,6 +1,5 @@
 'use client'
 
-import React from 'react'
 import {
   Box,
   FormControl,
@@ -8,10 +7,8 @@ import {
   Input,
   Button,
   Stack,
-  useToast,
   FormErrorMessage,
 } from '@chakra-ui/react'
-import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 
 interface CategoryFormProps {

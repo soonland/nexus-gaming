@@ -1,11 +1,8 @@
 'use client'
 
-import React from 'react'
 import {
   Container,
   Stack,
-  Heading,
-  Text,
   Button,
   Icon,
   Alert,

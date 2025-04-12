@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { Prisma, ArticleStatus } from '@prisma/client'
-import type { ArticleForm, ArticleData } from '@/types'
+import type { ArticleForm } from '@/types'
 
 // GET - Liste des articles
 export async function GET(request: Request) {

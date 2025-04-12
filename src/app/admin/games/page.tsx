@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo, useRef } from 'react'
+import { useState, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import {
   Box,

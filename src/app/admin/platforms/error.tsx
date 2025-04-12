@@ -1,16 +1,13 @@
 'use client'
 
-import React from 'react'
 import {
   Container,
   VStack,
-  Heading,
-  Text,
   Button,
   Alert,
   AlertIcon,
   AlertTitle,
-  AlertDescription,
+  AlertDescription
 } from '@chakra-ui/react'
 import { useRouter } from 'next/navigation'
 

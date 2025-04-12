@@ -43,7 +43,6 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params
-    const user = await getCurrentUser()
 
     const body = await request.json()
     const { name } = body

@@ -1,5 +1,4 @@
 import { compare } from 'bcrypt'
-import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { signToken } from '@/lib/jwt'

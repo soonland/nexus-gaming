@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo, useRef } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import {
   Box,
   Button,
@@ -42,7 +42,7 @@ import { DateDisplay } from '@/components/common/DateDisplay'
 export default function PlatformsPage() {
   const toast = useToast()
   const [searchTerm, setSearchTerm] = useState('')
-  const { platforms, deletePlatform, isLoading, isDeleting } = usePlatforms()
+  const { platforms, deletePlatform, isDeleting } = usePlatforms()
   const borderColor = useColorModeValue('gray.200', 'gray.700')
   const deleteDialog = useDisclosure()
   const cancelRef = useRef<HTMLButtonElement>(null)

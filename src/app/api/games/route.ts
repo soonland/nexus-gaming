@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { Prisma } from '@prisma/client'
-import type { GameData, GameForm } from '@/types'
+import type { GameForm } from '@/types'
 
 export async function GET(request: Request) {
   try {

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext, ReactNode } from 'react'
+import { createContext, useContext, ReactNode } from 'react'
 import { useUserTheme } from '@/hooks/useUserTheme'
 import { ChakraProvider } from '@chakra-ui/react'
 

@@ -1,6 +1,5 @@
 'use client'
 
-import React from 'react'
 import { Box, Container, Heading, Text } from '@chakra-ui/react'
 
 export default function Home() {

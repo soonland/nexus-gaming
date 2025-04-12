@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 import dayjs from 'dayjs'
@@ -26,7 +27,7 @@ async function main() {
   console.log('Created admin users')
 
   // Create categories
-  const newsCategory = await prisma.category.create({
+  await prisma.category.create({
     data: {
       name: 'Actualités',
     },
@@ -144,7 +145,7 @@ async function main() {
       title: zeldaData.title,
       description: zeldaData.description,
       coverImage: zeldaData.coverImage,
-      releaseDate: dayjs(zeldaData.releaseDate!).toDate(),
+      releaseDate: dayjs(zeldaData.releaseDate).toDate(),
       developer: { connect: { id: zeldaData.developerId } },
       publisher: { connect: { id: zeldaData.publisherId } },
       platforms: { connect: zeldaData.platformIds.map(id => ({ id })) },
@@ -156,7 +157,7 @@ async function main() {
       title: spiderManData.title,
       description: spiderManData.description,
       coverImage: spiderManData.coverImage,
-      releaseDate: dayjs(spiderManData.releaseDate!).toDate(),
+      releaseDate: dayjs(spiderManData.releaseDate).toDate(),
       developer: { connect: { id: spiderManData.developerId } },
       publisher: { connect: { id: spiderManData.publisherId } },
       platforms: { connect: spiderManData.platformIds.map(id => ({ id })) },
@@ -168,7 +169,7 @@ async function main() {
       title: baldursGateData.title,
       description: baldursGateData.description,
       coverImage: baldursGateData.coverImage,
-      releaseDate: dayjs(baldursGateData.releaseDate!).toDate(),
+      releaseDate: dayjs(baldursGateData.releaseDate).toDate(),
       developer: { connect: { id: baldursGateData.developerId } },
       publisher: { connect: { id: baldursGateData.publisherId } },
       platforms: { connect: baldursGateData.platformIds.map(id => ({ id })) },

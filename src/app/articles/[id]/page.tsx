@@ -1,6 +1,4 @@
 'use client'
-
-import React from 'react'
 import {
   Box,
   Container,
@@ -19,7 +17,6 @@ import {
 import { Hero } from '@/components/common/Hero'
 import { FaUser } from 'react-icons/fa'
 import { BsController, BsArrowLeft } from 'react-icons/bs'
-import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { GameCard } from '@/components/games/GameCard'
 import { DateDisplay } from '@/components/common/DateDisplay'

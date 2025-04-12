@@ -74,7 +74,6 @@ export function ChakraDateTimePicker({
   showTimeSelect = true,
   minDate = new Date(),
   placeholderText,
-  isClearable = true,
 }: ChakraDateTimePickerProps) {
   const [mounted, setMounted] = useState(false)
   

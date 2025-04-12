@@ -1,6 +1,5 @@
 'use client'
 
-import React from 'react'
 import {
   Box,
   Container,
@@ -18,7 +17,7 @@ import {
   Heading
 } from '@chakra-ui/react'
 import { Hero } from '@/components/common/Hero'
-import { FaUser, FaBuilding, FaGamepad } from 'react-icons/fa'
+import { FaBuilding, FaGamepad } from 'react-icons/fa'
 import { BsCalendar4, BsArrowLeft } from 'react-icons/bs'
 import { useParams, useRouter } from 'next/navigation'
 import { ArticlePreview } from '@/components/articles/ArticlePreview'

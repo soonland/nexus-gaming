@@ -1,8 +1,7 @@
 'use client'
 
-import React, { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useEffect } from 'react'
 import {
-  Box,
   Button,
   FormControl,
   FormErrorMessage,
@@ -40,12 +39,11 @@ export default function GameSelector({
 }: GameSelectorProps) {
   const { isOpen, onOpen, onClose } = useDisclosure()
   const { data } = useGames({ limit: '100' }) // Get all games for selector
-  const games = data?.games || []
   const [tempSelectedIds, setTempSelectedIds] = useState(selectedIds)
   const [searchTerm, setSearchTerm] = useState('')
 
   // Reset temp selection when modal opens
-  React.useEffect(() => {
+  useEffect(() => {
     setTempSelectedIds(selectedIds)
   }, [selectedIds, isOpen])
 
@@ -77,6 +75,7 @@ export default function GameSelector({
   )
 
   const filteredGames = useMemo(() => {
+    const games = data?.games || []
     if (!searchTerm) return games
     const term = searchTerm.toLowerCase()
     return games.filter(
@@ -84,7 +83,7 @@ export default function GameSelector({
         game.title.toLowerCase().includes(term) ||
         game.platforms.some(p => p.name.toLowerCase().includes(term))
     )
-  }, [games, searchTerm])
+  }, [data?.games, searchTerm])
 
   return (
     <FormControl isInvalid={!!error}>

@@ -1,6 +1,5 @@
 'use client'
 
-import React from 'react'
 import { Text, Tooltip } from '@chakra-ui/react'
 import { formatters } from '@/lib/dayjs'
 

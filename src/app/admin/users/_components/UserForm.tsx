@@ -59,7 +59,6 @@ export default function UserForm({ initialData, onSubmit, isLoading }: UserFormP
 
     // Real-time password match validation
     if (name === 'password' || name === 'confirmPassword') {
-      const otherField = name === 'password' ? 'confirmPassword' : 'password'
       const otherValue = name === 'password' ? formData.confirmPassword : formData.password
 
       if (value && otherValue && value !== otherValue) {

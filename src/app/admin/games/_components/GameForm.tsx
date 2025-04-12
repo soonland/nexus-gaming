@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import { useState } from 'react'
 import {
   Box,
   FormControl,
@@ -21,7 +21,7 @@ import { useCompanies } from '@/hooks/useCompanies'
 import PlatformSelect from './PlatformSelect'
 import { ChakraDateTimePicker } from '@/components/common/ChakraDateTimePicker'
 
-import type { GameForm as IGameForm, CompanyData } from '@/types'
+import type { GameForm as IGameForm } from '@/types'
 import InlineCompanyCreation from './InlineCompanyCreation'
 
 interface GameFormProps {
@@ -60,7 +60,7 @@ export default function GameForm({
     }
   })
 
-  const [inlineCreation, setInlineCreation] = React.useState<{
+  const [inlineCreation, setInlineCreation] = useState<{
     show: boolean
     type: 'developer' | 'publisher'
   }>({ show: false, type: 'developer' })

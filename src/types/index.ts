@@ -1,4 +1,4 @@
-import { Game, Article, Platform, Category, Company, User } from '@prisma/client'
+import { Game, Article, Platform, Category, Company } from '@prisma/client'
 
 // Enums et constantes
 export type ArticleStatus = 'DRAFT' | 'PENDING_APPROVAL' | 'PUBLISHED' | 'ARCHIVED'

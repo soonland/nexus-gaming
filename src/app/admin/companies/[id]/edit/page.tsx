@@ -1,6 +1,5 @@
 'use client'
 
-import React from 'react'
 import { Container, useToast, Alert, AlertIcon, Card, CardHeader, CardBody, Heading } from '@chakra-ui/react'
 import { useParams, useRouter } from 'next/navigation'
 import { useCompanies, useCompany } from '@/hooks/useCompanies'

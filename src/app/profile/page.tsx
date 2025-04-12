@@ -21,12 +21,9 @@ import {
   AlertIcon,
   AlertTitle,
   AlertDescription,
-  Select,
-  Divider,
 } from '@chakra-ui/react'
 import { useTheme } from '@/providers/ThemeProvider'
 import { ThemeSelector } from '@/components/theme/ThemeSelector'
-import type { ThemeName } from '@/theme'
 import { useState } from 'react'
 import { SocialProfilesSection } from '@/components/profile/SocialProfilesSection'
 import { useAuth } from '@/hooks/useAuth'

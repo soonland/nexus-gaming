@@ -1,6 +1,5 @@
 'use client'
 
-import React from 'react'
 import dayjs from '@/lib/dayjs'
 import { useParams } from 'next/navigation'
 import { Container, Alert, AlertIcon, Card, CardHeader, CardBody, Heading } from '@chakra-ui/react'

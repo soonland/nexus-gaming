@@ -1,19 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Role } from '@prisma/client'
 
-interface User {
-  id: string
-  username: string
-  email: string
-  role: Role
-  isActive: boolean
-  createdAt: string
-  updatedAt: string
-  _count: {
-    articles: number
-  }
-}
-
 interface CreateUserData {
   username: string
   email: string

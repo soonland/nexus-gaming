@@ -1,6 +1,5 @@
 'use client'
 
-import React from 'react'
 import { DateDisplay } from '@/components/common/DateDisplay'
 import {
   Box,

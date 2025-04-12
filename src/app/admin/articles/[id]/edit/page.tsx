@@ -1,7 +1,6 @@
 'use client'
 
-import React from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import { Container, Alert, AlertIcon, Card, CardHeader, CardBody, Heading } from '@chakra-ui/react'
 import ArticleForm from '../../_components/ArticleForm'
 import { useArticle, useArticles } from '@/hooks/useArticles'
@@ -14,7 +13,6 @@ export default function EditArticlePage() {
   const id = params.id as string
   const { article, isLoading: isLoadingArticle, error } = useArticle(id)
   const { updateArticle, isUpdating } = useArticles()
-  const router = useRouter()
 
   const handleSubmit = async (data: ArticleFormData) => {
     await updateArticle(id, data)

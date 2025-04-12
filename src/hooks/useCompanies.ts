@@ -53,9 +53,9 @@ export function useCompanies() {
   return {
     companies,
     isLoading,
-    createCompany: createCompany.mutate,
-    updateCompany: updateCompany.mutate,
-    deleteCompany: deleteCompany.mutate,
+    createCompany: createCompany.mutateAsync,
+    updateCompany: updateCompany.mutateAsync,
+    deleteCompany: deleteCompany.mutateAsync,
     isCreating: createCompany.isPending,
     isUpdating: updateCompany.isPending,
     isDeleting: deleteCompany.isPending,

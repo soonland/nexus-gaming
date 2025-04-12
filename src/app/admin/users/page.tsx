@@ -42,7 +42,7 @@ export default function UserListPage() {
   const limit = parseInt(searchParams.get('limit') || '10')
 
   // Queries and Mutations
-  const { data, isLoading } = useUsers({
+  const { data } = useUsers({
     page: page.toString(),
     limit: limit.toString(),
     search: searchTerm,

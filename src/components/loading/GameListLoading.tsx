@@ -1,6 +1,5 @@
 'use client'
 
-import React from 'react'
 import {
   Box,
   Container,
@@ -14,7 +13,6 @@ import {
   Th,
   Td,
   useColorModeValue,
-  Stack,
   Wrap,
   WrapItem,
 } from '@chakra-ui/react'

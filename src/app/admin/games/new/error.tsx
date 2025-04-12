@@ -1,6 +1,5 @@
 'use client'
 
-import React from 'react'
 import { Container, Alert, AlertIcon } from '@chakra-ui/react'
 
 export default function NewGameError() {

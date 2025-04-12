@@ -1,6 +1,5 @@
 'use client'
 
-import React, { useEffect } from 'react'
 import { Container, Heading, Card, CardHeader, CardBody, Spinner, Center } from '@chakra-ui/react'
 import AnnouncementForm from '../../_components/AnnouncementForm'
 import { useAdminAnnouncement } from '@/hooks/useAdminAnnouncement'

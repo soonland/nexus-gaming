@@ -1,6 +1,5 @@
 'use client'
 
-import React from 'react'
 import { Container, Heading, Card, CardHeader, CardBody } from '@chakra-ui/react'
 import ArticleForm from '../_components/ArticleForm'
 import { useArticles } from '@/hooks/useArticles'

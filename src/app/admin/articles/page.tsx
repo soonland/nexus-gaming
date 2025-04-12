@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo, useRef } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import {
   Box,
   Button,
@@ -79,7 +79,7 @@ export default function ArticlesPage() {
   const [articleToDelete, setArticleToDelete] = useState<string | null>(null)
 
   // Queries
-  const { data, deleteArticle, isLoading, isDeleting } = useArticles({
+  const { data, deleteArticle, isDeleting } = useArticles({
     page: page.toString(),
     limit: limit.toString(),
     search: searchTerm,

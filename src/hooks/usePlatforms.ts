@@ -71,9 +71,9 @@ export function usePlatforms() {
   return {
     platforms,
     isLoading,
-    createPlatform: createPlatform.mutate,
-    updatePlatform: updatePlatform.mutate,
-    deletePlatform: deletePlatform.mutate,
+    createPlatform: createPlatform.mutateAsync,
+    updatePlatform: updatePlatform.mutateAsync,
+    deletePlatform: deletePlatform.mutateAsync,
     isCreating: createPlatform.isPending,
     isUpdating: updatePlatform.isPending,
     isDeleting: deletePlatform.isPending,

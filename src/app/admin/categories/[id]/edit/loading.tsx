@@ -1,6 +1,5 @@
 'use client'
 
-import React from 'react'
 import { Container } from '@chakra-ui/react'
 import CategoryFormLoading from '@/components/loading/CategoryFormLoading'
 

@@ -1,7 +1,6 @@
 'use client'
 
-import React from 'react'
-import { Box, VStack, Button, useColorModeValue, ChakraProvider } from '@chakra-ui/react'
+import { Box, VStack, useColorModeValue, ChakraProvider } from '@chakra-ui/react'
 import { createCustomTheme, themeColorMap } from '@/theme'
 import type { ThemeName } from '@/theme'
 

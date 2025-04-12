@@ -7,7 +7,6 @@ import { FiSave, FiExternalLink, FiX } from "react-icons/fi";
 interface PlatformField {
   value: string;
   isDirty: boolean;
-  isLoading: boolean;
   profileId?: string;
 }
 
@@ -34,29 +33,37 @@ const SOCIAL_PLATFORMS = [
 
 export function SocialProfilesSection() {
   const toast = useToast();
-  const { profiles, isLoading, createProfile, updateProfile } = useSocialProfiles();
+  const { 
+    profiles, 
+    isLoading, 
+    createProfile, 
+    updateProfile,
+    isCreating,
+    isUpdating 
+  } = useSocialProfiles();
   const [fields, setFields] = useState<PlatformFields>(() => {
     const initial: Partial<PlatformFields> = {};
     [...GAMING_PLATFORMS, ...SOCIAL_PLATFORMS].forEach(platform => {
-      initial[platform] = { value: "", isDirty: false, isLoading: false };
+      initial[platform] = { value: "", isDirty: false };
     });
     return initial as PlatformFields;
   });
 
   useEffect(() => {
     if (profiles) {
-      const newFields = { ...fields };
-      profiles.forEach(profile => {
-        if (newFields[profile.platform]) {
-          newFields[profile.platform] = {
-            value: profile.username,
-            isDirty: false,
-            isLoading: false,
-            profileId: profile.id
-          };
-        }
+      setFields(prevFields => {
+        const newFields = { ...prevFields };
+        profiles.forEach(profile => {
+          if (newFields[profile.platform]) {
+            newFields[profile.platform] = {
+              value: profile.username,
+              isDirty: false,
+              profileId: profile.id
+            };
+          }
+        });
+        return newFields;
       });
-      setFields(newFields);
     }
   }, [profiles]);
 
@@ -83,48 +90,26 @@ export function SocialProfilesSection() {
     }));
   };
 
-  const handleSave = async (platform: SocialPlatform) => {
+  const handleSave = (platform: SocialPlatform) => {
     const field = fields[platform];
     if (!field.isDirty) return;
 
-    setFields(prev => ({
-      ...prev,
-      [platform]: { ...prev[platform], isLoading: true }
-    }));
-
     try {
       if (field.profileId) {
-        await updateProfile(
-          { 
-            id: field.profileId, 
-            data: { platform, username: field.value }
-          }
-        );
+        updateProfile({ 
+          id: field.profileId, 
+          data: { platform, username: field.value }
+        });
       } else {
-        await createProfile({ platform, username: field.value });
+        createProfile({ platform, username: field.value });
       }
-
-      toast({
-        title: "Succès",
-        description: "Profil mis à jour",
-        status: "success"
-      });
-
-      setFields(prev => ({
-        ...prev,
-        [platform]: { ...prev[platform], isDirty: false, isLoading: false }
-      }));
     } catch (error) {
       toast({
         title: "Erreur",
         description: "Impossible de mettre à jour le profil",
-        status: "error"
+        status: "error",
+        duration: 3000,
       });
-
-      setFields(prev => ({
-        ...prev,
-        [platform]: { ...prev[platform], isLoading: false }
-      }));
     }
   };
 
@@ -160,7 +145,7 @@ export function SocialProfilesSection() {
                     size="sm"
                     colorScheme="blue"
                     onClick={() => handleSave(platform)}
-                    isLoading={field.isLoading}
+                    isLoading={isCreating || isUpdating}
                   />
                 </>
               )}

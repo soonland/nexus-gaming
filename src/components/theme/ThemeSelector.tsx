@@ -1,6 +1,5 @@
 'use client'
 
-import React from 'react'
 import { SimpleGrid, Text, VStack } from '@chakra-ui/react'
 import { ThemePreview } from './ThemePreview'
 import type { ThemeName } from '@/theme'

@@ -1,6 +1,5 @@
 'use client'
 
-import React from 'react'
 import {
   Box,
   Button,
@@ -11,7 +10,6 @@ import {
   MenuList,
   MenuItem,
   IconButton,
-  useColorMode,
   useColorModeValue,
   Text,
 } from '@chakra-ui/react'

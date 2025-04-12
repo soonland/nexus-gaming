@@ -7,7 +7,6 @@ import {
   AlertDescription,
   Button,
   Container,
-  VStack,
 } from '@chakra-ui/react'
 import { useEffect } from 'react'
 

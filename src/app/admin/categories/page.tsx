@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo, useRef } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import {
   Box,
   Button,
@@ -37,20 +37,11 @@ import {
 } from '@chakra-ui/icons'
 import Link from 'next/link'
 import { useCategories } from '@/hooks/useCategories'
-import CategoryListLoading from '@/components/loading/CategoryListLoading'
-
-interface Category {
-  id: string
-  name: string
-  articleCount: number
-  createdAt: Date
-  updatedAt: Date
-}
 
 export default function CategoriesPage() {
   const toast = useToast()
   const [searchTerm, setSearchTerm] = useState('')
-  const { categories, deleteCategory, isLoading, isDeleting } = useCategories()
+  const { categories, deleteCategory, isDeleting } = useCategories()
   const borderColor = useColorModeValue('gray.200', 'gray.700')
   const deleteDialog = useDisclosure()
   const cancelRef = useRef<HTMLButtonElement>(null)

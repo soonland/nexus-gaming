@@ -1,8 +1,7 @@
 'use client'
 
-import React, { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useEffect } from 'react'
 import {
-  Box,
   Button,
   FormControl,
   FormErrorMessage,
@@ -50,7 +49,7 @@ export default function PlatformSelect({
   const [searchTerm, setSearchTerm] = useState('')
 
   // Reset temp selection when modal opens
-  React.useEffect(() => {
+  useEffect(() => {
     setTempSelectedIds(selectedIds)
   }, [selectedIds, isOpen])
 
