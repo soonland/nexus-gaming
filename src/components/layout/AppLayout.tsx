@@ -1,14 +1,15 @@
-'use client'
+'use client';
 
-import React from 'react'
-import { Box } from '@chakra-ui/react'
-import { Navbar } from './Navbar'
+import { Box } from '@chakra-ui/react';
+import type React from 'react';
 
-export function AppLayout({ children }: { children: React.ReactNode }) {
+import { Navbar } from './Navbar';
+
+export const AppLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <Box minH="100vh">
+    <Box minH='100vh'>
       <Navbar />
-      <Box as="main">{children}</Box>
+      <Box as='main'>{children}</Box>
     </Box>
-  )
-}
+  );
+};

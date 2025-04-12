@@ -1,11 +1,11 @@
-import { SocialPlatform } from '@prisma/client';
+import type { SocialPlatform } from '@prisma/client';
 
-export interface UserSocialProfileData {
+export interface IUserSocialProfileData {
   platform: SocialPlatform;
   username: string;
 }
 
-export interface UserSocialProfile extends UserSocialProfileData {
+export interface IUserSocialProfile extends IUserSocialProfileData {
   id: string;
   url: string | null;
   userId: string;

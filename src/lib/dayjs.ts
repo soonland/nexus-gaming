@@ -1,18 +1,18 @@
-import dayjs from 'dayjs'
-import 'dayjs/locale/fr'
-import relativeTime from 'dayjs/plugin/relativeTime'
-import localizedFormat from 'dayjs/plugin/localizedFormat'
-import updateLocale from 'dayjs/plugin/updateLocale'
-import calendar from 'dayjs/plugin/calendar'
+import dayjs from 'dayjs';
+import 'dayjs/locale/fr';
+import calendar from 'dayjs/plugin/calendar';
+import localizedFormat from 'dayjs/plugin/localizedFormat';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import updateLocale from 'dayjs/plugin/updateLocale';
 
 // Étendre dayjs avec les plugins nécessaires
-dayjs.extend(relativeTime)
-dayjs.extend(localizedFormat)
-dayjs.extend(updateLocale)
-dayjs.extend(calendar)
+dayjs.extend(relativeTime);
+dayjs.extend(localizedFormat);
+dayjs.extend(updateLocale);
+dayjs.extend(calendar);
 
 // Définir le français comme locale par défaut
-dayjs.locale('fr')
+dayjs.locale('fr');
 
 // Personnaliser les messages relatifs
 dayjs.updateLocale('fr', {
@@ -29,23 +29,24 @@ dayjs.updateLocale('fr', {
     M: 'un mois',
     MM: '%d mois',
     y: 'un an',
-    yy: '%d ans'
-  }
-})
+    yy: '%d ans',
+  },
+});
 
 export const formatters = {
   relative: (date: Date | string) => dayjs(date).fromNow(),
   short: (date: Date | string) => dayjs(date).format('D MMM YYYY'),
   long: (date: Date | string) => dayjs(date).format('D MMMM YYYY [à] HH:mm'),
-  calendar: (date: Date | string) => dayjs(date).calendar(null, {
-    sameDay: '[Aujourd\'hui à] HH:mm',
-    nextDay: '[Demain à] HH:mm',
-    nextWeek: 'dddd [à] HH:mm',
-    lastDay: '[Hier à] HH:mm',
-    lastWeek: 'dddd [dernier à] HH:mm',
-    sameElse: 'D MMMM YYYY'
-  }),
-  custom: (date: Date | string, format: string) => dayjs(date).format(format)
-}
+  calendar: (date: Date | string) =>
+    dayjs(date).calendar(null, {
+      sameDay: "[Aujourd'hui à] HH:mm",
+      nextDay: '[Demain à] HH:mm',
+      nextWeek: 'dddd [à] HH:mm',
+      lastDay: '[Hier à] HH:mm',
+      lastWeek: 'dddd [dernier à] HH:mm',
+      sameElse: 'D MMMM YYYY',
+    }),
+  custom: (date: Date | string, format: string) => dayjs(date).format(format),
+};
 
-export default dayjs
+export default dayjs;

@@ -1,13 +1,15 @@
-import { NextRequest, NextResponse } from 'next/server'
-import prisma from '@/lib/prisma'
-import type { GameForm } from '@/types'
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+
+import prisma from '@/lib/prisma';
+import type { GameForm } from '@/types';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params
+    const { id } = await params;
     const game = await prisma.game.findUnique({
       where: { id },
       select: {
@@ -39,8 +41,8 @@ export async function GET(
             user: {
               select: {
                 id: true,
-                username: true
-              }
+                username: true,
+              },
             },
             category: {
               select: {
@@ -64,10 +66,10 @@ export async function GET(
             _count: {
               select: {
                 gamesAsDev: true,
-                gamesAsPub: true
-              }
-            }
-          }
+                gamesAsPub: true,
+              },
+            },
+          },
         },
         publisher: {
           select: {
@@ -80,19 +82,16 @@ export async function GET(
             _count: {
               select: {
                 gamesAsDev: true,
-                gamesAsPub: true
-              }
-            }
-          }
-        }
+                gamesAsPub: true,
+              },
+            },
+          },
+        },
       },
-    })
+    });
 
     if (!game) {
-      return NextResponse.json(
-        { error: 'Game not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'Game not found' }, { status: 404 });
     }
 
     const formattedGame = {
@@ -102,31 +101,30 @@ export async function GET(
       releaseDate: game.releaseDate ? new Date(game.releaseDate) : null,
       platforms: game.platforms.map(platform => ({
         ...platform,
-        releaseDate: platform.releaseDate ? new Date(platform.releaseDate) : null
+        releaseDate: platform.releaseDate
+          ? new Date(platform.releaseDate)
+          : null,
       })),
       articles: game.articles.map(article => ({
         ...article,
-        publishedAt: article.publishedAt ? new Date(article.publishedAt) : null
+        publishedAt: article.publishedAt ? new Date(article.publishedAt) : null,
       })),
       developer: {
         ...game.developer,
         createdAt: new Date(game.developer.createdAt),
-        updatedAt: new Date(game.developer.updatedAt)
+        updatedAt: new Date(game.developer.updatedAt),
       },
       publisher: {
         ...game.publisher,
         createdAt: new Date(game.publisher.createdAt),
-        updatedAt: new Date(game.publisher.updatedAt)
-      }
-    }
+        updatedAt: new Date(game.publisher.updatedAt),
+      },
+    };
 
-    return NextResponse.json(formattedGame)
+    return NextResponse.json(formattedGame);
   } catch (error) {
-    console.error('Error fetching game:', error)
-    return NextResponse.json(
-      { error: 'Error fetching game' },
-      { status: 500 }
-    )
+    console.error('Error fetching game:', error);
+    return NextResponse.json({ error: 'Error fetching game' }, { status: 500 });
   }
 }
 
@@ -135,8 +133,8 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params
-    const data = (await request.json()) as GameForm
+    const { id } = await params;
+    const data = (await request.json()) as GameForm;
 
     const game = await prisma.game.update({
       where: { id },
@@ -147,14 +145,14 @@ export async function PATCH(
         coverImage: data.coverImage,
         platforms: {
           set: [], // Disconnect all platforms first
-          connect: data.platformIds.map((platformId) => ({ id: platformId })),
+          connect: data.platformIds.map(platformId => ({ id: platformId })),
         },
         developer: {
-          connect: { id: data.developerId }
+          connect: { id: data.developerId },
         },
         publisher: {
-          connect: { id: data.publisherId }
-        }
+          connect: { id: data.publisherId },
+        },
       },
       select: {
         id: true,
@@ -183,10 +181,10 @@ export async function PATCH(
             _count: {
               select: {
                 gamesAsDev: true,
-                gamesAsPub: true
-              }
-            }
-          }
+                gamesAsPub: true,
+              },
+            },
+          },
         },
         publisher: {
           select: {
@@ -199,13 +197,13 @@ export async function PATCH(
             _count: {
               select: {
                 gamesAsDev: true,
-                gamesAsPub: true
-              }
-            }
-          }
-        }
+                gamesAsPub: true,
+              },
+            },
+          },
+        },
       },
-    })
+    });
 
     const formattedGame = {
       ...game,
@@ -214,27 +212,26 @@ export async function PATCH(
       releaseDate: game.releaseDate ? new Date(game.releaseDate) : null,
       platforms: game.platforms.map(platform => ({
         ...platform,
-        releaseDate: platform.releaseDate ? new Date(platform.releaseDate) : null
+        releaseDate: platform.releaseDate
+          ? new Date(platform.releaseDate)
+          : null,
       })),
       developer: {
         ...game.developer,
         createdAt: new Date(game.developer.createdAt),
-        updatedAt: new Date(game.developer.updatedAt)
+        updatedAt: new Date(game.developer.updatedAt),
       },
       publisher: {
         ...game.publisher,
         createdAt: new Date(game.publisher.createdAt),
-        updatedAt: new Date(game.publisher.updatedAt)
-      }
-    }
+        updatedAt: new Date(game.publisher.updatedAt),
+      },
+    };
 
-    return NextResponse.json(formattedGame)
+    return NextResponse.json(formattedGame);
   } catch (error) {
-    console.error('Error updating game:', error)
-    return NextResponse.json(
-      { error: 'Error updating game' },
-      { status: 500 }
-    )
+    console.error('Error updating game:', error);
+    return NextResponse.json({ error: 'Error updating game' }, { status: 500 });
   }
 }
 
@@ -243,17 +240,14 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params
+    const { id } = await params;
     await prisma.game.delete({
       where: { id },
-    })
+    });
 
-    return new NextResponse(null, { status: 204 })
+    return new NextResponse(null, { status: 204 });
   } catch (error) {
-    console.error('Error deleting game:', error)
-    return NextResponse.json(
-      { error: 'Error deleting game' },
-      { status: 500 }
-    )
+    console.error('Error deleting game:', error);
+    return NextResponse.json({ error: 'Error deleting game' }, { status: 500 });
   }
 }

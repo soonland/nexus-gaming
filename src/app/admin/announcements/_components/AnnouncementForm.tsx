@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import {
   Box,
@@ -11,72 +11,75 @@ import {
   HStack,
   Select,
   useToast,
-} from '@chakra-ui/react'
-import { useRouter } from 'next/navigation'
-import { useForm, Controller } from 'react-hook-form'
-import { AnnouncementType } from '@prisma/client'
-import { ChakraDateTimePicker } from '@/components/common/ChakraDateTimePicker'
+} from '@chakra-ui/react';
+import { AnnouncementType } from '@prisma/client';
+import { useRouter } from 'next/navigation';
+import { useForm, Controller } from 'react-hook-form';
 
-interface AnnouncementForm {
-  message: string
-  type: AnnouncementType
-  expiresAt?: Date | null
-  isActive: boolean
+import { ChakraDateTimePicker } from '@/components/common/ChakraDateTimePicker';
+
+interface IAnnouncementForm {
+  message: string;
+  type: AnnouncementType;
+  expiresAt?: Date | null;
+  isActive: boolean;
 }
 
-interface AnnouncementFormProps {
-  initialData?: Partial<AnnouncementForm>
-  onSubmit: (data: AnnouncementForm) => Promise<void>
-  isLoading?: boolean
-  mode?: 'create' | 'edit'
+interface IAnnouncementFormProps {
+  initialData?: Partial<IAnnouncementForm>;
+  onSubmit: (data: IAnnouncementForm) => Promise<void>;
+  isLoading?: boolean;
+  mode?: 'create' | 'edit';
 }
 
-export default function AnnouncementForm({
+const AnnouncementForm = ({
   initialData,
   onSubmit,
   isLoading,
   mode = 'create',
-}: AnnouncementFormProps) {
-  const router = useRouter()
-  const toast = useToast()
+}: IAnnouncementFormProps) => {
+  const router = useRouter();
+  const toast = useToast();
 
   const {
     register,
     handleSubmit,
     control,
     formState: { errors },
-  } = useForm<AnnouncementForm>({
+  } = useForm<IAnnouncementForm>({
     defaultValues: {
       message: initialData?.message || '',
       type: initialData?.type || AnnouncementType.INFO,
-      expiresAt: initialData?.expiresAt ? new Date(initialData.expiresAt) : null,
+      expiresAt: initialData?.expiresAt
+        ? new Date(initialData.expiresAt)
+        : null,
       isActive: initialData?.isActive ?? true,
     },
-  })
+  });
 
-  const onSubmitForm = async (data: AnnouncementForm) => {
+  const onSubmitForm = async (data: IAnnouncementForm) => {
     try {
-      await onSubmit(data)
+      await onSubmit(data);
       toast({
         title: mode === 'create' ? 'Annonce créée' : 'Annonce mise à jour',
         status: 'success',
         duration: 3000,
-      })
-      router.push('/admin/announcements')
+      });
+      router.push('/admin/announcements');
     } catch (error) {
       toast({
         title: 'Erreur',
-        description: "Une erreur est survenue",
+        description: 'Une erreur est survenue',
         status: 'error',
         duration: 5000,
-      })
+      });
     }
-  }
+  };
 
   return (
-    <Box as="form" onSubmit={handleSubmit(onSubmitForm)}>
+    <Box as='form' onSubmit={handleSubmit(onSubmitForm)}>
       <Stack spacing={6}>
-        <FormControl isInvalid={!!errors.message} isRequired>
+        <FormControl isRequired isInvalid={!!errors.message}>
           <FormLabel>Message</FormLabel>
           <Textarea
             {...register('message', { required: 'Le message est requis' })}
@@ -88,7 +91,7 @@ export default function AnnouncementForm({
           )}
         </FormControl>
 
-        <FormControl isInvalid={!!errors.type} isRequired>
+        <FormControl isRequired isInvalid={!!errors.type}>
           <FormLabel>Type</FormLabel>
           <Select {...register('type', { required: 'Le type est requis' })}>
             <option value={AnnouncementType.INFO}>Information</option>
@@ -103,14 +106,14 @@ export default function AnnouncementForm({
         <FormControl>
           <FormLabel>Date d'expiration (optionnelle)</FormLabel>
           <Controller
-            name="expiresAt"
             control={control}
+            name='expiresAt'
             render={({ field: { onChange, value } }) => (
               <ChakraDateTimePicker
-                selectedDate={value || null}
-                onChange={(date: Date | null) => onChange(date)}
                 minDate={new Date()}
                 placeholderText="Sélectionner une date d'expiration"
+                selectedDate={value || null}
+                onChange={(date: Date | null) => onChange(date)}
               />
             )}
           />
@@ -118,32 +121,30 @@ export default function AnnouncementForm({
 
         <FormControl>
           <FormLabel>Statut</FormLabel>
-          <Select 
-            {...register('isActive', { 
-              setValueAs: (value: string) => value === 'true'
+          <Select
+            {...register('isActive', {
+              setValueAs: (value: string) => value === 'true',
             })}
           >
-            <option value="true">Active</option>
-            <option value="false">Inactive</option>
+            <option value='true'>Active</option>
+            <option value='false'>Inactive</option>
           </Select>
         </FormControl>
 
-        <HStack justify="flex-end" spacing={4} pt={4}>
+        <HStack justify='flex-end' pt={4} spacing={4}>
           <Button
+            variant='ghost'
             onClick={() => router.push('/admin/announcements')}
-            variant="ghost"
           >
             Annuler
           </Button>
-          <Button
-            type="submit"
-            colorScheme="blue"
-            isLoading={isLoading}
-          >
+          <Button colorScheme='blue' isLoading={isLoading} type='submit'>
             {mode === 'create' ? 'Créer' : 'Mettre à jour'}
           </Button>
         </HStack>
       </Stack>
     </Box>
-  )
-}
+  );
+};
+
+export default AnnouncementForm;

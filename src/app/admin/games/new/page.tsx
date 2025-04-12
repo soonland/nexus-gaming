@@ -1,28 +1,36 @@
-'use client'
+'use client';
 
-import React from 'react'
-import { Container, Card, CardHeader, CardBody, Heading } from '@chakra-ui/react'
-import { useGames } from '@/hooks/useGames'
-import GameForm from '../_components/GameForm'
-import GameFormLoading from '@/components/loading/GameFormLoading'
+import {
+  Container,
+  Card,
+  CardHeader,
+  CardBody,
+  Heading,
+} from '@chakra-ui/react';
 
-export default function NewGamePage() {
-  const { createGame, isCreating } = useGames()
+import { useGames } from '@/hooks/useGames';
+
+import GameForm from '../_components/GameForm';
+
+const NewGamePage = () => {
+  const { createGame, isCreating } = useGames();
 
   return (
-    <Container maxW="container.md" py={8}>
+    <Container maxW='container.md' py={8}>
       <Card>
         <CardHeader>
-          <Heading size="lg">Nouveau jeu</Heading>
+          <Heading size='lg'>Nouveau jeu</Heading>
         </CardHeader>
         <CardBody>
           <GameForm
-            mode="create"
-            onSubmit={createGame}
             isLoading={isCreating}
+            mode='create'
+            onSubmit={createGame}
           />
         </CardBody>
       </Card>
     </Container>
-  )
-}
+  );
+};
+
+export default NewGamePage;

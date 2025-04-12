@@ -1,63 +1,74 @@
-'use client'
+'use client';
 
-import React from 'react'
-import { Container, Alert, AlertIcon, Card, CardHeader, CardBody, Heading } from '@chakra-ui/react'
-import { useParams, useRouter } from 'next/navigation'
-import { usePlatform, usePlatforms } from '@/hooks/usePlatforms'
-import PlatformForm from '../../_components/PlatformForm'
-import type { PlatformForm as PlatformFormType } from '@/types'
-import PlatformFormLoading from '@/components/loading/PlatformFormLoading'
+import {
+  Container,
+  Alert,
+  AlertIcon,
+  Card,
+  CardHeader,
+  CardBody,
+  Heading,
+} from '@chakra-ui/react';
+import { useParams, useRouter } from 'next/navigation';
 
-export default function EditPlatformPage() {
-  const params = useParams()
-  const id = params.id as string
-  const { platform, isLoading } = usePlatform(id)
-  const { updatePlatform, isUpdating } = usePlatforms()
-  const router = useRouter()
+import PlatformFormLoading from '@/components/loading/PlatformFormLoading';
+import { usePlatform, usePlatforms } from '@/hooks/usePlatforms';
+import type { PlatformForm as PlatformFormType } from '@/types';
+
+import PlatformForm from '../../_components/PlatformForm';
+
+const EditPlatformPage = () => {
+  const params = useParams();
+  const id = params.id as string;
+  const { platform, isLoading } = usePlatform(id);
+  const { updatePlatform, isUpdating } = usePlatforms();
+  const router = useRouter();
 
   if (isLoading) {
     return (
-      <Container maxW="container.md" py={8}>
+      <Container maxW='container.md' py={8}>
         <PlatformFormLoading />
       </Container>
-    )
+    );
   }
 
   if (!platform) {
     return (
-      <Container maxW="container.md" py={8}>
-        <Alert status="error">
+      <Container maxW='container.md' py={8}>
+        <Alert status='error'>
           <AlertIcon />
           Plateforme non trouvée
         </Alert>
       </Container>
-    )
+    );
   }
 
   const handleSubmit = async (data: PlatformFormType) => {
-    await updatePlatform({ id, data })
-    router.push('/admin/platforms')
-  }
+    await updatePlatform({ id, data });
+    router.push('/admin/platforms');
+  };
 
   return (
-    <Container maxW="container.md" py={8}>
+    <Container maxW='container.md' py={8}>
       <Card>
         <CardHeader>
-          <Heading size="lg">Modifier la plateforme</Heading>
+          <Heading size='lg'>Modifier la plateforme</Heading>
         </CardHeader>
         <CardBody>
           <PlatformForm
             initialData={{
               name: platform.name,
               manufacturer: platform.manufacturer,
-              releaseDate: platform.releaseDate?.toISOString() || null
+              releaseDate: platform.releaseDate?.toISOString() || null,
             }}
-            onSubmit={handleSubmit}
             isLoading={isUpdating}
-            mode="edit"
+            mode='edit'
+            onSubmit={handleSubmit}
           />
         </CardBody>
       </Card>
     </Container>
-  )
-}
+  );
+};
+
+export default EditPlatformPage;

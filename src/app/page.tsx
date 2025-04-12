@@ -1,19 +1,20 @@
-'use client'
+'use client';
 
-import React from 'react'
-import { Box, Container, Heading, Text } from '@chakra-ui/react'
+import { Box, Container, Heading, Text } from '@chakra-ui/react';
 
-export default function Home() {
+const Home = () => {
   return (
-    <Container maxW="container.xl" py={8}>
-      <Box textAlign="center" py={10}>
-        <Heading as="h1" size="2xl" mb={4}>
+    <Container maxW='container.xl' py={8}>
+      <Box py={10} textAlign='center'>
+        <Heading as='h1' mb={4} size='2xl'>
           Nexus Gaming
         </Heading>
-        <Text fontSize="xl" color="gray.600">
+        <Text color='gray.600' fontSize='xl'>
           Your gaming community hub
         </Text>
       </Box>
     </Container>
-  )
-}
+  );
+};
+
+export default Home;

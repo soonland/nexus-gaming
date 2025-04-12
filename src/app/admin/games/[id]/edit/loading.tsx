@@ -1,8 +1,9 @@
-'use client'
+'use client';
 
-import React from 'react'
-import GameFormLoading from '@/components/loading/GameFormLoading'
+import GameFormLoading from '@/components/loading/GameFormLoading';
 
-export default function EditGameLoading() {
-  return <GameFormLoading />
-}
+const EditGameLoading = () => {
+  return <GameFormLoading />;
+};
+
+export default EditGameLoading;

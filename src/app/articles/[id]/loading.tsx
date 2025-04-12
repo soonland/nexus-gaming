@@ -1,32 +1,33 @@
-import React from 'react'
 import {
   Container,
   Stack,
   Skeleton,
   SkeletonText,
   Box,
-} from '@chakra-ui/react'
+} from '@chakra-ui/react';
 
-export default function ArticleLoading() {
+const ArticleLoading = () => {
   return (
     <Box>
       <Skeleton height={{ base: '300px', md: '400px' }} />
-      <Container maxW="container.xl" py={8}>
+      <Container maxW='container.xl' py={8}>
         <Stack spacing={8}>
-          <Skeleton height="40px" width="150px" />
-          <Box p={8} rounded="lg" border="1px" borderColor="gray.200">
-            <SkeletonText mt="4" noOfLines={8} spacing="4" skeletonHeight="3" />
+          <Skeleton height='40px' width='150px' />
+          <Box border='1px' borderColor='gray.200' p={8} rounded='lg'>
+            <SkeletonText mt='4' noOfLines={8} skeletonHeight='3' spacing='4' />
           </Box>
           <Stack spacing={4}>
-            <Skeleton height="30px" width="200px" />
+            <Skeleton height='30px' width='200px' />
             <Stack direction={{ base: 'column', md: 'row' }} spacing={6}>
-              <Skeleton height="300px" flex="1" />
-              <Skeleton height="300px" flex="1" />
-              <Skeleton height="300px" flex="1" />
+              <Skeleton flex='1' height='300px' />
+              <Skeleton flex='1' height='300px' />
+              <Skeleton flex='1' height='300px' />
             </Stack>
           </Stack>
         </Stack>
       </Container>
     </Box>
-  )
-}
+  );
+};
+
+export default ArticleLoading;

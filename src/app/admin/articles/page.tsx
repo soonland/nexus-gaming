@@ -1,6 +1,13 @@
-'use client'
+'use client';
 
-import React, { useState, useMemo, useRef } from 'react'
+import {
+  SearchIcon,
+  AddIcon,
+  EditIcon,
+  DeleteIcon,
+  ExternalLinkIcon,
+  CloseIcon,
+} from '@chakra-ui/icons';
 import {
   Box,
   Button,
@@ -28,139 +35,144 @@ import {
   AlertDialogHeader,
   AlertDialogOverlay,
   useDisclosure,
-} from '@chakra-ui/react'
-import {
-  SearchIcon,
-  AddIcon,
-  EditIcon,
-  DeleteIcon,
-  ExternalLinkIcon,
-  CloseIcon,
-} from '@chakra-ui/icons'
-import { BiFilter } from 'react-icons/bi'
-import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
-import { useArticles } from '@/hooks/useArticles'
-import { useUsers } from '@/hooks/useUsers'
-import { useCategories } from '@/hooks/useCategories'
-import { DateDisplay } from '@/components/common/DateDisplay'
-import { FiltersPanel } from './_components/FiltersPanel'
-import type { ArticleStatus } from '@/types'
+} from '@chakra-ui/react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { useState, useMemo, useRef } from 'react';
+import { BiFilter } from 'react-icons/bi';
+
+import { DateDisplay } from '@/components/common/DateDisplay';
+import { useArticles } from '@/hooks/useArticles';
+import { useCategories } from '@/hooks/useCategories';
+import { useUsers } from '@/hooks/useUsers';
+import type { ArticleStatus } from '@/types';
+
+import { FiltersPanel } from './_components/FiltersPanel';
 
 const getStatusBadge = (status: ArticleStatus) => {
   switch (status) {
     case 'PUBLISHED':
-      return <Badge colorScheme="green">🟢 Publié</Badge>
+      return <Badge colorScheme='green'>🟢 Publié</Badge>;
     case 'PENDING_APPROVAL':
-      return <Badge colorScheme="orange">🔶 En attente</Badge>
+      return <Badge colorScheme='orange'>🔶 En attente</Badge>;
     case 'ARCHIVED':
-      return <Badge colorScheme="gray">⚪ Archivé</Badge>
+      return <Badge colorScheme='gray'>⚪ Archivé</Badge>;
     default:
-      return <Badge colorScheme="yellow">🔸 Brouillon</Badge>
+      return <Badge colorScheme='yellow'>🔸 Brouillon</Badge>;
   }
-}
+};
 
-export default function ArticlesPage() {
+const ArticlesPage = () => {
   // Hooks
-  const searchParams = useSearchParams()
-  const toast = useToast()
-  const deleteDialog = useDisclosure()
-  const cancelRef = useRef<HTMLButtonElement>(null)
-  const borderColor = useColorModeValue('gray.200', 'gray.700')
+  const searchParams = useSearchParams();
+  const toast = useToast();
+  const deleteDialog = useDisclosure();
+  const cancelRef = useRef<HTMLButtonElement>(null);
+  const borderColor = useColorModeValue('gray.200', 'gray.700');
 
   // State
-  const [page, setPage] = useState(parseInt(searchParams.get('page') ?? '1'))
-  const [limit] = useState(10)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedStatuses, setSelectedStatuses] = useState<ArticleStatus[]>([])
-  const [selectedUser, setSelectedUser] = useState<string>('')
-  const [selectedCategory, setSelectedCategory] = useState<string>('')
-  const [showFilters, setShowFilters] = useState<boolean>(false)
-  const [articleToDelete, setArticleToDelete] = useState<string | null>(null)
+  const [page, setPage] = useState(parseInt(searchParams.get('page') ?? '1'));
+  const [limit] = useState(10);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedStatuses, setSelectedStatuses] = useState<ArticleStatus[]>([]);
+  const [selectedUser, setSelectedUser] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [showFilters, setShowFilters] = useState<boolean>(false);
+  const [articleToDelete, setArticleToDelete] = useState<string | null>(null);
 
   // Queries
-  const { data, deleteArticle, isLoading, isDeleting } = useArticles({
+  const { data, deleteArticle, isDeleting } = useArticles({
     page: page.toString(),
     limit: limit.toString(),
     search: searchTerm,
     status: selectedStatuses.length === 1 ? selectedStatuses[0] : undefined,
-  })
-  const { data: users, isLoading: isLoadingUsers } = useUsers()
-  const { categories, isLoading: isLoadingCategories } = useCategories()
+  });
+  const { data: users, isLoading: isLoadingUsers } = useUsers();
+  const { categories, isLoading: isLoadingCategories } = useCategories();
 
   // Memoized values
   const hasActiveFilters = useMemo(() => {
-    return searchTerm || selectedUser || selectedCategory || selectedStatuses.length > 0
-  }, [searchTerm, selectedUser, selectedCategory, selectedStatuses])
+    return (
+      searchTerm ||
+      selectedUser ||
+      selectedCategory ||
+      selectedStatuses.length > 0
+    );
+  }, [searchTerm, selectedUser, selectedCategory, selectedStatuses]);
 
-  const activeFiltersCount = useMemo(() => (
-    [
-      searchTerm ? 1 : 0,
-      selectedUser ? 1 : 0,
-      selectedCategory ? 1 : 0,
-      selectedStatuses.length
-    ].reduce((a, b) => a + b, 0)
-  ), [searchTerm, selectedUser, selectedCategory, selectedStatuses])
+  const activeFiltersCount = useMemo(
+    () =>
+      [
+        searchTerm ? 1 : 0,
+        selectedUser ? 1 : 0,
+        selectedCategory ? 1 : 0,
+        selectedStatuses.length,
+      ].reduce((a, b) => a + b, 0),
+    [searchTerm, selectedUser, selectedCategory, selectedStatuses]
+  );
 
   const statusCounts = useMemo(() => {
     const initialCounts = {
       DRAFT: 0,
       PENDING_APPROVAL: 0,
       PUBLISHED: 0,
-      ARCHIVED: 0
-    }
-    if (!data?.articles) return initialCounts
-    return data.articles.reduce((acc: Record<ArticleStatus, number>, article) => {
-      acc[article.status] = (acc[article.status] || 0) + 1
-      return acc
-    }, { ...initialCounts })
-  }, [data?.articles])
+      ARCHIVED: 0,
+    };
+    if (!data?.articles) return initialCounts;
+    return data.articles.reduce(
+      (acc: Record<ArticleStatus, number>, article) => {
+        acc[article.status] = (acc[article.status] || 0) + 1;
+        return acc;
+      },
+      { ...initialCounts }
+    );
+  }, [data?.articles]);
 
-  const filteredArticles = data?.articles || []
+  const filteredArticles = data?.articles || [];
 
   const handleResetFilters = () => {
-    setSearchTerm('')
-    setSelectedUser('')
-    setSelectedCategory('')
-    setSelectedStatuses([])
-  }
+    setSearchTerm('');
+    setSelectedUser('');
+    setSelectedCategory('');
+    setSelectedStatuses([]);
+  };
 
   const handleDeleteClick = (id: string) => {
-    setArticleToDelete(id)
-    deleteDialog.onOpen()
-  }
+    setArticleToDelete(id);
+    deleteDialog.onOpen();
+  };
 
   const handleDeleteConfirm = async () => {
-    if (!articleToDelete) return
+    if (!articleToDelete) return;
 
     try {
-      await deleteArticle(articleToDelete)
+      await deleteArticle(articleToDelete);
       toast({
         title: 'Article supprimé',
         status: 'success',
         duration: 3000,
-      })
-      deleteDialog.onClose()
-      setArticleToDelete(null)
+      });
+      deleteDialog.onClose();
+      setArticleToDelete(null);
     } catch (error) {
       toast({
         title: 'Erreur',
-        description: "Une erreur est survenue lors de la suppression",
+        description: 'Une erreur est survenue lors de la suppression',
         status: 'error',
         duration: 5000,
-      })
+      });
     }
-  }
+  };
 
   return (
-    <Container maxW="container.xl" py={8}>
-      <VStack spacing={8} align="stretch">
-        <HStack justify="space-between">
-          <Heading size="lg">Gestion des articles</Heading>
+    <Container maxW='container.xl' py={8}>
+      <VStack align='stretch' spacing={8}>
+        <HStack justify='space-between'>
+          <Heading size='lg'>Gestion des articles</Heading>
           <Button
             as={Link}
-            href="/admin/articles/new"
-            colorScheme="blue"
+            colorScheme='blue'
+            href='/admin/articles/new'
             leftIcon={<AddIcon />}
           >
             Nouvel article
@@ -169,22 +181,22 @@ export default function ArticlesPage() {
 
         <Box>
           <HStack mb={4} spacing={4}>
-            <HStack flex="1" spacing={4}>
-              <InputGroup maxW="sm">
-                <InputLeftElement pointerEvents="none">
-                  <SearchIcon color="gray.300" />
+            <HStack flex='1' spacing={4}>
+              <InputGroup maxW='sm'>
+                <InputLeftElement pointerEvents='none'>
+                  <SearchIcon color='gray.300' />
                 </InputLeftElement>
                 <Input
-                  placeholder="Rechercher..."
+                  placeholder='Rechercher...'
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={e => setSearchTerm(e.target.value)}
                 />
               </InputGroup>
               {searchTerm && (
                 <IconButton
+                  aria-label='Clear search'
                   icon={<CloseIcon />}
-                  aria-label="Clear search"
-                  size="sm"
+                  size='sm'
                   onClick={() => setSearchTerm('')}
                 />
               )}
@@ -192,37 +204,43 @@ export default function ArticlesPage() {
 
             <HStack>
               <Button
+                colorScheme={hasActiveFilters ? 'blue' : 'gray'}
                 leftIcon={<BiFilter />}
-                variant="outline"
+                variant='outline'
                 onClick={() => setShowFilters(prev => !prev)}
-                colorScheme={hasActiveFilters ? "blue" : "gray"}
               >
                 Filtres {hasActiveFilters && `(${activeFiltersCount})`}
               </Button>
             </HStack>
           </HStack>
 
-          <FiltersPanel 
+          <FiltersPanel
+            categories={categories ?? []}
+            filteredCount={filteredArticles.length}
+            hasActiveFilters={Boolean(hasActiveFilters)}
+            isLoadingCategories={isLoadingCategories}
+            isLoadingUsers={isLoadingUsers}
             isVisible={showFilters}
-            selectedUser={selectedUser}
             selectedCategory={selectedCategory}
             selectedStatuses={selectedStatuses}
-            users={users}
-            categories={categories ?? []}
+            selectedUser={selectedUser}
             statusCounts={statusCounts}
-            hasActiveFilters={Boolean(hasActiveFilters)}
-            filteredCount={filteredArticles.length}
             totalCount={data?.articles?.length || 0}
-            isLoadingUsers={isLoadingUsers}
-            isLoadingCategories={isLoadingCategories}
-            onUserChange={setSelectedUser}
+            users={users}
             onCategoryChange={setSelectedCategory}
-            onStatusesChange={setSelectedStatuses}
             onReset={handleResetFilters}
+            onStatusesChange={setSelectedStatuses}
+            onUserChange={setSelectedUser}
           />
 
-          <Box mt={4} overflowX="auto" borderWidth="1px" borderColor={borderColor} rounded="lg">
-            <Table variant="simple">
+          <Box
+            borderColor={borderColor}
+            borderWidth='1px'
+            mt={4}
+            overflowX='auto'
+            rounded='lg'
+          >
+            <Table variant='simple'>
               <Thead>
                 <Tr>
                   <Th>Titre</Th>
@@ -230,11 +248,11 @@ export default function ArticlesPage() {
                   <Th>Auteur</Th>
                   <Th>Status</Th>
                   <Th>Date de publication</Th>
-                  <Th width="150px">Actions</Th>
+                  <Th width='150px'>Actions</Th>
                 </Tr>
               </Thead>
               <Tbody>
-                {filteredArticles.map((article) => (
+                {filteredArticles.map(article => (
                   <Tr key={article.id}>
                     <Td>{article.title}</Td>
                     <Td>{article.category.name}</Td>
@@ -242,36 +260,36 @@ export default function ArticlesPage() {
                     <Td>{getStatusBadge(article.status)}</Td>
                     <Td>
                       {article.publishedAt && (
-                        <DateDisplay date={article.publishedAt} format="long" />
+                        <DateDisplay date={article.publishedAt} format='long' />
                       )}
                     </Td>
                     <Td>
                       <HStack spacing={2}>
                         <IconButton
+                          aria-label='Modifier'
                           as={Link}
+                          colorScheme='blue'
                           href={`/admin/articles/${article.id}/edit`}
                           icon={<EditIcon />}
-                          aria-label="Modifier"
-                          size="sm"
-                          colorScheme="blue"
+                          size='sm'
                         />
                         <IconButton
+                          aria-label='Voir'
                           as={Link}
+                          colorScheme='green'
                           href={`/articles/${article.id}`}
                           icon={<ExternalLinkIcon />}
-                          aria-label="Voir"
-                          size="sm"
-                          colorScheme="green"
-                          target="_blank"
-                          rel="noopener noreferrer"
+                          rel='noopener noreferrer'
+                          size='sm'
+                          target='_blank'
                         />
                         <IconButton
+                          aria-label='Supprimer'
+                          colorScheme='red'
                           icon={<DeleteIcon />}
-                          aria-label="Supprimer"
-                          size="sm"
-                          colorScheme="red"
-                          onClick={() => handleDeleteClick(article.id)}
                           isLoading={isDeleting}
+                          size='sm'
+                          onClick={() => handleDeleteClick(article.id)}
                         />
                       </HStack>
                     </Td>
@@ -282,11 +300,11 @@ export default function ArticlesPage() {
           </Box>
 
           {data?.pagination && data.pagination.pages > 1 && (
-            <HStack justify="center" spacing={2} mt={4}>
+            <HStack justify='center' mt={4} spacing={2}>
               {Array.from({ length: data.pagination.pages }, (_, i) => (
                 <Button
                   key={i + 1}
-                  size="sm"
+                  size='sm'
                   variant={page === i + 1 ? 'solid' : 'outline'}
                   onClick={() => setPage(i + 1)}
                 >
@@ -307,17 +325,18 @@ export default function ArticlesPage() {
           <AlertDialogContent>
             <AlertDialogHeader>Supprimer l'article</AlertDialogHeader>
             <AlertDialogBody>
-              Êtes-vous sûr de vouloir supprimer cet article ? Cette action ne peut pas être annulée.
+              Êtes-vous sûr de vouloir supprimer cet article ? Cette action ne
+              peut pas être annulée.
             </AlertDialogBody>
             <AlertDialogFooter>
               <Button ref={cancelRef} onClick={deleteDialog.onClose}>
                 Annuler
               </Button>
               <Button
-                colorScheme="red"
-                onClick={handleDeleteConfirm}
-                ml={3}
+                colorScheme='red'
                 isLoading={isDeleting}
+                ml={3}
+                onClick={handleDeleteConfirm}
               >
                 Supprimer
               </Button>
@@ -326,5 +345,7 @@ export default function ArticlesPage() {
         </AlertDialogOverlay>
       </AlertDialog>
     </Container>
-  )
-}
+  );
+};
+
+export default ArticlesPage;

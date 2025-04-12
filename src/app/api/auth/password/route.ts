@@ -1,29 +1,28 @@
-import { NextRequest, NextResponse } from 'next/server'
-import prisma from '@/lib/prisma'
-import { getCurrentUser } from '@/lib/jwt'
-import { hashPassword } from '@/lib/password'
-import bcrypt from 'bcryptjs'
+import bcrypt from 'bcryptjs';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+
+import { getCurrentUser } from '@/lib/jwt';
+import { hashPassword } from '@/lib/password';
+import prisma from '@/lib/prisma';
 
 export async function PUT(request: NextRequest) {
   try {
-    const tokenUser = await getCurrentUser()
-    
+    const tokenUser = await getCurrentUser();
+
     if (!tokenUser) {
-      return NextResponse.json(
-        { error: 'Not authenticated' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    const body = await request.json()
-    const { currentPassword, newPassword } = body
+    const body = await request.json();
+    const { currentPassword, newPassword } = body;
 
     // Validate passwords
     if (!currentPassword || !newPassword) {
       return NextResponse.json(
         { error: 'Both current and new passwords are required' },
         { status: 400 }
-      )
+      );
     }
 
     // Get user with password
@@ -32,23 +31,20 @@ export async function PUT(request: NextRequest) {
       select: {
         id: true,
         password: true,
-      }
-    })
+      },
+    });
 
     if (!user) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     // Verify current password
-    const passwordValid = await bcrypt.compare(currentPassword, user.password)
+    const passwordValid = await bcrypt.compare(currentPassword, user.password);
     if (!passwordValid) {
       return NextResponse.json(
         { error: 'Current password is incorrect' },
         { status: 400 }
-      )
+      );
     }
 
     // Update password and expiration dates
@@ -63,21 +59,21 @@ export async function PUT(request: NextRequest) {
         id: true,
         lastPasswordChange: true,
         passwordExpiresAt: true,
-      }
-    })
+      },
+    });
 
     return NextResponse.json({
       user: {
         ...updatedUser,
         lastPasswordChange: updatedUser.lastPasswordChange.toISOString(),
         passwordExpiresAt: updatedUser.passwordExpiresAt.toISOString(),
-      }
-    })
+      },
+    });
   } catch (error) {
-    console.error('Error changing password:', error)
+    console.error('Error changing password:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
-    )
+    );
   }
 }

@@ -1,21 +1,25 @@
-'use client'
+'use client';
 
-import React, { createContext, useContext, ReactNode } from 'react'
-import { useUserTheme } from '@/hooks/useUserTheme'
-import { ChakraProvider } from '@chakra-ui/react'
+import { ChakraProvider } from '@chakra-ui/react';
+import type { ReactNode } from 'react';
+import { createContext, useContext } from 'react';
 
-const ThemeContext = createContext<ReturnType<typeof useUserTheme> | null>(null)
+import { useUserTheme } from '@/hooks/useUserTheme';
+
+const ThemeContext = createContext<ReturnType<typeof useUserTheme> | null>(
+  null
+);
 
 export const useTheme = () => {
-  const context = useContext(ThemeContext)
+  const context = useContext(ThemeContext);
   if (!context) {
-    throw new Error('useTheme must be used within a ThemeProvider')
+    throw new Error('useTheme must be used within a ThemeProvider');
   }
-  return context
-}
+  return context;
+};
 
-export function ThemeProvider({ children }: { children: ReactNode }) {
-  const themeContext = useUserTheme()
+export const ThemeProvider = ({ children }: { children: ReactNode }) => {
+  const themeContext = useUserTheme();
 
   return (
     <ThemeContext.Provider value={themeContext}>
@@ -23,5 +27,5 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         {children}
       </ChakraProvider>
     </ThemeContext.Provider>
-  )
-}
+  );
+};

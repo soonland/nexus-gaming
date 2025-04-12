@@ -1,6 +1,5 @@
-'use client'
+'use client';
 
-import React from 'react'
 import {
   Box,
   Card,
@@ -16,59 +15,60 @@ import {
   WrapItem,
   Divider,
   useColorModeValue,
-} from '@chakra-ui/react'
-import { BsCalendar4 } from 'react-icons/bs'
-import Link from 'next/link'
-import { DateDisplay } from '@/components/common/DateDisplay'
-import { GameData } from '@/types'
+} from '@chakra-ui/react';
+import Link from 'next/link';
+import { BsCalendar4 } from 'react-icons/bs';
 
-interface GameCardProps {
-  game: Partial<GameData>
+import { DateDisplay } from '@/components/common/DateDisplay';
+import type { GameData } from '@/types';
+
+interface IGameCardProps {
+  game: Partial<GameData>;
 }
 
-export function GameCard({ game }: GameCardProps) {
-  const bgColor = useColorModeValue('white', 'gray.800')
-  const dateColor = useColorModeValue('blue.600', 'blue.300')
+export const GameCard = ({ game }: IGameCardProps) => {
+  const bgColor = useColorModeValue('white', 'gray.800');
+  const dateColor = useColorModeValue('blue.600', 'blue.300');
   const overlayGradient = useColorModeValue(
     'linear(to-t, blackAlpha.600, blackAlpha.300)',
     'linear(to-t, blackAlpha.700, blackAlpha.400)'
-  )
+  );
 
   if (!game) {
-    console.warn('GameCard rendered without game data')
-    return null
+    console.warn('GameCard rendered without game data');
+    return null;
   }
 
   return (
     <Card
-      as={Link}
-      href={`/games/${game.id}`}
-      bg={bgColor}
-      h="100%"
-      transition="transform 0.2s"
       _hover={{ transform: 'translateY(-4px)', textDecoration: 'none' }}
-      overflow="hidden"
+      as={Link}
+      bg={bgColor}
+      h='100%'
+      href={`/games/${game.id}`}
+      overflow='hidden'
+      transition='transform 0.2s'
     >
       {/* Image avec overlay */}
-      <Box position="relative" height="200px" overflow="hidden">
+      <Box height='200px' overflow='hidden' position='relative'>
         <Box
-          position="absolute"
-          top={0}
-          left={0}
-          right={0}
-          bottom={0}
           bgGradient={overlayGradient}
+          bottom={0}
+          left={0}
+          position='absolute'
+          right={0}
+          top={0}
           zIndex={1}
         />
         <Image
-          src={game.coverImage || '/images/placeholder-game.png'}
           alt={game.title}
-          height="100%"
-          width="100%"
-          objectFit="cover"
-          onError={(e) => {
-            const img = e.target as HTMLImageElement
-            img.src = '/images/placeholder-game.png'
+          height='100%'
+          objectFit='cover'
+          src={game.coverImage || '/images/placeholder-game.png'}
+          width='100%'
+          onError={e => {
+            const img = e.target as HTMLImageElement;
+            img.src = '/images/placeholder-game.png';
           }}
         />
       </Box>
@@ -77,10 +77,10 @@ export function GameCard({ game }: GameCardProps) {
         <Stack spacing={4}>
           {/* Titre et description */}
           <Stack spacing={2}>
-            <Heading size="md" noOfLines={2}>
+            <Heading noOfLines={2} size='md'>
               {game.title}
             </Heading>
-            <Text fontSize="sm" color="gray.600" noOfLines={3}>
+            <Text color='gray.600' fontSize='sm' noOfLines={3}>
               {game.description}
             </Text>
           </Stack>
@@ -89,11 +89,11 @@ export function GameCard({ game }: GameCardProps) {
           {game.releaseDate && (
             <HStack color={dateColor}>
               <Icon as={BsCalendar4} />
-              <DateDisplay 
-                date={game.releaseDate}
-                format="calendar"
-                tooltipFormat="long"
+              <DateDisplay
                 color={dateColor}
+                date={game.releaseDate}
+                format='calendar'
+                tooltipFormat='long'
               />
             </HStack>
           )}
@@ -103,20 +103,20 @@ export function GameCard({ game }: GameCardProps) {
             <>
               <Divider />
               <Wrap spacing={2}>
-                {game.platforms.map((platform) => (
+                {game.platforms.map(platform => (
                   <WrapItem key={platform.name}>
                     <Badge
-                      px={2}
-                      py={1}
-                      borderRadius="full"
-                      fontSize="xs"
-                      colorScheme="blue"
-                      variant="subtle"
                       _hover={{
                         bg: 'blue.100',
                         transform: 'scale(1.05)',
                       }}
-                      transition="all 0.2s"
+                      borderRadius='full'
+                      colorScheme='blue'
+                      fontSize='xs'
+                      px={2}
+                      py={1}
+                      transition='all 0.2s'
+                      variant='subtle'
                     >
                       {platform.name}
                     </Badge>
@@ -128,5 +128,5 @@ export function GameCard({ game }: GameCardProps) {
         </Stack>
       </CardBody>
     </Card>
-  )
-}
+  );
+};

@@ -1,18 +1,27 @@
-import { Input, Text, IconButton, HStack, VStack, useToast, Box, Divider } from "@chakra-ui/react";
-import { useState, useEffect } from "react";
-import { SocialPlatform } from "@prisma/client";
-import { useSocialProfiles } from "@/hooks/useSocialProfiles";
-import { FiSave, FiExternalLink, FiX } from "react-icons/fi";
+import {
+  Input,
+  Text,
+  IconButton,
+  HStack,
+  VStack,
+  useToast,
+  Box,
+  Divider,
+} from '@chakra-ui/react';
+import { SocialPlatform } from '@prisma/client';
+import { useState, useEffect } from 'react';
+import { FiSave, FiExternalLink, FiX } from 'react-icons/fi';
 
-interface PlatformField {
+import { useSocialProfiles } from '@/hooks/useSocialProfiles';
+
+interface IPlatformField {
   value: string;
   isDirty: boolean;
-  isLoading: boolean;
   profileId?: string;
 }
 
 type PlatformFields = {
-  [key in SocialPlatform]: PlatformField;
+  [key in SocialPlatform]: IPlatformField;
 };
 
 const GAMING_PLATFORMS = [
@@ -32,31 +41,39 @@ const SOCIAL_PLATFORMS = [
   SocialPlatform.YOUTUBE,
 ];
 
-export function SocialProfilesSection() {
+export const SocialProfilesSection = () => {
   const toast = useToast();
-  const { profiles, isLoading, createProfile, updateProfile } = useSocialProfiles();
+  const {
+    profiles,
+    isLoading,
+    createProfile,
+    updateProfile,
+    isCreating,
+    isUpdating,
+  } = useSocialProfiles();
   const [fields, setFields] = useState<PlatformFields>(() => {
     const initial: Partial<PlatformFields> = {};
     [...GAMING_PLATFORMS, ...SOCIAL_PLATFORMS].forEach(platform => {
-      initial[platform] = { value: "", isDirty: false, isLoading: false };
+      initial[platform] = { value: '', isDirty: false };
     });
     return initial as PlatformFields;
   });
 
   useEffect(() => {
     if (profiles) {
-      const newFields = { ...fields };
-      profiles.forEach(profile => {
-        if (newFields[profile.platform]) {
-          newFields[profile.platform] = {
-            value: profile.username,
-            isDirty: false,
-            isLoading: false,
-            profileId: profile.id
-          };
-        }
+      setFields(prevFields => {
+        const newFields = { ...prevFields };
+        profiles.forEach(profile => {
+          if (newFields[profile.platform as SocialPlatform]) {
+            newFields[profile.platform as SocialPlatform] = {
+              value: profile.username,
+              isDirty: false,
+              profileId: profile.id,
+            };
+          }
+        });
+        return newFields;
       });
-      setFields(newFields);
     }
   }, [profiles]);
 
@@ -66,8 +83,10 @@ export function SocialProfilesSection() {
       [platform]: {
         ...prev[platform],
         value,
-        isDirty: value !== (profiles?.find(p => p.platform === platform)?.username || "")
-      }
+        isDirty:
+          value !==
+          (profiles?.find(p => p.platform === platform)?.username || ''),
+      },
     }));
   };
 
@@ -77,54 +96,32 @@ export function SocialProfilesSection() {
       ...prev,
       [platform]: {
         ...prev[platform],
-        value: originalProfile?.username || "",
-        isDirty: false
-      }
+        value: originalProfile?.username || '',
+        isDirty: false,
+      },
     }));
   };
 
-  const handleSave = async (platform: SocialPlatform) => {
+  const handleSave = (platform: SocialPlatform) => {
     const field = fields[platform];
     if (!field.isDirty) return;
 
-    setFields(prev => ({
-      ...prev,
-      [platform]: { ...prev[platform], isLoading: true }
-    }));
-
     try {
       if (field.profileId) {
-        await updateProfile(
-          { 
-            id: field.profileId, 
-            data: { platform, username: field.value }
-          }
-        );
+        updateProfile({
+          id: field.profileId,
+          data: { platform, username: field.value },
+        });
       } else {
-        await createProfile({ platform, username: field.value });
+        createProfile({ platform, username: field.value });
       }
-
-      toast({
-        title: "Succès",
-        description: "Profil mis à jour",
-        status: "success"
-      });
-
-      setFields(prev => ({
-        ...prev,
-        [platform]: { ...prev[platform], isDirty: false, isLoading: false }
-      }));
     } catch (error) {
       toast({
-        title: "Erreur",
-        description: "Impossible de mettre à jour le profil",
-        status: "error"
+        title: 'Erreur',
+        description: 'Impossible de mettre à jour le profil',
+        status: 'error',
+        duration: 3000,
       });
-
-      setFields(prev => ({
-        ...prev,
-        [platform]: { ...prev[platform], isLoading: false }
-      }));
     }
   };
 
@@ -135,42 +132,44 @@ export function SocialProfilesSection() {
 
       return (
         <Box key={platform} mb={2}>
-          <HStack spacing={4} align="center">
-            <Text width="100px" fontWeight="medium" fontSize="sm">{platform}</Text>
+          <HStack align='center' spacing={4}>
+            <Text fontSize='sm' fontWeight='medium' width='100px'>
+              {platform}
+            </Text>
             <Input
-              value={field.value}
-              onChange={(e) => handleChange(platform, e.target.value)}
-              placeholder={`Votre ${platform}`}
-              size="sm"
               flex={1}
+              placeholder={`Votre ${platform}`}
+              size='sm'
+              value={field.value}
+              onChange={e => handleChange(platform, e.target.value)}
             />
             <HStack spacing={1}>
               {field.isDirty && (
                 <>
                   <IconButton
-                    aria-label="Cancel"
+                    aria-label='Cancel'
                     icon={<FiX />}
-                    size="sm"
-                    variant="ghost"
+                    size='sm'
+                    variant='ghost'
                     onClick={() => handleCancel(platform)}
                   />
                   <IconButton
-                    aria-label="Save"
+                    aria-label='Save'
+                    colorScheme='blue'
                     icon={<FiSave />}
-                    size="sm"
-                    colorScheme="blue"
+                    isLoading={isCreating || isUpdating}
+                    size='sm'
                     onClick={() => handleSave(platform)}
-                    isLoading={field.isLoading}
                   />
                 </>
               )}
               {profile?.url && !field.isDirty && (
                 <IconButton
-                  aria-label="Open profile"
+                  aria-label='Open profile'
                   icon={<FiExternalLink />}
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => window.open(profile.url || '', "_blank")}
+                  size='sm'
+                  variant='ghost'
+                  onClick={() => window.open(profile.url || '', '_blank')}
                 />
               )}
             </HStack>
@@ -185,18 +184,22 @@ export function SocialProfilesSection() {
   }
 
   return (
-      <VStack spacing={8} align="stretch">
-        <Box>
-          <Text fontSize="sm" fontWeight="medium" color="gray.500" mb={4}>PLATEFORMES DE JEU</Text>
-          <Divider mb={4} />
-          {renderPlatformFields(GAMING_PLATFORMS)}
-        </Box>
+    <VStack align='stretch' spacing={8}>
+      <Box>
+        <Text color='gray.500' fontSize='sm' fontWeight='medium' mb={4}>
+          PLATEFORMES DE JEU
+        </Text>
+        <Divider mb={4} />
+        {renderPlatformFields(GAMING_PLATFORMS)}
+      </Box>
 
-        <Box>
-          <Text fontSize="sm" fontWeight="medium" color="gray.500" mb={4}>RÉSEAUX SOCIAUX</Text>
-          <Divider mb={4} />
-          {renderPlatformFields(SOCIAL_PLATFORMS)}
-        </Box>
-      </VStack>
+      <Box>
+        <Text color='gray.500' fontSize='sm' fontWeight='medium' mb={4}>
+          RÉSEAUX SOCIAUX
+        </Text>
+        <Divider mb={4} />
+        {renderPlatformFields(SOCIAL_PLATFORMS)}
+      </Box>
+    </VStack>
   );
-}
+};

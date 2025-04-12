@@ -1,48 +1,45 @@
-'use client'
+'use client';
 
-import React from 'react'
-import {
-  FormControl,
-  FormLabel,
-  Select,
-} from '@chakra-ui/react'
-import { useQuery } from '@tanstack/react-query'
-import axios from 'axios'
+import { FormControl, FormLabel, Select } from '@chakra-ui/react';
+import { useQuery } from '@tanstack/react-query';
+import axios from 'axios';
 
-interface Category {
-  id: string
-  name: string
+interface ICategory {
+  id: string;
+  name: string;
 }
 
-interface CategorySelectProps {
-  value?: string
-  onChange: (categoryId: string | undefined) => void
+interface ICategorySelectProps {
+  value?: string;
+  onChange: (categoryId: string | undefined) => void;
 }
 
-export default function CategorySelect({ value, onChange }: CategorySelectProps) {
-  const { data: categories, isLoading } = useQuery<Category[]>({
+const CategorySelect = ({ value, onChange }: ICategorySelectProps) => {
+  const { data: categories, isLoading } = useQuery<ICategory[]>({
     queryKey: ['categories'],
     queryFn: async () => {
-      const response = await axios.get('/api/categories')
-      return response.data
+      const response = await axios.get('/api/categories');
+      return response.data;
     },
-  })
+  });
 
   return (
     <FormControl>
       <FormLabel>Catégorie</FormLabel>
       <Select
-        placeholder="Sélectionner une catégorie"
-        value={value || ''}
-        onChange={(e) => onChange(e.target.value || undefined)}
         isDisabled={isLoading}
+        placeholder='Sélectionner une catégorie'
+        value={value || ''}
+        onChange={e => onChange(e.target.value || undefined)}
       >
-        {categories?.map((category) => (
+        {categories?.map(category => (
           <option key={category.id} value={category.id}>
             {category.name}
           </option>
         ))}
       </Select>
     </FormControl>
-  )
-}
+  );
+};
+
+export default CategorySelect;

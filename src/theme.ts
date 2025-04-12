@@ -1,4 +1,4 @@
-import { extendTheme, type ThemeConfig } from '@chakra-ui/react'
+import { extendTheme, type ThemeConfig } from '@chakra-ui/react';
 
 const themeColors = {
   default: {
@@ -13,9 +13,9 @@ const themeColors = {
         600: '#2563eb',
         700: '#1d4ed8',
         800: '#1e40af',
-        900: '#1e3a8a'
-      }
-    }
+        900: '#1e3a8a',
+      },
+    },
   },
   gaming: {
     colors: {
@@ -29,9 +29,9 @@ const themeColors = {
         600: '#9333ea',
         700: '#7e22ce',
         800: '#6b21a8',
-        900: '#581c87'
-      }
-    }
+        900: '#581c87',
+      },
+    },
   },
   nature: {
     colors: {
@@ -45,9 +45,9 @@ const themeColors = {
         600: '#16a34a',
         700: '#15803d',
         800: '#166534',
-        900: '#14532d'
-      }
-    }
+        900: '#14532d',
+      },
+    },
   },
   retro: {
     colors: {
@@ -61,30 +61,30 @@ const themeColors = {
         600: '#ea580c',
         700: '#c2410c',
         800: '#9a3412',
-        900: '#7c2d12'
-      }
-    }
-  }
-} as const
+        900: '#7c2d12',
+      },
+    },
+  },
+} as const;
 
 const themeColorMap = {
   default: 'blue',
   gaming: 'purple',
   nature: 'green',
-  retro: 'orange'
-} as const
+  retro: 'orange',
+} as const;
 
-export type ThemeName = keyof typeof themeColors
-export { themeColorMap }
+export type ThemeName = keyof typeof themeColors;
+export { themeColorMap };
 
 const config: ThemeConfig = {
   initialColorMode: 'light',
   useSystemColorMode: true,
-}
+};
 
 const createTheme = (themeName: ThemeName) => {
-  const themeColor = themeColors[themeName]
-  const colorScheme = themeColorMap[themeName]
+  const themeColor = themeColors[themeName];
+  const colorScheme = themeColorMap[themeName];
   return {
     config,
     styles: {
@@ -117,11 +117,12 @@ const createTheme = (themeName: ThemeName) => {
         },
       },
     },
-  }
-}
+  };
+};
 
 // Exporter le thème par défaut initialement
-export const theme = extendTheme(createTheme('default'))
+export const theme = extendTheme(createTheme('default'));
 
 // Exporter la fonction pour créer de nouveaux thèmes
-export const createCustomTheme = (themeName: ThemeName) => extendTheme(createTheme(themeName))
+export const createCustomTheme = (themeName: ThemeName) =>
+  extendTheme(createTheme(themeName));

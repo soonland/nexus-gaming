@@ -1,5 +1,7 @@
-import PlatformFormLoading from '@/components/loading/PlatformFormLoading'
+import PlatformFormLoading from '@/components/loading/PlatformFormLoading';
 
-export default function Loading() {
-  return <PlatformFormLoading />
-}
+const Loading = () => {
+  return <PlatformFormLoading />;
+};
+
+export default Loading;
