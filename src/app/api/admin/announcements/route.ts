@@ -103,16 +103,20 @@ export async function PUT(request: Request) {
     const data = await request.json();
     const { id, isActive } = data;
 
-    if (!id || typeof isActive !== 'boolean') {
+    if (!['active', 'inactive'].includes(isActive)) {
       return NextResponse.json(
-        { error: 'ID and isActive status are required' },
+        { error: 'isActive must be "active" or "inactive"' },
         { status: 400 }
       );
     }
 
     const announcement = await prisma.adminAnnouncement.update({
       where: { id },
-      data: { isActive },
+      data: {
+        isActive: ['active', 'inactive'].includes(isActive)
+          ? isActive
+          : 'active',
+      },
       select: {
         id: true,
         message: true,

@@ -70,20 +70,15 @@ export async function PUT(
       );
     }
 
-    if (typeof isActive !== 'boolean') {
-      return NextResponse.json(
-        { error: 'isActive must be a boolean' },
-        { status: 400 }
-      );
-    }
-
     const announcement = await prisma.adminAnnouncement.update({
       where: { id },
       data: {
         message,
         type,
         expiresAt: expiresAt ? new Date(expiresAt) : null,
-        isActive: Boolean(isActive),
+        isActive: ['active', 'inactive'].includes(isActive)
+          ? isActive
+          : 'active',
       },
       select: {
         id: true,

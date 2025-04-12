@@ -118,9 +118,13 @@ const AnnouncementsPage = () => {
                   <Td>{getTypeBadge(announcement.type)}</Td>
                   <Td>
                     <Badge
-                      colorScheme={announcement.isActive ? 'green' : 'gray'}
+                      colorScheme={
+                        announcement.isActive === 'active' ? 'green' : 'gray'
+                      }
                     >
-                      {announcement.isActive ? 'Active' : 'Inactive'}
+                      {announcement.isActive === 'active'
+                        ? 'Active'
+                        : 'Inactive'}
                     </Badge>
                   </Td>
                   <Td>{announcement.createdBy.username}</Td>
@@ -144,11 +148,19 @@ const AnnouncementsPage = () => {
                       />
                       <IconButton
                         aria-label={
-                          announcement.isActive ? 'Désactiver' : 'Activer'
+                          announcement.isActive === 'active'
+                            ? 'Désactiver'
+                            : 'Activer'
                         }
-                        colorScheme={announcement.isActive ? 'green' : 'gray'}
+                        colorScheme={
+                          announcement.isActive === 'active' ? 'green' : 'gray'
+                        }
                         icon={
-                          announcement.isActive ? <SunIcon /> : <MoonIcon />
+                          announcement.isActive === 'active' ? (
+                            <SunIcon />
+                          ) : (
+                            <MoonIcon />
+                          )
                         }
                         isLoading={toggleAnnouncementStatus.isPending}
                         size='sm'
@@ -156,14 +168,18 @@ const AnnouncementsPage = () => {
                           toggleAnnouncementStatus.mutate(
                             {
                               id: announcement.id,
-                              isActive: !announcement.isActive,
+                              isActive:
+                                announcement.isActive === 'active'
+                                  ? 'inactive'
+                                  : 'active',
                             },
                             {
                               onSuccess: () => {
                                 toast({
-                                  title: announcement.isActive
-                                    ? 'Annonce désactivée'
-                                    : 'Annonce activée',
+                                  title:
+                                    announcement.isActive === 'active'
+                                      ? 'Annonce désactivée'
+                                      : 'Annonce activée',
                                   status: 'success',
                                   duration: 3000,
                                 });

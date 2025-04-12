@@ -16,22 +16,19 @@ export async function PATCH(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { isActive } = await request.json();
+    const data = await request.json();
+    const { isActive } = data;
 
-    if (typeof isActive !== 'boolean') {
+    if (!['active', 'inactive'].includes(isActive)) {
       return NextResponse.json(
-        { error: 'Invalid request data' },
+        { error: 'isActive must be "active" or "inactive"' },
         { status: 400 }
       );
     }
 
     const announcement = await prisma.adminAnnouncement.update({
-      where: {
-        id,
-      },
-      data: {
-        isActive,
-      },
+      where: { id },
+      data: { isActive },
     });
 
     return NextResponse.json(announcement);
