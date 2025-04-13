@@ -26,16 +26,19 @@ import {
 import { useState } from 'react';
 
 import PasswordStrengthIndicator from '@/components/common/PasswordStrengthIndicator';
+import { AvatarUpload } from '@/components/profile/AvatarUpload';
 import { SocialProfilesSection } from '@/components/profile/SocialProfilesSection';
 import { ThemeSelector } from '@/components/theme/ThemeSelector';
 import { useAuth } from '@/hooks/useAuth';
 import { usePasswordExpiration } from '@/hooks/usePasswordExpiration';
+import { useUpdateAvatar } from '@/hooks/useUpdateAvatar';
 import dayjs from '@/lib/dayjs';
 import { useTheme } from '@/providers/ThemeProvider';
 
 const ProfilePage = () => {
   const { user, refresh } = useAuth();
   const { colorMode, toggleColorMode } = useColorMode();
+  const updateAvatar = useUpdateAvatar();
   const { theme, changeTheme } = useTheme();
   const toast = useToast();
   const passwordExpiration = usePasswordExpiration();
@@ -109,6 +112,35 @@ const ProfilePage = () => {
     <Container maxW='container.md' py={8}>
       <VStack align='stretch' spacing={8}>
         <Heading size='lg'>Mon profil</Heading>
+
+        <Card>
+          <CardBody>
+            <VStack align='center' spacing={6}>
+              <AvatarUpload
+                currentAvatarUrl={user.avatarUrl}
+                username={user.username}
+                onUpload={async url => {
+                  try {
+                    await updateAvatar.mutateAsync(url);
+                    await refresh();
+                    toast({
+                      title: 'Avatar mis à jour',
+                      status: 'success',
+                      duration: 3000,
+                    });
+                  } catch (error) {
+                    toast({
+                      title: 'Erreur',
+                      description: "Impossible de mettre à jour l'avatar",
+                      status: 'error',
+                      duration: 5000,
+                    });
+                  }
+                }}
+              />
+            </VStack>
+          </CardBody>
+        </Card>
 
         <Card>
           <CardBody>
