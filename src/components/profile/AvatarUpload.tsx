@@ -1,25 +1,38 @@
 'use client';
 
 import {
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogOverlay,
   Avatar,
   AvatarBadge,
   Box,
+  Button,
   Text,
   VStack,
   Icon,
+  IconButton,
   Spinner,
   useToast,
 } from '@chakra-ui/react';
 import { keyframes } from '@emotion/react';
 import { useRef, useState } from 'react';
-import { FiCamera, FiCheck } from 'react-icons/fi';
+import { FiCamera, FiCheck, FiTrash2 } from 'react-icons/fi';
 
 import { uploadImage } from '@/lib/upload';
+
+export const getPublicIdFromUrl = (url: string) => {
+  const matches = url.match(/\/v\d+\/(.+?)\.\w+$/);
+  return matches ? matches[1] : null;
+};
 
 interface IAvatarUploadProps {
   currentAvatarUrl?: string | null;
   username: string;
-  onUpload: (url: string) => void;
+  onUpload: (url: string | null) => void;
   className?: string;
 }
 
@@ -41,7 +54,11 @@ export const AvatarUpload = ({
   const [isUploading, setIsUploading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cancelDeleteRef = useRef<HTMLButtonElement>(null);
   const toast = useToast();
 
   const handleDragEnter = (e: React.DragEvent) => {
@@ -55,7 +72,6 @@ export const AvatarUpload = ({
   };
 
   const validateFile = (file: File): boolean => {
-    // 5MB en octets
     const MAX_SIZE = 5 * 1024 * 1024;
     const ALLOWED_TYPES = ['image/jpeg', 'image/png'];
 
@@ -89,6 +105,21 @@ export const AvatarUpload = ({
       setIsUploading(true);
       setIsSuccess(false);
       const result = await uploadImage(file, 'avatars');
+
+      // Si on a un ancien avatar, on le supprime
+      if (currentAvatarUrl) {
+        const oldPublicId = getPublicIdFromUrl(currentAvatarUrl);
+        if (oldPublicId) {
+          // On ne veut pas attendre la suppression
+          fetch(
+            `/api/upload/delete?public_id=${encodeURIComponent(oldPublicId)}`,
+            {
+              method: 'DELETE',
+            }
+          ).catch(console.error);
+        }
+      }
+
       setPreviewUrl(result.secure_url);
       onUpload(result.secure_url);
       setIsSuccess(true);
@@ -115,12 +146,38 @@ export const AvatarUpload = ({
     if (file) handleFileSelect(file);
   };
 
+  const handleDelete = async () => {
+    if (!pendingDeleteId) return;
+
+    try {
+      await fetch(
+        `/api/upload/delete?public_id=${encodeURIComponent(pendingDeleteId)}`,
+        {
+          method: 'DELETE',
+        }
+      );
+      setPreviewUrl(null);
+      onUpload(null);
+      // Le toast de succès sera géré par le parent
+    } catch (error) {
+      toast({
+        title: 'Erreur lors de la suppression',
+        status: 'error',
+        duration: 3000,
+      });
+      console.error('Failed to delete avatar:', error);
+    } finally {
+      setIsDeleteDialogOpen(false);
+      setPendingDeleteId(null);
+    }
+  };
+
   return (
     <Box className={className}>
       <VStack align='center' spacing={4}>
         <Box
           cursor='pointer'
-          p={6}
+          p={3}
           position='relative'
           onClick={() => fileInputRef.current?.click()}
           onDragEnter={handleDragEnter}
@@ -131,70 +188,111 @@ export const AvatarUpload = ({
             setIsDragging(false);
             handleDrop(e);
           }}
+          onMouseEnter={() => setIsHovering(true)}
+          onMouseLeave={() => setIsHovering(false)}
         >
-          <Avatar name={username} size='xl' src={previewUrl || undefined}>
-            {(isUploading || isSuccess) && (
-              <AvatarBadge
-                bg={isUploading ? 'blue.500' : 'green.500'}
-                borderColor='white'
-                borderWidth={1}
-                boxSize='0.8em'
-              >
-                {isUploading ? (
-                  <Spinner
-                    color='white'
-                    size='xs'
-                    speed='0.8s'
-                    thickness='1.5px'
-                  />
-                ) : (
-                  <Icon as={FiCheck} boxSize={2.5} color='white' />
-                )}
-              </AvatarBadge>
-            )}
-          </Avatar>
+          {/* Overlay sur hover */}
           <Box
-            _hover={{ opacity: 1 }}
             alignItems='center'
-            bg={isDragging ? 'blackAlpha.700' : 'blackAlpha.600'}
-            borderColor={isDragging ? 'blue.400' : 'transparent'}
+            bg='blackAlpha.600'
             borderRadius='full'
-            borderStyle='dashed'
-            borderWidth={3}
-            boxShadow={isDragging ? 'lg' : 'none'}
             display='flex'
             flexDirection='column'
             gap={1}
-            inset='-1.5rem'
+            inset='-0.75rem'
             justifyContent='center'
-            opacity={isDragging ? 1 : 0}
+            opacity={isHovering && !isDragging ? 1 : 0}
             position='absolute'
-            transform={isDragging ? 'scale(1.05)' : 'scale(1)'}
             transition='all 0.2s'
+            zIndex={1}
           >
-            <VStack align='center' spacing={1} width='100%'>
-              <Icon
-                as={FiCamera}
-                boxSize={5}
-                color='white'
-                sx={
-                  isDragging
-                    ? {
-                        animation: `${pulseAnimation} 1.5s infinite`,
-                      }
-                    : undefined
-                }
-              />
-              <Text
-                color='white'
-                fontSize='xs'
-                fontWeight='medium'
-                opacity={isDragging ? 1 : 0}
-                transform='translateY(2px)'
-              >
-                Déposez l'image ici
+            <VStack spacing={1}>
+              <Icon as={FiCamera} boxSize={5} color='white' />
+              <Text color='white' fontSize='xs'>
+                Changer l&apos;avatar
               </Text>
             </VStack>
+          </Box>
+
+          {/* Zone de drop */}
+          {isDragging && (
+            <Box
+              alignItems='center'
+              bg='blackAlpha.700'
+              borderColor='blue.400'
+              borderRadius='full'
+              borderStyle='dashed'
+              borderWidth={3}
+              boxShadow='lg'
+              display='flex'
+              flexDirection='column'
+              gap={1}
+              inset='-0.75rem'
+              justifyContent='center'
+              position='absolute'
+              transform='scale(1.05)'
+              transition='all 0.2s'
+              zIndex={1}
+            >
+              <VStack align='center' spacing={1}>
+                <Icon
+                  as={FiCamera}
+                  boxSize={5}
+                  color='white'
+                  sx={{
+                    animation: `${pulseAnimation} 1.5s infinite`,
+                  }}
+                />
+                <Text color='white' fontSize='xs'>
+                  Déposez l&apos;image ici
+                </Text>
+              </VStack>
+            </Box>
+          )}
+
+          {/* Avatar et badge de suppression */}
+          <Box position='relative' zIndex={2}>
+            <Avatar name={username} size='xl' src={previewUrl || undefined}>
+              {(isUploading || isSuccess) && (
+                <AvatarBadge
+                  bg={isUploading ? 'blue.500' : 'green.500'}
+                  borderColor='white'
+                  borderWidth={1}
+                  boxSize='0.8em'
+                >
+                  {isUploading ? (
+                    <Spinner
+                      color='white'
+                      size='xs'
+                      speed='0.8s'
+                      thickness='1.5px'
+                    />
+                  ) : (
+                    <Icon as={FiCheck} boxSize={2.5} color='white' />
+                  )}
+                </AvatarBadge>
+              )}
+            </Avatar>
+            {previewUrl && (
+              <IconButton
+                aria-label="Supprimer l'avatar"
+                colorScheme='red'
+                icon={<Icon as={FiTrash2} />}
+                position='absolute'
+                right='-2'
+                size='sm'
+                top='-2'
+                zIndex={3}
+                onClick={e => {
+                  e.stopPropagation();
+                  const publicId = getPublicIdFromUrl(previewUrl);
+
+                  if (!publicId) return;
+                  setPendingDeleteId(publicId);
+                  setIsDeleteDialogOpen(true);
+                }}
+              />
+            )}
           </Box>
         </Box>
 
@@ -215,6 +313,37 @@ export const AvatarUpload = ({
           onChange={handleFileInput}
         />
       </VStack>
+
+      <AlertDialog
+        isOpen={isDeleteDialogOpen}
+        leastDestructiveRef={cancelDeleteRef}
+        onClose={() => setIsDeleteDialogOpen(false)}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader fontSize='lg' fontWeight='bold'>
+              Supprimer l&apos;avatar
+            </AlertDialogHeader>
+
+            <AlertDialogBody>
+              Êtes-vous sûr de vouloir supprimer votre avatar ? Cette action est
+              irréversible.
+            </AlertDialogBody>
+
+            <AlertDialogFooter>
+              <Button
+                ref={cancelDeleteRef}
+                onClick={() => setIsDeleteDialogOpen(false)}
+              >
+                Annuler
+              </Button>
+              <Button colorScheme='red' ml={3} onClick={handleDelete}>
+                Supprimer
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
     </Box>
   );
 };

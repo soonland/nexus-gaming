@@ -26,7 +26,10 @@ import {
 import { useState } from 'react';
 
 import PasswordStrengthIndicator from '@/components/common/PasswordStrengthIndicator';
-import { AvatarUpload } from '@/components/profile/AvatarUpload';
+import {
+  AvatarUpload,
+  getPublicIdFromUrl,
+} from '@/components/profile/AvatarUpload';
 import { SocialProfilesSection } from '@/components/profile/SocialProfilesSection';
 import { ThemeSelector } from '@/components/theme/ThemeSelector';
 import { useAuth } from '@/hooks/useAuth';
@@ -38,7 +41,7 @@ import { useTheme } from '@/providers/ThemeProvider';
 const ProfilePage = () => {
   const { user, refresh } = useAuth();
   const { colorMode, toggleColorMode } = useColorMode();
-  const updateAvatar = useUpdateAvatar();
+  const { updateAvatar, deleteAvatar } = useUpdateAvatar();
   const { theme, changeTheme } = useTheme();
   const toast = useToast();
   const passwordExpiration = usePasswordExpiration();
@@ -121,13 +124,28 @@ const ProfilePage = () => {
                 username={user.username}
                 onUpload={async url => {
                   try {
-                    await updateAvatar.mutateAsync(url);
-                    await refresh();
-                    toast({
-                      title: 'Avatar mis à jour',
-                      status: 'success',
-                      duration: 3000,
-                    });
+                    if (url === null) {
+                      const publicId = user.avatarUrl
+                        ? getPublicIdFromUrl(user.avatarUrl)
+                        : null;
+                      if (publicId) {
+                        await deleteAvatar(publicId);
+                        await refresh();
+                        toast({
+                          title: 'Avatar supprimé',
+                          status: 'success',
+                          duration: 3000,
+                        });
+                      }
+                    } else {
+                      await updateAvatar(url);
+                      await refresh();
+                      toast({
+                        title: 'Avatar mis à jour',
+                        status: 'success',
+                        duration: 3000,
+                      });
+                    }
                   } catch (error) {
                     toast({
                       title: 'Erreur',
