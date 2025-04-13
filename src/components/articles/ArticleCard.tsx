@@ -26,9 +26,7 @@ interface IArticleCardProps {
 
 export const ArticleCard = ({ article }: IArticleCardProps) => {
   const bgColor = useColorModeValue('white', 'gray.800');
-  // Use first game's cover image or a placeholder
-  const coverImage =
-    article.games[0]?.coverImage || '/images/placeholder-game.png';
+  const coverImage = article.heroImage || '/images/placeholder-game.png';
   const categoryColor = useColorModeValue('blue.500', 'blue.300');
   const overlayGradient = useColorModeValue(
     'linear(to-t, blackAlpha.600, blackAlpha.300)',

@@ -51,6 +51,7 @@ export type ArticleData = Omit<
   Article,
   'userId' | 'categoryId' | 'createdAt' | 'updatedAt' | 'publishedAt'
 > & {
+  heroImage?: string | null;
   category: WithId;
   user: UserRef;
   games: GameRef[];
@@ -99,6 +100,7 @@ export type ArticleForm = {
   gameIds?: string[];
   status?: ArticleStatus;
   publishedAt?: string | null;
+  heroImage?: string | null;
 };
 
 export type PlatformForm = {

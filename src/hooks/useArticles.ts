@@ -39,8 +39,15 @@ export function useArticles(params: IArticlesParams = {}) {
 
   const createArticle = useMutation({
     mutationFn: async (data: ArticleForm) => {
-      const response = await axios.post('/api/articles', data);
-      return response.data;
+      try {
+        const response = await axios.post('/api/articles', data);
+        return response.data;
+      } catch (error) {
+        if (axios.isAxiosError(error) && error.response?.status === 401) {
+          throw new Error('Vous devez être connecté pour créer un article');
+        }
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['articles'] });
@@ -52,8 +59,9 @@ export function useArticles(params: IArticlesParams = {}) {
       const response = await axios.patch(`/api/articles/${id}`, data);
       return response.data;
     },
-    onSuccess: () => {
+    onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: ['articles'] });
+      queryClient.invalidateQueries({ queryKey: ['article', id] });
     },
   });
 

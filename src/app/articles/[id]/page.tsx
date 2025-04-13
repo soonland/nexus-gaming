@@ -76,7 +76,7 @@ const ArticlePage = () => {
               ]
             : []
         }
-        image={article.games[0]?.coverImage || undefined}
+        image={article.heroImage || article.games[0]?.coverImage || undefined}
         metadata={
           <HStack spacing={6}>
             <HStack>

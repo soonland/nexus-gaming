@@ -1,6 +1,7 @@
 import type { Prisma, ArticleStatus } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
+import { getCurrentUser } from '@/lib/jwt';
 import prisma from '@/lib/prisma';
 import type { ArticleForm } from '@/types';
 
@@ -42,6 +43,7 @@ export async function GET(request: Request) {
           title: true,
           content: true,
           status: true,
+          heroImage: true,
           publishedAt: true,
           createdAt: true,
           updatedAt: true,
@@ -105,6 +107,7 @@ export async function POST(request: Request) {
       status,
       publishedAt,
       gameIds = [],
+      heroImage,
     } = data;
 
     if (!title || !content || !categoryId) {
@@ -114,8 +117,11 @@ export async function POST(request: Request) {
       );
     }
 
-    // TODO: Récupérer le vrai userId depuis l'authentification
-    const defaultUserId = 'clm1234567890';
+    // Get the authenticated user
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
     const article = await prisma.article.create({
       data: {
@@ -124,7 +130,8 @@ export async function POST(request: Request) {
         status: status || 'DRAFT',
         publishedAt: publishedAt ? new Date(publishedAt) : null,
         categoryId,
-        userId: defaultUserId,
+        userId: currentUser.id,
+        heroImage,
         games: {
           connect: gameIds.map(id => ({ id })),
         },
@@ -134,6 +141,7 @@ export async function POST(request: Request) {
         title: true,
         content: true,
         status: true,
+        heroImage: true,
         publishedAt: true,
         createdAt: true,
         updatedAt: true,

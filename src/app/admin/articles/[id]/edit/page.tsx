@@ -68,6 +68,7 @@ const EditArticlePage = () => {
       ? dayjs(article.publishedAt).format('YYYY-MM-DD')
       : undefined,
     user: article.user,
+    heroImage: article.heroImage,
   };
 
   return (

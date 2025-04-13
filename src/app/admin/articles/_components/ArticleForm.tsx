@@ -1,5 +1,6 @@
 'use client';
 
+import { CloseIcon } from '@chakra-ui/icons';
 import {
   Box,
   Button,
@@ -13,14 +14,18 @@ import {
   HStack,
   useToast,
   Select,
+  Image,
+  IconButton,
 } from '@chakra-ui/react';
 import type { Role } from '@prisma/client';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
+import { ImageUpload } from '@/components/common/ImageUpload';
 import { useAuth } from '@/hooks/useAuth';
 import { useCategories } from '@/hooks/useCategories';
+import { deleteImage } from '@/lib/upload';
 import type { ArticleForm as IArticleForm, ArticleStatus } from '@/types';
 
 import GameSelector from './GameSelector';
@@ -51,9 +56,12 @@ const ArticleForm = ({
   isLoading,
   mode = 'create',
 }: IArticleFormProps) => {
+  const [heroImage, setHeroImage] = useState<string | null>(
+    initialData?.heroImage || null
+  );
   const router = useRouter();
   const toast = useToast();
-  const { categories } = useCategories();
+  const { categories, isLoading: isCategoriesLoading } = useCategories();
   const { user } = useAuth();
   const availableStatuses = getAvailableStatuses(user?.role);
 
@@ -84,6 +92,44 @@ const ArticleForm = ({
     }
   }, [status, availableStatuses, setValue]);
 
+  // Mise à jour de la catégorie quand les catégories sont chargées
+  useEffect(() => {
+    if (!isCategoriesLoading && categories && initialData?.categoryId) {
+      const categoryExists = categories?.some(
+        category => category.id === initialData.categoryId
+      );
+      if (categoryExists) {
+        setValue('categoryId', initialData.categoryId);
+      }
+    }
+  }, [categories, isCategoriesLoading, initialData?.categoryId, setValue]);
+
+  const handleImageUpload = async (url: string) => {
+    // Si on a une image existante, on la supprime
+    if (heroImage) {
+      const oldPublicId = heroImage.split('/').pop()?.split('.')[0];
+      if (oldPublicId) {
+        fetch(
+          `/api/upload/delete?public_id=${encodeURIComponent(oldPublicId)}`,
+          {
+            method: 'DELETE',
+          }
+        ).catch(console.error);
+      }
+    }
+    setHeroImage(url);
+  };
+
+  const handleImageDelete = async () => {
+    if (heroImage) {
+      const publicId = heroImage.split('/').pop()?.split('.')[0];
+      if (publicId) {
+        await deleteImage(publicId);
+        setHeroImage(null);
+      }
+    }
+  };
+
   const onSubmitForm = async (data: IArticleForm) => {
     try {
       // Si l'article est publié et qu'il n'y a pas de date de publication, on la définit
@@ -91,6 +137,7 @@ const ArticleForm = ({
         data.publishedAt = new Date().toISOString();
       }
 
+      data.heroImage = heroImage;
       await onSubmit(data);
       toast({
         title: mode === 'create' ? 'Article créé' : 'Article mis à jour',
@@ -99,12 +146,20 @@ const ArticleForm = ({
       });
       router.push('/admin/articles');
     } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Une erreur est survenue';
+
       toast({
         title: 'Erreur',
-        description: 'Une erreur est survenue',
+        description: errorMessage,
         status: 'error',
         duration: 5000,
       });
+
+      // Si c'est une erreur d'authentification, rediriger vers la page de login
+      if (errorMessage.includes('connecté')) {
+        router.push('/login');
+      }
     }
   };
 
@@ -132,7 +187,12 @@ const ArticleForm = ({
               {...register('categoryId', {
                 required: 'La catégorie est requise',
               })}
-              placeholder='Sélectionner une catégorie'
+              isDisabled={isCategoriesLoading}
+              placeholder={
+                isCategoriesLoading
+                  ? 'Chargement...'
+                  : 'Sélectionner une catégorie'
+              }
             >
               {categories?.map(category => (
                 <option key={category.id} value={category.id}>
@@ -182,6 +242,39 @@ const ArticleForm = ({
             </FormHelperText>
           </FormControl>
         </HStack>
+
+        <FormControl>
+          <FormLabel>Image hero</FormLabel>
+          <Box position='relative'>
+            <ImageUpload
+              folder='articles'
+              preview={false}
+              onUpload={(url: string) => handleImageUpload(url)}
+            />
+            {heroImage && (
+              <Box mt={4} position='relative' width='fit-content'>
+                <Image
+                  alt='Hero preview'
+                  height='200px'
+                  objectFit='cover'
+                  src={heroImage}
+                  width='300px'
+                />
+                <IconButton
+                  aria-label='Remove image'
+                  colorScheme='red'
+                  icon={<CloseIcon />}
+                  position='absolute'
+                  right={2}
+                  size='sm'
+                  top={2}
+                  onClick={handleImageDelete}
+                />
+              </Box>
+            )}
+          </Box>
+          <FormHelperText>Format JPG ou PNG recommandé</FormHelperText>
+        </FormControl>
 
         <FormControl isInvalid={!!errors.title}>
           <FormLabel>Titre</FormLabel>

@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { uploadImage } from '@/lib/upload';
 
 interface IImageUploadProps {
-  onUpload: (url: string) => void;
+  onUpload: (url: string, publicId: string) => void;
   folder?: string;
   preview?: boolean;
   className?: string;
@@ -28,7 +28,7 @@ export const ImageUpload = ({
     try {
       const file = e.target.files[0];
       const result = await uploadImage(file, folder);
-      onUpload(result.secure_url);
+      onUpload(result.secure_url, result.public_id);
       if (preview) {
         setPreviewUrl(result.secure_url);
       }
