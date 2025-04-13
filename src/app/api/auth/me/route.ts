@@ -22,6 +22,7 @@ export async function GET() {
         role: true,
         isActive: true,
         lastPasswordChange: true,
+        avatarUrl: true,
       },
     });
 

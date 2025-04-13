@@ -9,6 +9,7 @@ export type AuthUser = {
   isActive: boolean;
   lastPasswordChange: string;
   lastLogin?: string;
+  avatarUrl?: string | null;
 };
 
 export interface ILoginCredentials {
@@ -29,4 +30,5 @@ export interface IJWTPayload extends JoseJWTPayload {
   isActive: boolean;
   lastPasswordChange: string;
   lastLogin?: string;
+  avatarUrl?: string | null;
 }

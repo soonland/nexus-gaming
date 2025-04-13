@@ -18,6 +18,7 @@ import Link from 'next/link';
 import { BiPowerOff, BiUser } from 'react-icons/bi';
 import { FiMenu } from 'react-icons/fi';
 
+import { Avatar } from '@/components/common/Avatar';
 import { NotificationBell } from '@/components/common/NotificationBell';
 import { useAuth } from '@/hooks/useAuth';
 import { canManageAnnouncements } from '@/lib/permissions';
@@ -101,8 +102,15 @@ export const Navbar = () => {
             {/* Menu utilisateur ou bouton de connexion */}
             {user ? (
               <Menu>
-                <MenuButton as={Button} variant='ghost'>
-                  <Text>{user.username}</Text>
+                <MenuButton as={Button} px={2} variant='ghost'>
+                  <HStack spacing={2}>
+                    <Avatar
+                      alt={user.username}
+                      size='sm'
+                      src={user.avatarUrl}
+                    />
+                    <Text>{user.username}</Text>
+                  </HStack>
                 </MenuButton>
                 <MenuList>
                   <MenuItem as={Link} href='/profile' icon={<BiUser />}>
