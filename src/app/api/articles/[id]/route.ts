@@ -17,6 +17,7 @@ export async function GET(
         title: true,
         content: true,
         status: true,
+        heroImage: true,
         publishedAt: true,
         createdAt: true,
         updatedAt: true,
@@ -79,6 +80,7 @@ export async function PATCH(
         content: data.content,
         categoryId: data.categoryId,
         status: data.status,
+        heroImage: data.heroImage,
         publishedAt: data.publishedAt ? new Date(data.publishedAt) : null,
         games: {
           set: [], // Disconnect all games first
@@ -90,6 +92,7 @@ export async function PATCH(
         title: true,
         content: true,
         status: true,
+        heroImage: true,
         publishedAt: true,
         createdAt: true,
         updatedAt: true,

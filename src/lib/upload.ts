@@ -27,3 +27,14 @@ export const uploadImage = async (
   const result = await response.json();
   return result;
 };
+
+export const deleteImage = async (publicId: string): Promise<void> => {
+  const response = await fetch(`/api/upload/delete?public_id=${publicId}`, {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Delete failed');
+  }
+};

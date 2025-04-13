@@ -7,6 +7,7 @@ type GameWithDetails = Pick<Game, 'id' | 'title' | 'coverImage'> & {
 };
 
 type ArticleWithRelations = Omit<Article, 'userId' | 'categoryId'> & {
+  heroImage?: string | null;
   user: Pick<User, 'username'>;
   category: Pick<Category, 'name'> | null;
   games: GameWithDetails[];
