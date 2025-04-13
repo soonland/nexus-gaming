@@ -23,6 +23,7 @@ export async function POST(request: NextRequest) {
         isActive: true,
         lastPasswordChange: true,
         lastLogin: true,
+        avatarUrl: true,
       },
     });
 
@@ -61,6 +62,7 @@ export async function POST(request: NextRequest) {
         isActive: true,
         lastPasswordChange: true,
         lastLogin: true,
+        avatarUrl: true,
       },
     });
 

@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  Avatar,
   Box,
   Button,
   Container,
@@ -18,7 +19,6 @@ import Link from 'next/link';
 import { BiPowerOff, BiUser } from 'react-icons/bi';
 import { FiMenu } from 'react-icons/fi';
 
-import { Avatar } from '@/components/common/Avatar';
 import { NotificationBell } from '@/components/common/NotificationBell';
 import { useAuth } from '@/hooks/useAuth';
 import { canManageAnnouncements } from '@/lib/permissions';
@@ -105,9 +105,9 @@ export const Navbar = () => {
                 <MenuButton as={Button} px={2} variant='ghost'>
                   <HStack spacing={2}>
                     <Avatar
-                      alt={user.username}
+                      name={user.username}
                       size='sm'
-                      src={user.avatarUrl}
+                      src={user.avatarUrl || undefined}
                     />
                     <Text>{user.username}</Text>
                   </HStack>
