@@ -1,80 +1,54 @@
 'use client';
 
-import {
-  Container,
-  Alert,
-  AlertIcon,
-  Card,
-  CardHeader,
-  CardBody,
-  Heading,
-} from '@chakra-ui/react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
-import GameFormLoading from '@/components/loading/GameFormLoading';
-import { useGame, useGames } from '@/hooks/useGames';
-import dayjs from '@/lib/dayjs';
-import type { GameForm as IGameForm } from '@/types';
+import { AdminPageLayout } from '@/components/admin';
+import { useGame } from '@/hooks/useGames';
 
-import GameForm from '../../_components/GameForm';
+import { GameForm } from '../../_components/GameForm';
 
 const EditGamePage = () => {
   const params = useParams();
-  const id = params.id as string;
-  const { game, isLoading } = useGame(id);
-  const { updateGame, isUpdating } = useGames();
+  const router = useRouter();
+  const { game, isLoading, error } = useGame(params.id as string);
+
+  useEffect(() => {
+    if (error) {
+      console.error('Error loading game:', error);
+      router.push('/admin/games');
+    }
+  }, [error, router]);
 
   if (isLoading) {
     return (
-      <Container maxW='container.md' py={8}>
-        <GameFormLoading />
-      </Container>
+      <AdminPageLayout title='Modifier un jeu'>
+        <div>Chargement...</div>
+      </AdminPageLayout>
     );
   }
 
   if (!game) {
-    return (
-      <Container maxW='container.md' py={8}>
-        <Alert status='error'>
-          <AlertIcon />
-          Jeu non trouvé
-        </Alert>
-      </Container>
-    );
+    return null;
   }
 
-  const initialData = {
-    title: game.title,
-    description: game.description || '',
-    releaseDate: game.releaseDate
-      ? dayjs(game.releaseDate).format('YYYY-MM-DD')
-      : null,
-    coverImage: game.coverImage || null,
-    platformIds: game.platforms.map(p => p.id),
-    developerId: game.developer.id,
-    publisherId: game.publisher.id,
-  };
-
-  const handleSubmit = async (data: IGameForm) => {
-    await updateGame(id, data);
-  };
-
   return (
-    <Container maxW='container.md' py={8}>
-      <Card>
-        <CardHeader>
-          <Heading size='lg'>Modifier le jeu</Heading>
-        </CardHeader>
-        <CardBody>
-          <GameForm
-            initialData={initialData}
-            isLoading={isUpdating}
-            mode='edit'
-            onSubmit={handleSubmit}
-          />
-        </CardBody>
-      </Card>
-    </Container>
+    <AdminPageLayout title='Modifier un jeu'>
+      <GameForm
+        initialData={{
+          id: game.id,
+          title: game.title,
+          description: game.description,
+          releaseDate: game.releaseDate,
+          coverImage: game.coverImage,
+          developer: game.developer,
+          publisher: game.publisher,
+          genre: game.genre,
+          platforms: game.platforms,
+        }}
+        mode='edit'
+      />
+    </AdminPageLayout>
   );
 };
 

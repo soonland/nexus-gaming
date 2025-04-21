@@ -1,26 +1,28 @@
 'use client';
 
+import ReportProblemIcon from '@mui/icons-material/ReportProblem';
 import {
   Container,
-  Heading,
-  SimpleGrid,
   Skeleton,
   Alert,
-  AlertIcon,
-} from '@chakra-ui/react';
+  Typography,
+  Grid,
+  Box,
+} from '@mui/material';
 
 import { GameCard } from '@/components/games/GameCard';
 import { useGames } from '@/hooks/useGames';
 
 const GamesPage = () => {
-  const { data, isLoading, error } = useGames({ limit: '100' });
-  const games = data?.games || [];
+  const { games, isLoading, error } = useGames({
+    limit: 100,
+    admin: false,
+  });
 
   if (error) {
     return (
-      <Container maxW='container.xl' py={8}>
-        <Alert status='error'>
-          <AlertIcon />
+      <Container maxWidth='lg'>
+        <Alert icon={<ReportProblemIcon />} severity='error' variant='outlined'>
           Error loading games
         </Alert>
       </Container>
@@ -28,15 +30,29 @@ const GamesPage = () => {
   }
 
   return (
-    <Container maxW='container.xl' py={8}>
-      <Heading as='h1' mb={6}>
-        Games
-      </Heading>
-      <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
+    <Container maxWidth='lg'>
+      <Box mb={4}>
+        <Typography component='h1' variant='h4'>
+          Games
+        </Typography>
+      </Box>
+      <Grid container spacing={4}>
         {isLoading
-          ? [...Array(6)].map((_, i) => <Skeleton key={i} height='300px' />)
-          : games.map(game => <GameCard key={game.id} game={game} />)}
-      </SimpleGrid>
+          ? [...Array(3)].map((_, i) => (
+              <Grid key={i} size={4}>
+                <Skeleton
+                  height={350}
+                  sx={{ borderRadius: 1 }}
+                  variant='rectangular'
+                />
+              </Grid>
+            ))
+          : games.map(game => (
+              <Grid key={game.id} size={4}>
+                <GameCard game={game} />
+              </Grid>
+            ))}
+      </Grid>
     </Container>
   );
 };

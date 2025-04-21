@@ -1,11 +1,20 @@
-import { Box, Container } from '@chakra-ui/react';
+import { Box, Container } from '@mui/material';
 
 import { NavbarContent } from './NavbarContent';
 
 export const Navbar = () => {
   return (
-    <Box as='nav' position='sticky' py={4} top={0} zIndex={100}>
-      <Container maxW='container.xl'>
+    <Box
+      bgcolor='background.paper'
+      borderBottom={1}
+      borderColor='divider'
+      left={0}
+      position='fixed'
+      right={0}
+      top={0}
+      zIndex={100}
+    >
+      <Container maxWidth='lg'>
         <NavbarContent />
       </Container>
     </Box>

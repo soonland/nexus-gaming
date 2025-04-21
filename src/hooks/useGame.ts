@@ -1,19 +1,37 @@
-import type {
-  Game,
-  Platform,
-  Company,
-  Article,
-  User,
-  Category,
-} from '@prisma/client';
+import type { Game, Platform, Company } from '@prisma/client';
 import { useQuery } from '@tanstack/react-query';
 
-export type RelatedArticle = Pick<
-  Article,
-  'id' | 'title' | 'content' | 'publishedAt'
-> & {
-  category: Pick<Category, 'name'> | null;
-  user: Pick<User, 'username'>;
+import type { ICategoryData } from '@/types';
+
+export type ArticlePreview = {
+  id: string;
+  title: string;
+  heroImage?: string;
+  publishedAt?: string;
+  category: {
+    name: string;
+  };
+  user: {
+    username: string;
+  };
+  games: {
+    id: string;
+    title: string;
+  }[];
+};
+
+export type RelatedArticle = {
+  id: string;
+  title: string;
+  content: string;
+  publishedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  category: ICategoryData;
+  user: {
+    id: string;
+    username: string;
+  };
 };
 
 type GameWithRelations = Omit<Game, 'developerId' | 'publisherId'> & {

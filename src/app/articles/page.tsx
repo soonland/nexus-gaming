@@ -1,53 +1,55 @@
 'use client';
 
+import ReportProblemIcon from '@mui/icons-material/ReportProblem';
 import {
   Container,
-  Heading,
-  SimpleGrid,
   Skeleton,
   Alert,
-  AlertIcon,
-} from '@chakra-ui/react';
+  Typography,
+  Grid,
+  Box,
+} from '@mui/material';
 
 import { ArticleCard } from '@/components/articles/ArticleCard';
 import { useArticles } from '@/hooks/useArticles';
-import type { ArticleData } from '@/types';
 
 const ArticlesPage = () => {
-  const { data, isLoading, error } = useArticles({
-    limit: '100',
-    status: 'PUBLISHED',
-  });
-  const articles = data?.articles || [];
+  const { articles, isLoading, error } = useArticles({ limit: 100 });
 
   if (error) {
     return (
-      <Container maxW='container.xl' py={8}>
-        <Alert status='error'>
-          <AlertIcon />
-          {error instanceof Error ? error.message : 'Error loading articles'}
+      <Container maxWidth='lg'>
+        <Alert icon={<ReportProblemIcon />} severity='error' variant='outlined'>
+          Error loading articles
         </Alert>
       </Container>
     );
   }
 
   return (
-    <Container maxW='container.xl' py={8}>
-      <Heading as='h1' mb={6}>
-        Articles
-      </Heading>
-      <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
+    <Container maxWidth='lg'>
+      <Box mb={4}>
+        <Typography component='h1' variant='h4'>
+          Articles
+        </Typography>
+      </Box>
+      <Grid container spacing={4}>
         {isLoading
-          ? [...Array(6)].map((_, i) => <Skeleton key={i} height='400px' />)
-          : articles
-              ?.filter(
-                (article): article is ArticleData & { publishedAt: Date } =>
-                  article.publishedAt !== null
-              )
-              .map(article => (
-                <ArticleCard key={article.id} article={article} />
-              ))}
-      </SimpleGrid>
+          ? [...Array(3)].map((_, i) => (
+              <Grid key={i} size={4}>
+                <Skeleton
+                  height={350}
+                  sx={{ borderRadius: 1 }}
+                  variant='rectangular'
+                />
+              </Grid>
+            ))
+          : articles.map(article => (
+              <Grid key={article.id} size={4}>
+                <ArticleCard article={article} />
+              </Grid>
+            ))}
+      </Grid>
     </Container>
   );
 };

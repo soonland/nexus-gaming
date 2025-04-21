@@ -1,252 +1,238 @@
 'use client';
 
-import {
-  AddIcon,
-  EditIcon,
-  DeleteIcon,
-  SunIcon,
-  MoonIcon,
-} from '@chakra-ui/icons';
-import {
-  Box,
-  Button,
-  Container,
-  Heading,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  Badge,
-  IconButton,
-  HStack,
-  useToast,
-  AlertDialog,
-  AlertDialogBody,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogContent,
-  AlertDialogOverlay,
-  useDisclosure,
-} from '@chakra-ui/react';
-import Link from 'next/link';
-import React, { useRef } from 'react';
+import { useState } from 'react';
+import { FiEye, FiEyeOff } from 'react-icons/fi';
 
-import { DateDisplay } from '@/components/common/DateDisplay';
+import {
+  AdminActionButtons,
+  AdminActions,
+  AdminDataTable,
+  AdminDeleteDialog,
+  AdminFilters,
+  AdminList,
+  AdminPageLayout,
+  defaultActions,
+} from '@/components/admin';
+import { SideColorBadge, useNotifier } from '@/components/common';
 import { useAdminAnnouncement } from '@/hooks/useAdminAnnouncement';
+import type { IAdminAnnouncement } from '@/hooks/useAdminAnnouncement';
+import dayjs from '@/lib/dayjs';
 
-const getTypeBadge = (type: string) => {
-  switch (type) {
-    case 'URGENT':
-      return <Badge colorScheme='red'>Urgent</Badge>;
-    case 'ATTENTION':
-      return <Badge colorScheme='orange'>Attention</Badge>;
-    default:
-      return <Badge colorScheme='blue'>Info</Badge>;
-  }
-};
+import {
+  getAnnouncementTypeStyle,
+  getStatusStyle,
+} from './_components/announcementStyles';
 
-const AnnouncementsPage = () => {
-  const { announcements, deleteAnnouncement, toggleAnnouncementStatus } =
-    useAdminAnnouncement();
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const toast = useToast();
-  const cancelRef = useRef<HTMLButtonElement>(null);
-  const [announcementToDelete, setAnnouncementToDelete] = React.useState<
-    string | null
-  >(null);
+type AnnouncementSortField = keyof Pick<
+  IAdminAnnouncement,
+  'message' | 'createdAt' | 'expiresAt' | 'type' | 'isActive'
+>;
 
-  const handleDeleteClick = (id: string) => {
-    setAnnouncementToDelete(id);
-    onOpen();
+interface IDeleteDialogState {
+  isOpen: boolean;
+  announcementId: string | null;
+}
+
+const AdminAnnouncementsPage = () => {
+  const [deleteDialog, setDeleteDialog] = useState<IDeleteDialogState>({
+    isOpen: false,
+    announcementId: null,
+  });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortField, setSortField] =
+    useState<AnnouncementSortField>('createdAt');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const {
+    announcements = [],
+    deleteAnnouncement,
+    toggleAnnouncementStatus,
+  } = useAdminAnnouncement();
+  const { showSuccess, showError } = useNotifier();
+
+  const handleSort = (field: AnnouncementSortField) => {
+    setSortField(field);
+    setSortOrder(
+      field === sortField ? (sortOrder === 'asc' ? 'desc' : 'asc') : 'asc'
+    );
   };
 
-  const handleDeleteConfirm = async () => {
-    if (!announcementToDelete) return;
+  const sortedAnnouncements = [...announcements].sort((a, b) => {
+    const aValue = a[sortField];
+    const bValue = b[sortField];
+    const order = sortOrder === 'asc' ? 1 : -1;
 
-    try {
-      await deleteAnnouncement.mutateAsync(announcementToDelete);
-      toast({
-        title: 'Annonce supprimée',
-        status: 'success',
-        duration: 3000,
-      });
-      onClose();
-      setAnnouncementToDelete(null);
-    } catch (error) {
-      toast({
-        title: 'Erreur',
-        description: 'Une erreur est survenue lors de la suppression',
-        status: 'error',
-        duration: 5000,
-      });
+    if (sortField === 'createdAt' || sortField === 'expiresAt') {
+      const dateA = aValue ? dayjs(String(aValue)) : dayjs(0);
+      const dateB = bValue ? dayjs(String(bValue)) : dayjs(0);
+      return dateA.diff(dateB) * order;
+    }
+
+    if (typeof aValue === 'string' && typeof bValue === 'string') {
+      return aValue.localeCompare(bValue) * order;
+    }
+    return 0;
+  });
+
+  const filteredAnnouncements = sortedAnnouncements.filter(announcement =>
+    announcement.message.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const isEmpty = filteredAnnouncements.length === 0;
+
+  const handleDelete = async () => {
+    if (deleteDialog.announcementId) {
+      try {
+        await deleteAnnouncement.mutateAsync(deleteDialog.announcementId);
+        showSuccess('Annonce supprimée avec succès');
+        setDeleteDialog({ isOpen: false, announcementId: null });
+      } catch (error) {
+        console.error('Error deleting announcement:', error);
+        showError('Une erreur est survenue lors de la suppression');
+      }
     }
   };
 
+  const handleToggleStatus = async (announcement: IAdminAnnouncement) => {
+    try {
+      await toggleAnnouncementStatus.mutateAsync({
+        id: announcement.id,
+        isActive: announcement.isActive === 'active' ? 'inactive' : 'active',
+      });
+      showSuccess(
+        `Annonce ${
+          announcement.isActive === 'active' ? 'désactivée' : 'activée'
+        } avec succès`
+      );
+    } catch (error) {
+      console.error('Error toggling announcement status:', error);
+      showError("Une erreur est survenue lors du changement d'état");
+    }
+  };
+
+  const renderActions = (row: IAdminAnnouncement) => (
+    <AdminActionButtons
+      actions={[
+        defaultActions.edit(`/admin/announcements/${row.id}/edit`),
+        {
+          label: row.isActive === 'active' ? 'Désactiver' : 'Activer',
+          icon: row.isActive === 'active' ? FiEyeOff : FiEye,
+          onClick: () => handleToggleStatus(row),
+          color: row.isActive === 'active' ? 'warning.main' : 'success.main',
+        },
+        defaultActions.delete(
+          () =>
+            setDeleteDialog({
+              isOpen: true,
+              announcementId: row.id,
+            }),
+          deleteAnnouncement.isPending && deleteDialog.announcementId === row.id
+        ),
+      ]}
+    />
+  );
+
   return (
-    <>
-      <Container maxW='container.xl' py={8}>
-        <HStack justify='space-between' mb={8}>
-          <Heading size='lg'>Gestion des annonces</Heading>
-          <Button
-            as={Link}
-            colorScheme='blue'
-            href='/admin/announcements/new'
-            leftIcon={<AddIcon />}
-          >
-            Nouvelle annonce
-          </Button>
-        </HStack>
-
-        <Box overflowX='auto'>
-          <Table variant='simple'>
-            <Thead>
-              <Tr>
-                <Th>Message</Th>
-                <Th>Type</Th>
-                <Th>Statut</Th>
-                <Th>Créé par</Th>
-                <Th>Date d'expiration</Th>
-                <Th width='150px'>Actions</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {announcements?.map(announcement => (
-                <Tr key={announcement.id}>
-                  <Td>{announcement.message}</Td>
-                  <Td>{getTypeBadge(announcement.type)}</Td>
-                  <Td>
-                    <Badge
-                      colorScheme={
-                        announcement.isActive === 'active' ? 'green' : 'gray'
-                      }
-                    >
-                      {announcement.isActive === 'active'
-                        ? 'Active'
-                        : 'Inactive'}
-                    </Badge>
-                  </Td>
-                  <Td>{announcement.createdBy.username}</Td>
-                  <Td>
-                    {announcement.expiresAt && (
-                      <DateDisplay
-                        date={announcement.expiresAt}
-                        format='long'
-                      />
-                    )}
-                  </Td>
-                  <Td>
-                    <HStack spacing={2}>
-                      <IconButton
-                        aria-label='Modifier'
-                        as={Link}
-                        colorScheme='blue'
-                        href={`/admin/announcements/${announcement.id}/edit`}
-                        icon={<EditIcon />}
-                        size='sm'
-                      />
-                      <IconButton
-                        aria-label={
-                          announcement.isActive === 'active'
-                            ? 'Désactiver'
-                            : 'Activer'
-                        }
-                        colorScheme={
-                          announcement.isActive === 'active' ? 'green' : 'gray'
-                        }
-                        icon={
-                          announcement.isActive === 'active' ? (
-                            <SunIcon />
-                          ) : (
-                            <MoonIcon />
-                          )
-                        }
-                        isLoading={toggleAnnouncementStatus.isPending}
-                        size='sm'
-                        onClick={() => {
-                          toggleAnnouncementStatus.mutate(
-                            {
-                              id: announcement.id,
-                              isActive:
-                                announcement.isActive === 'active'
-                                  ? 'inactive'
-                                  : 'active',
-                            },
-                            {
-                              onSuccess: () => {
-                                toast({
-                                  title:
-                                    announcement.isActive === 'active'
-                                      ? 'Annonce désactivée'
-                                      : 'Annonce activée',
-                                  status: 'success',
-                                  duration: 3000,
-                                });
-                              },
-                              onError: () => {
-                                toast({
-                                  title: 'Erreur',
-                                  description:
-                                    "Impossible de modifier le statut de l'annonce",
-                                  status: 'error',
-                                  duration: 5000,
-                                });
-                              },
-                            }
-                          );
-                        }}
-                      />
-                      <IconButton
-                        aria-label='Supprimer'
-                        colorScheme='red'
-                        icon={<DeleteIcon />}
-                        isLoading={
-                          deleteAnnouncement.isPending &&
-                          announcementToDelete === announcement.id
-                        }
-                        size='sm'
-                        onClick={() => handleDeleteClick(announcement.id)}
-                      />
-                    </HStack>
-                  </Td>
-                </Tr>
-              ))}
-            </Tbody>
-          </Table>
-        </Box>
-      </Container>
-
-      <AlertDialog
-        isOpen={isOpen}
-        leastDestructiveRef={cancelRef}
-        onClose={onClose}
+    <AdminPageLayout
+      actions={
+        <AdminActions
+          createHref='/admin/announcements/new'
+          createLabel='Ajouter une annonce'
+        />
+      }
+      title='Gestion des annonces'
+    >
+      <AdminFilters
+        searchPlaceholder='Rechercher une annonce...'
+        onSearch={setSearchQuery}
+      />
+      <AdminList
+        emptyMessage='Aucune annonce trouvée'
+        isEmpty={isEmpty}
+        isLoading={
+          deleteAnnouncement.isPending || toggleAnnouncementStatus.isPending
+        }
       >
-        <AlertDialogOverlay>
-          <AlertDialogContent>
-            <AlertDialogHeader>Supprimer l'annonce</AlertDialogHeader>
-            <AlertDialogBody>
-              Êtes-vous sûr de vouloir supprimer cette annonce ? Cette action ne
-              peut pas être annulée.
-            </AlertDialogBody>
-            <AlertDialogFooter>
-              <Button ref={cancelRef} onClick={onClose}>
-                Annuler
-              </Button>
-              <Button
-                colorScheme='red'
-                isLoading={deleteAnnouncement.isPending}
-                ml={3}
-                onClick={handleDeleteConfirm}
-              >
-                Supprimer
-              </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialogOverlay>
-      </AlertDialog>
-    </>
+        <AdminDataTable<IAdminAnnouncement, AnnouncementSortField>
+          columns={[
+            {
+              field: 'type',
+              headerName: 'Type',
+              sortable: true,
+              render: row => {
+                const style = getAnnouncementTypeStyle(row.type);
+                return (
+                  <SideColorBadge
+                    backgroundColor={style.backgroundColor}
+                    borderWidth={style.borderWidth}
+                    color={style.color}
+                    label={style.label}
+                  />
+                );
+              },
+              width: '150px',
+            },
+            {
+              field: 'message',
+              headerName: 'Message',
+              sortable: true,
+            },
+            {
+              field: 'isActive',
+              headerName: 'État',
+              sortable: true,
+              render: row => {
+                const style = getStatusStyle(row.isActive);
+                return (
+                  <SideColorBadge
+                    backgroundColor={style.backgroundColor}
+                    color={style.color}
+                    label={style.label}
+                  />
+                );
+              },
+              width: '120px',
+            },
+            {
+              field: 'expiresAt',
+              headerName: "Date d'expiration",
+              render: row =>
+                row.expiresAt ? dayjs(row.expiresAt).format('LL') : '-',
+              sortable: true,
+              width: '200px',
+            },
+            {
+              field: 'createdAt',
+              headerName: 'Créé le',
+              render: row => dayjs(row.createdAt).format('LL'),
+              sortable: true,
+              width: '200px',
+            },
+            {
+              field: 'actions',
+              headerName: 'Actions',
+              render: renderActions,
+              width: '120px',
+            },
+          ]}
+          rows={filteredAnnouncements}
+          sortField={sortField}
+          sortOrder={sortOrder}
+          onSort={handleSort}
+        />
+      </AdminList>
+      <AdminDeleteDialog
+        isLoading={deleteAnnouncement.isPending}
+        isOpen={deleteDialog.isOpen}
+        message='Êtes-vous sûr de vouloir supprimer cette annonce ?'
+        title="Supprimer l'annonce"
+        onClose={() =>
+          !deleteAnnouncement.isPending &&
+          setDeleteDialog({ isOpen: false, announcementId: null })
+        }
+        onConfirm={handleDelete}
+      />
+    </AdminPageLayout>
   );
 };
 
-export default AnnouncementsPage;
+export default AdminAnnouncementsPage;

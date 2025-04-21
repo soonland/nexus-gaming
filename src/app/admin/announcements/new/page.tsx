@@ -1,39 +1,14 @@
 'use client';
 
-import {
-  Container,
-  Heading,
-  Card,
-  CardHeader,
-  CardBody,
-} from '@chakra-ui/react';
+import { AdminPageLayout } from '@/components/admin';
 
-import { useAdminAnnouncement } from '@/hooks/useAdminAnnouncement';
-
-import AnnouncementForm from '../_components/AnnouncementForm';
+import { AnnouncementForm } from '../_components/AnnouncementForm';
 
 const NewAnnouncementPage = () => {
-  const { createAnnouncement } = useAdminAnnouncement();
-
-  const handleSubmit = async (data: any) => {
-    await createAnnouncement.mutateAsync(data);
-  };
-
   return (
-    <Container maxW='container.lg' py={8}>
-      <Card>
-        <CardHeader>
-          <Heading size='lg'>Nouvelle annonce</Heading>
-        </CardHeader>
-        <CardBody>
-          <AnnouncementForm
-            isLoading={createAnnouncement.isPending}
-            mode='create'
-            onSubmit={handleSubmit}
-          />
-        </CardBody>
-      </Card>
-    </Container>
+    <AdminPageLayout title='Créer une annonce'>
+      <AnnouncementForm mode='create' />
+    </AdminPageLayout>
   );
 };
 

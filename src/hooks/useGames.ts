@@ -14,27 +14,61 @@ interface IGamesResponse {
 }
 
 interface IGamesParams {
-  page?: string;
-  limit?: string;
+  page?: number;
+  limit?: number;
   search?: string;
+  admin?: boolean;
 }
 
-export function useGames(params: IGamesParams = {}) {
-  const queryClient = useQueryClient();
+const gamesApi = {
+  getAll: async (params: IGamesParams = {}) => {
+    const queryParams = new URLSearchParams(
+      Object.entries(params)
+        .filter(([_, value]) => value !== undefined)
+        .map(([key, value]) => [key, String(value)])
+    );
+    const { data } = await axios.get(`/api/games?${queryParams.toString()}`);
+    return data as IGamesResponse;
+  },
 
+  getById: async (id: string) => {
+    const { data } = await axios.get(`/api/games/${id}`);
+    return data as GameData;
+  },
+
+  create: async (data: GameForm) => {
+    const response = await axios.post('/api/games', data);
+    return response.data;
+  },
+
+  update: async (id: string, data: GameForm) => {
+    const response = await axios.patch(`/api/games/${id}`, data);
+    return response.data;
+  },
+
+  delete: async (id: string) => {
+    await axios.delete(`/api/games/${id}`);
+  },
+};
+
+export function useGames(params: IGamesParams = {}) {
   const { data, isLoading, error } = useQuery<IGamesResponse>({
     queryKey: ['games', params],
-    queryFn: async () => {
-      const queryParams = new URLSearchParams();
-      Object.entries(params).forEach(([key, value]) => {
-        if (value) queryParams.set(key, value);
-      });
-      const response = await axios.get(`/api/games?${queryParams.toString()}`);
-      return response.data;
-    },
+    queryFn: () => gamesApi.getAll({ ...params, admin: params.admin ?? true }),
   });
 
-  const createGame = useMutation({
+  return {
+    games: data?.games ?? [],
+    pagination: data?.pagination,
+    isLoading,
+    error,
+  };
+}
+
+export function useCreateGame() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
     mutationFn: async (data: GameForm) => {
       const response = await axios.post('/api/games', data);
       return response.data;
@@ -43,43 +77,32 @@ export function useGames(params: IGamesParams = {}) {
       queryClient.invalidateQueries({ queryKey: ['games'] });
     },
   });
+}
 
-  const updateGame = useMutation({
+export function useUpdateGame() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: GameForm }) => {
       const response = await axios.patch(`/api/games/${id}`, data);
       return response.data;
     },
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: ['games'] });
+      queryClient.invalidateQueries({ queryKey: ['game', id] });
+    },
+  });
+}
+
+export function useDeleteGame() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: gamesApi.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['games'] });
     },
   });
-
-  const deleteGame = useMutation({
-    mutationFn: async (id: string) => {
-      await axios.delete(`/api/games/${id}`);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['games'] });
-    },
-  });
-
-  return {
-    data,
-    isLoading,
-    error,
-    createGame: async (data: GameForm) => {
-      return createGame.mutateAsync(data);
-    },
-    updateGame: async (id: string, data: GameForm) => {
-      return updateGame.mutateAsync({ id, data });
-    },
-    deleteGame: async (id: string) => {
-      return deleteGame.mutateAsync(id);
-    },
-    isCreating: createGame.isPending,
-    isUpdating: updateGame.isPending,
-    isDeleting: deleteGame.isPending,
-  };
 }
 
 export function useGame(id: string) {
@@ -89,10 +112,7 @@ export function useGame(id: string) {
     error,
   } = useQuery<GameData>({
     queryKey: ['game', id],
-    queryFn: async () => {
-      const response = await axios.get(`/api/games/${id}`);
-      return response.data;
-    },
+    queryFn: () => gamesApi.getById(id),
     enabled: !!id,
   });
 

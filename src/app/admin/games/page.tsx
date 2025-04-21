@@ -1,265 +1,219 @@
 'use client';
 
+import { useState } from 'react';
+
 import {
-  SearchIcon,
-  AddIcon,
-  EditIcon,
-  DeleteIcon,
-  ExternalLinkIcon,
-  CloseIcon,
-} from '@chakra-ui/icons';
-import {
-  Box,
-  Button,
-  Container,
-  Heading,
-  VStack,
-  HStack,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  IconButton,
-  Input,
-  InputGroup,
-  InputLeftElement,
-  Badge,
-  useToast,
-  useColorModeValue,
-  Wrap,
-  WrapItem,
-  AlertDialog,
-  AlertDialogBody,
-  AlertDialogContent,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogOverlay,
-  useDisclosure,
-} from '@chakra-ui/react';
-import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import { useState, useRef } from 'react';
+  AdminActionButtons,
+  AdminActions,
+  AdminDataTable,
+  AdminDeleteDialog,
+  AdminFilters,
+  AdminList,
+  AdminPageLayout,
+  Pagination,
+  defaultActions,
+} from '@/components/admin';
+import { SideColorBadge } from '@/components/common';
+import { useNotifier } from '@/components/common/Notifier';
+import { useGames, useDeleteGame } from '@/hooks/useGames';
+import dayjs from '@/lib/dayjs';
+import type { IGameData } from '@/types/api';
 
-import { DateDisplay } from '@/components/common/DateDisplay';
-import GameListLoading from '@/components/loading/GameListLoading';
-import { useGames } from '@/hooks/useGames';
+type GameSortField = keyof Pick<IGameData, 'title' | 'createdAt' | 'updatedAt'>;
 
-const GamesPage = () => {
-  const toast = useToast();
-  const searchParams = useSearchParams();
-  const [page, setPage] = useState(parseInt(searchParams.get('page') ?? '1'));
-  const [limit] = useState(10);
-  const [searchTerm, setSearchTerm] = useState('');
+interface IDeleteDialogState {
+  isOpen: boolean;
+  gameId: string | null;
+}
 
-  const { data, deleteGame, isLoading, isDeleting } = useGames({
-    page: page.toString(),
-    limit: limit.toString(),
-    search: searchTerm,
+const DEFAULT_PAGE_SIZE = 10;
+
+const AdminGamesPage = () => {
+  const [deleteDialog, setDeleteDialog] = useState<IDeleteDialogState>({
+    isOpen: false,
+    gameId: null,
   });
-  const borderColor = useColorModeValue('gray.200', 'gray.700');
-  const deleteDialog = useDisclosure();
-  const cancelRef = useRef<HTMLButtonElement>(null);
-  const [gameToDelete, setGameToDelete] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortField, setSortField] = useState<GameSortField>('createdAt');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 
-  // Filtrage des jeux
-  const filteredGames = data?.games || [];
+  const { games, pagination, isLoading, error } = useGames({
+    page,
+    limit: pageSize,
+    search: searchQuery,
+  });
 
-  const handleDeleteClick = (id: string) => {
-    setGameToDelete(id);
-    deleteDialog.onOpen();
+  const { showSuccess, showError } = useNotifier();
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setPage(1); // Reset to first page when changing page size
   };
 
-  const handleDeleteConfirm = async () => {
-    if (!gameToDelete) return;
+  const handleSort = (field: GameSortField) => {
+    setSortField(field);
+    setSortOrder(
+      field === sortField ? (sortOrder === 'asc' ? 'desc' : 'asc') : 'asc'
+    );
+  };
 
-    try {
-      await deleteGame(gameToDelete);
-      toast({
-        title: 'Jeu supprimé',
-        status: 'success',
-        duration: 3000,
-      });
-      deleteDialog.onClose();
-      setGameToDelete(null);
-    } catch (error) {
-      toast({
-        title: 'Erreur',
-        description: 'Une erreur est survenue lors de la suppression',
-        status: 'error',
-        duration: 5000,
-      });
+  const sortedGames = (games || []).sort((a: IGameData, b: IGameData) => {
+    const order = sortOrder === 'asc' ? 1 : -1;
+
+    switch (sortField) {
+      case 'createdAt':
+        return dayjs(a.createdAt).diff(dayjs(b.createdAt)) * order;
+      case 'updatedAt':
+        return dayjs(a.updatedAt).diff(dayjs(b.updatedAt)) * order;
+      case 'title':
+        return a.title.localeCompare(b.title) * order;
+      default:
+        return 0;
+    }
+  });
+
+  const filteredGames = sortedGames.filter((game: IGameData) =>
+    game.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const deleteGame = useDeleteGame();
+  const isEmpty = !filteredGames.length;
+
+  const handleDelete = async () => {
+    if (deleteDialog.gameId) {
+      try {
+        await deleteGame.mutateAsync(deleteDialog.gameId);
+        showSuccess('Jeu supprimé avec succès');
+        setDeleteDialog({ isOpen: false, gameId: null });
+      } catch (error) {
+        console.error('Error deleting game:', error);
+        showError('Une erreur est survenue lors de la suppression');
+      }
     }
   };
 
-  if (isLoading) {
-    return <GameListLoading />;
-  }
+  const renderPlatforms = (game: IGameData) => {
+    return (
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        {game.platforms.map(platform => (
+          <SideColorBadge
+            key={platform.id}
+            backgroundColor='rgb(237, 247, 237)'
+            color='rgb(30, 70, 32)'
+            label={platform.name}
+          />
+        ))}
+      </div>
+    );
+  };
 
   return (
-    <Container maxW='container.xl' py={8}>
-      <VStack align='stretch' spacing={8}>
-        <HStack justify='space-between'>
-          <Heading size='lg'>Gestion des jeux</Heading>
-          <Button
-            as={Link}
-            colorScheme='blue'
-            href='/admin/games/new'
-            leftIcon={<AddIcon />}
-          >
-            Nouveau jeu
-          </Button>
-        </HStack>
-
-        <Box>
-          <HStack mb={4}>
-            <InputGroup maxW='sm'>
-              <InputLeftElement pointerEvents='none'>
-                <SearchIcon color='gray.300' />
-              </InputLeftElement>
-              <Input
-                placeholder='Rechercher...'
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-              />
-            </InputGroup>
-            {searchTerm && (
-              <IconButton
-                aria-label='Clear search'
-                icon={<CloseIcon />}
-                size='sm'
-                onClick={() => setSearchTerm('')}
-              />
-            )}
-          </HStack>
-
-          <Box
-            borderColor={borderColor}
-            borderWidth='1px'
-            overflowX='auto'
-            rounded='lg'
-          >
-            <Table variant='simple'>
-              <Thead>
-                <Tr>
-                  <Th>Titre</Th>
-                  <Th>Développeur</Th>
-                  <Th>Éditeur</Th>
-                  <Th>Date de sortie</Th>
-                  <Th>Plateformes</Th>
-                  <Th width='150px'>Actions</Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {filteredGames.map(game => (
-                  <Tr key={game.id}>
-                    <Td>{game.title}</Td>
-                    <Td>{game.developer.name}</Td>
-                    <Td>{game.publisher.name}</Td>
-                    <Td>
-                      {game.releaseDate && (
-                        <DateDisplay date={game.releaseDate} format='long' />
-                      )}
-                    </Td>
-                    <Td>
-                      <Wrap>
-                        {game.platforms.map(platform => (
-                          <WrapItem key={platform.id}>
-                            <Badge
-                              colorScheme='blue'
-                              fontSize='xs'
-                              variant='subtle'
-                            >
-                              {platform.name}
-                            </Badge>
-                          </WrapItem>
-                        ))}
-                      </Wrap>
-                    </Td>
-                    <Td>
-                      <HStack spacing={2}>
-                        <IconButton
-                          aria-label='Modifier'
-                          as={Link}
-                          colorScheme='blue'
-                          href={`/admin/games/${game.id}/edit`}
-                          icon={<EditIcon />}
-                          size='sm'
-                        />
-                        <IconButton
-                          aria-label='Voir'
-                          as={Link}
-                          colorScheme='green'
-                          href={`/games/${game.id}`}
-                          icon={<ExternalLinkIcon />}
-                          rel='noopener noreferrer'
-                          size='sm'
-                          target='_blank'
-                        />
-                        <IconButton
-                          aria-label='Supprimer'
-                          colorScheme='red'
-                          icon={<DeleteIcon />}
-                          isLoading={isDeleting}
-                          size='sm'
-                          onClick={() => handleDeleteClick(game.id)}
-                        />
-                      </HStack>
-                    </Td>
-                  </Tr>
-                ))}
-              </Tbody>
-            </Table>
-          </Box>
-
-          {data?.pagination && data.pagination.pages > 1 && (
-            <HStack justify='center' mt={4} spacing={2}>
-              {Array.from({ length: data.pagination.pages }, (_, i) => (
-                <Button
-                  key={i + 1}
-                  size='sm'
-                  variant={page === i + 1 ? 'solid' : 'outline'}
-                  onClick={() => setPage(i + 1)}
-                >
-                  {i + 1}
-                </Button>
-              ))}
-            </HStack>
-          )}
-        </Box>
-      </VStack>
-
-      <AlertDialog
-        isOpen={deleteDialog.isOpen}
-        leastDestructiveRef={cancelRef}
-        onClose={deleteDialog.onClose}
+    <AdminPageLayout
+      actions={
+        <AdminActions
+          createHref='/admin/games/new'
+          createLabel='Ajouter un jeu'
+        />
+      }
+      title='Gestion des jeux'
+    >
+      <AdminFilters
+        searchPlaceholder='Rechercher un jeu...'
+        onSearch={setSearchQuery}
+      />
+      {pagination && (
+        <Pagination
+          currentPage={page}
+          pageSize={pageSize}
+          total={pagination.total}
+          totalPages={pagination.pages}
+          onPageChange={setPage}
+          onPageSizeChange={handlePageSizeChange}
+        />
+      )}
+      <AdminList
+        emptyMessage='Aucun jeu trouvé'
+        error={error}
+        isEmpty={isEmpty}
+        isLoading={isLoading}
       >
-        <AlertDialogOverlay>
-          <AlertDialogContent>
-            <AlertDialogHeader>Supprimer le jeu</AlertDialogHeader>
-            <AlertDialogBody>
-              Êtes-vous sûr de vouloir supprimer ce jeu ? Cette action ne peut
-              pas être annulée.
-            </AlertDialogBody>
-            <AlertDialogFooter>
-              <Button ref={cancelRef} onClick={deleteDialog.onClose}>
-                Annuler
-              </Button>
-              <Button
-                colorScheme='red'
-                isLoading={isDeleting}
-                ml={3}
-                onClick={handleDeleteConfirm}
-              >
-                Supprimer
-              </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialogOverlay>
-      </AlertDialog>
-    </Container>
+        <AdminDataTable<IGameData, GameSortField>
+          columns={[
+            {
+              field: 'title',
+              headerName: 'Titre',
+              sortable: true,
+            },
+            {
+              field: 'developer',
+              headerName: 'Développeur',
+              render: row => row.developer.name,
+            },
+            {
+              field: 'publisher',
+              headerName: 'Éditeur',
+              render: row => row.publisher.name,
+            },
+            {
+              field: 'platforms',
+              headerName: 'Plateformes',
+              render: renderPlatforms,
+              width: '250px',
+            },
+            {
+              field: 'releaseDate',
+              headerName: 'Date de sortie',
+              render: row =>
+                row.releaseDate ? dayjs(row.releaseDate).format('LL') : '-',
+              width: '150px',
+            },
+            {
+              field: 'actions',
+              headerName: 'Actions',
+              render: row => (
+                <AdminActionButtons
+                  actions={[
+                    defaultActions.edit(`/admin/games/${row.id}/edit`),
+                    defaultActions.delete(() =>
+                      setDeleteDialog({
+                        isOpen: true,
+                        gameId: row.id,
+                      })
+                    ),
+                  ]}
+                />
+              ),
+              width: '120px',
+            },
+          ]}
+          rows={filteredGames}
+          sortField={sortField}
+          sortOrder={sortOrder}
+          onSort={handleSort}
+        />
+      </AdminList>
+      {pagination && (
+        <Pagination
+          currentPage={page}
+          pageSize={pageSize}
+          total={pagination.total}
+          totalPages={pagination.pages}
+          onPageChange={setPage}
+          onPageSizeChange={handlePageSizeChange}
+        />
+      )}
+      <AdminDeleteDialog
+        isLoading={false}
+        isOpen={deleteDialog.isOpen}
+        message='Êtes-vous sûr de vouloir supprimer ce jeu ?'
+        title='Supprimer le jeu'
+        onClose={() => setDeleteDialog({ isOpen: false, gameId: null })}
+        onConfirm={handleDelete}
+      />
+    </AdminPageLayout>
   );
 };
 
-export default GamesPage;
+export default AdminGamesPage;

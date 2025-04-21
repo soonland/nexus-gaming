@@ -1,23 +1,15 @@
 'use client';
 
 import {
-  Box,
   Card,
-  CardBody,
-  Heading,
-  Image,
+  CardContent,
+  CardMedia,
+  Typography,
   Stack,
-  Text,
-  Badge,
-  HStack,
-  Icon,
-  Wrap,
-  WrapItem,
-  Divider,
-  useColorModeValue,
-} from '@chakra-ui/react';
+  Chip,
+  useTheme,
+} from '@mui/material';
 import Link from 'next/link';
-import { BsCalendar4 } from 'react-icons/bs';
 
 import { DateDisplay } from '@/components/common/DateDisplay';
 import type { GameData } from '@/types';
@@ -27,12 +19,7 @@ interface IGameCardProps {
 }
 
 export const GameCard = ({ game }: IGameCardProps) => {
-  const bgColor = useColorModeValue('white', 'gray.800');
-  const dateColor = useColorModeValue('blue.600', 'blue.300');
-  const overlayGradient = useColorModeValue(
-    'linear(to-t, blackAlpha.600, blackAlpha.300)',
-    'linear(to-t, blackAlpha.700, blackAlpha.400)'
-  );
+  const theme = useTheme();
 
   if (!game) {
     console.warn('GameCard rendered without game data');
@@ -41,92 +28,90 @@ export const GameCard = ({ game }: IGameCardProps) => {
 
   return (
     <Card
-      _hover={{ transform: 'translateY(-4px)', textDecoration: 'none' }}
-      as={Link}
-      bg={bgColor}
-      h='100%'
+      component={Link}
       href={`/games/${game.id}`}
-      overflow='hidden'
-      transition='transform 0.2s'
+      sx={{
+        'height': '100%',
+        'display': 'flex',
+        'flexDirection': 'column',
+        'transition': 'transform 0.2s',
+        'textDecoration': 'none',
+        '&:hover': {
+          transform: 'translateY(-4px)',
+        },
+      }}
     >
-      {/* Image avec overlay */}
-      <Box height='200px' overflow='hidden' position='relative'>
-        <Box
-          bgGradient={overlayGradient}
-          bottom={0}
-          left={0}
-          position='absolute'
-          right={0}
-          top={0}
-          zIndex={1}
-        />
-        <Image
-          alt={game.title}
-          height='100%'
-          objectFit='cover'
-          src={game.coverImage || '/images/placeholder-game.png'}
-          width='100%'
-          onError={e => {
-            const img = e.target as HTMLImageElement;
-            img.src = '/images/placeholder-game.png';
-          }}
-        />
-      </Box>
-
-      <CardBody>
-        <Stack spacing={4}>
+      <CardMedia
+        alt={game.title}
+        component='img'
+        height={200}
+        image={game.coverImage || '/images/placeholder-game.png'}
+        sx={{ objectFit: 'cover' }}
+        onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+          e.currentTarget.src = '/images/placeholder-game.png';
+        }}
+      />
+      <CardContent sx={{ flexGrow: 1 }}>
+        <Stack spacing={2}>
           {/* Titre et description */}
-          <Stack spacing={2}>
-            <Heading noOfLines={2} size='md'>
+          <Stack spacing={1}>
+            <Typography
+              sx={{
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+              }}
+              variant='h6'
+            >
               {game.title}
-            </Heading>
-            <Text color='gray.600' fontSize='sm' noOfLines={3}>
+            </Typography>
+            <Typography
+              color='text.secondary'
+              sx={{
+                display: '-webkit-box',
+                WebkitLineClamp: 3,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+              }}
+              variant='body2'
+            >
               {game.description}
-            </Text>
+            </Typography>
           </Stack>
 
           {/* Date de sortie */}
           {game.releaseDate && (
-            <HStack color={dateColor}>
-              <Icon as={BsCalendar4} />
+            <Stack
+              alignItems='center'
+              direction='row'
+              spacing={1}
+              sx={{ color: theme.palette.primary.main }}
+            >
               <DateDisplay
-                color={dateColor}
+                color='text.secondary'
                 date={game.releaseDate}
                 format='calendar'
-                tooltipFormat='long'
               />
-            </HStack>
+            </Stack>
           )}
 
           {/* Plateformes */}
           {Array.isArray(game.platforms) && game.platforms.length > 0 && (
-            <>
-              <Divider />
-              <Wrap spacing={2}>
-                {game.platforms.map(platform => (
-                  <WrapItem key={platform.name}>
-                    <Badge
-                      _hover={{
-                        bg: 'blue.100',
-                        transform: 'scale(1.05)',
-                      }}
-                      borderRadius='full'
-                      colorScheme='blue'
-                      fontSize='xs'
-                      px={2}
-                      py={1}
-                      transition='all 0.2s'
-                      variant='subtle'
-                    >
-                      {platform.name}
-                    </Badge>
-                  </WrapItem>
-                ))}
-              </Wrap>
-            </>
+            <Stack direction='row' flexWrap='wrap' spacing={1}>
+              {game.platforms.map(platform => (
+                <Chip
+                  key={platform.name}
+                  color='primary'
+                  label={platform.name}
+                  size='small'
+                  variant='filled'
+                />
+              ))}
+            </Stack>
           )}
         </Stack>
-      </CardBody>
+      </CardContent>
     </Card>
   );
 };

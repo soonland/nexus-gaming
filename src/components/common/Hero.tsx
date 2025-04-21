@@ -3,24 +3,27 @@
 import {
   Box,
   Container,
-  Heading,
+  Typography,
   Stack,
-  HStack,
-  Badge,
-  Image,
-} from '@chakra-ui/react';
+  Chip,
+  useTheme,
+} from '@mui/material';
+import type { SxProps, Theme } from '@mui/material';
 import type React from 'react';
 
-interface IHeroProps {
+export interface IHeroProps {
   title: string;
   image?: string;
   badges?: Array<{
     id: string;
     label: string;
-    colorScheme?: string;
+    color?: 'primary' | 'secondary' | 'error' | 'warning' | 'info' | 'success';
   }>;
   metadata?: React.ReactNode;
-  height?: { base: string; md: string };
+  minHeight?: string | { [key: string]: string };
+  overlay?: boolean;
+  overlayStrength?: number;
+  sx?: SxProps<Theme>;
 }
 
 export const Hero = ({
@@ -28,50 +31,89 @@ export const Hero = ({
   image,
   badges = [],
   metadata,
-  height = { base: '300px', md: '400px' },
+  minHeight = { xs: '300px', md: '400px' },
+  overlay = true,
+  overlayStrength = 0.6,
+  sx,
 }: IHeroProps) => {
+  const theme = useTheme();
+
   return (
-    <Box mb={8}>
-      <Container maxW='container.xl'>
-        <Box height={height} overflow='hidden' position='relative' rounded='lg'>
+    <Box mb={2} sx={sx}>
+      <Container maxWidth='xl'>
+        <Box
+          sx={{
+            position: 'relative',
+            minHeight: minHeight,
+            overflow: 'hidden',
+            borderRadius: 1,
+          }}
+        >
+          {/* Overlay gradient */}
+          {overlay && (
+            <Box
+              sx={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: `linear-gradient(to top, rgba(0,0,0,${overlayStrength}), rgba(0,0,0,${
+                  overlayStrength * 0.5
+                }))`,
+                zIndex: 1,
+              }}
+            />
+          )}
+
+          {/* Background image */}
           <Box
-            bgGradient='linear(to-t, blackAlpha.800, blackAlpha.400)'
-            bottom={0}
-            left={0}
-            position='absolute'
-            right={0}
-            top={0}
-            zIndex={1}
-          />
-          <Image
             alt={title}
-            height='100%'
-            objectFit='cover'
-            src={image || 'images/placeholder-game.png'}
-            width='100%'
+            component='img'
+            src={image || '/images/placeholder-game.png'}
+            sx={{
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+            }}
           />
+
+          {/* Content */}
           <Stack
-            bottom={8}
-            color='white'
-            left={8}
-            position='absolute'
-            right={8}
-            spacing={4}
-            zIndex={2}
+            spacing={2}
+            sx={{
+              position: 'absolute',
+              bottom: theme.spacing(4),
+              left: theme.spacing(4),
+              right: theme.spacing(4),
+              color: 'common.white',
+              zIndex: 2,
+            }}
           >
             {badges.length > 0 && (
-              <HStack spacing={2} wrap='wrap'>
+              <Stack direction='row' flexWrap='wrap' gap={1} spacing={1}>
                 {badges.map(badge => (
-                  <Badge
+                  <Chip
                     key={badge.id}
-                    colorScheme={badge.colorScheme || 'blue'}
-                  >
-                    {badge.label}
-                  </Badge>
+                    color={badge.color || 'primary'}
+                    label={badge.label}
+                    size='small'
+                    sx={{
+                      'color': 'common.white',
+                      '& .MuiChip-label': {
+                        color: 'common.white',
+                      },
+                    }}
+                  />
                 ))}
-              </HStack>
+              </Stack>
             )}
-            <Heading size='2xl'>{title}</Heading>
+
+            <Typography component='h1' variant='h2'>
+              {title}
+            </Typography>
+
             {metadata && <Box>{metadata}</Box>}
           </Stack>
         </Box>

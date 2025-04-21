@@ -1,40 +1,37 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import type { AxiosError } from 'axios';
 import axios from 'axios';
 
-import dayjs from '@/lib/dayjs';
-import type { PlatformData, PlatformForm } from '@/types';
+import type { IPlatformData, IPlatformForm } from '@/types/api';
 
 // Hook pour la liste des plateformes et les opérations CRUD
-export function usePlatforms() {
+interface IPlatformsResponse {
+  platforms: IPlatformData[];
+  pagination: {
+    total: number;
+    pages: number;
+    page: number;
+    limit: number;
+  };
+}
+
+export function usePlatforms({ page, limit }: { page: number; limit: number }) {
   const queryClient = useQueryClient();
 
-  const { data: platforms, isLoading } = useQuery<PlatformData[]>({
-    queryKey: ['platforms'],
+  const { data, isLoading, error } = useQuery<IPlatformsResponse, AxiosError>({
+    queryKey: ['platforms', { page, limit }],
     queryFn: async () => {
-      const response = await axios.get('/api/platforms');
-      return response.data.map((platform: any) => ({
-        ...platform,
-        createdAt: dayjs(platform.createdAt).toDate(),
-        updatedAt: dayjs(platform.updatedAt).toDate(),
-        releaseDate: platform.releaseDate
-          ? dayjs(platform.releaseDate).toDate()
-          : null,
-      }));
+      const response = await axios.get(
+        `/api/platforms?page=${page}&limit=${limit}`
+      );
+      return response.data;
     },
   });
 
   const createPlatform = useMutation({
-    mutationFn: async (data: PlatformForm) => {
+    mutationFn: async (data: IPlatformForm) => {
       const response = await axios.post('/api/platforms', data);
-      const platform = response.data;
-      return {
-        ...platform,
-        createdAt: dayjs(platform.createdAt).toDate(),
-        updatedAt: dayjs(platform.updatedAt).toDate(),
-        releaseDate: platform.releaseDate
-          ? dayjs(platform.releaseDate).toDate()
-          : null,
-      };
+      return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['platforms'] });
@@ -42,17 +39,9 @@ export function usePlatforms() {
   });
 
   const updatePlatform = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: PlatformForm }) => {
+    mutationFn: async ({ id, data }: { id: string; data: IPlatformForm }) => {
       const response = await axios.patch(`/api/platforms/${id}`, data);
-      const platform = response.data;
-      return {
-        ...platform,
-        createdAt: dayjs(platform.createdAt).toDate(),
-        updatedAt: dayjs(platform.updatedAt).toDate(),
-        releaseDate: platform.releaseDate
-          ? dayjs(platform.releaseDate).toDate()
-          : null,
-      };
+      return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['platforms'] });
@@ -69,8 +58,10 @@ export function usePlatforms() {
   });
 
   return {
-    platforms,
+    platforms: data?.platforms ?? [],
+    pagination: data?.pagination,
     isLoading,
+    error,
     createPlatform: createPlatform.mutateAsync,
     updatePlatform: updatePlatform.mutateAsync,
     deletePlatform: deletePlatform.mutateAsync,
@@ -82,19 +73,15 @@ export function usePlatforms() {
 
 // Hook pour les détails d'une plateforme
 export function usePlatform(id: string) {
-  const { data: platform, isLoading } = useQuery<PlatformData>({
+  const {
+    data: platform,
+    isLoading,
+    error,
+  } = useQuery<IPlatformData, AxiosError>({
     queryKey: ['platform', id],
     queryFn: async () => {
       const response = await axios.get(`/api/platforms/${id}`);
-      const platform = response.data;
-      return {
-        ...platform,
-        createdAt: dayjs(platform.createdAt).toDate(),
-        updatedAt: dayjs(platform.updatedAt).toDate(),
-        releaseDate: platform.releaseDate
-          ? dayjs(platform.releaseDate).toDate()
-          : null,
-      };
+      return response.data;
     },
     enabled: !!id,
   });
@@ -102,5 +89,6 @@ export function usePlatform(id: string) {
   return {
     platform,
     isLoading,
+    error,
   };
 }

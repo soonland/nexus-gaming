@@ -9,10 +9,7 @@ export async function GET(request: Request) {
   try {
     const tokenUser = await getCurrentUser();
 
-    if (
-      !tokenUser ||
-      (tokenUser.role !== 'ADMIN' && tokenUser.role !== 'SYSADMIN')
-    ) {
+    if (!tokenUser || tokenUser.role === 'USER') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
@@ -71,7 +68,7 @@ export async function GET(request: Request) {
         },
         skip,
         take: limit,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { username: 'asc' },
       }),
       prisma.user.count({ where }),
     ]);
@@ -180,7 +177,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { username, email, password, role = 'USER' } = body;
+    const { username, email, password, role = 'USER', isActive } = body;
 
     // Only SYSADMIN can create SYSADMIN users
     if (role === 'SYSADMIN' && tokenUser.role !== 'SYSADMIN') {
@@ -220,7 +217,7 @@ export async function POST(request: Request) {
         email,
         password: hashedPassword,
         role,
-        isActive: true,
+        isActive,
       },
       select: {
         id: true,

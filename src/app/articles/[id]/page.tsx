@@ -1,44 +1,39 @@
 'use client';
+
+import { ArrowBack, Person, SportsEsports } from '@mui/icons-material';
 import {
-  Box,
-  Container,
-  Text,
-  Stack,
-  HStack,
-  Icon,
-  SimpleGrid,
-  Button,
   Alert,
-  AlertIcon,
+  AlertTitle,
+  Box,
+  Button,
+  Container,
+  Grid,
   Skeleton,
-  useColorModeValue,
-  Heading,
-} from '@chakra-ui/react';
+  Stack,
+  Typography,
+  useTheme,
+} from '@mui/material';
 import { useParams, useRouter } from 'next/navigation';
-import { BsController, BsArrowLeft } from 'react-icons/bs';
-import { FaUser } from 'react-icons/fa';
 
 import { DateDisplay } from '@/components/common/DateDisplay';
 import { Hero } from '@/components/common/Hero';
 import { GameCard } from '@/components/games/GameCard';
 import { useArticle } from '@/hooks/useArticle';
-import type { GameData } from '@/types';
+import dayjs from '@/lib/dayjs';
 
 const ArticlePage = () => {
   const params = useParams();
   const router = useRouter();
+  const theme = useTheme();
   const id = params.id as string;
-  const { data: article, isLoading, error } = useArticle(id);
-
-  const bgColor = useColorModeValue('white', 'gray.800');
-  const borderColor = useColorModeValue('gray.200', 'gray.700');
+  const { article, isLoading, error } = useArticle(id);
 
   if (error) {
     return (
-      <Container maxW='container.xl' py={8}>
-        <Alert status='error'>
-          <AlertIcon />
-          Error loading article
+      <Container maxWidth='xl' sx={{ py: 4 }}>
+        <Alert severity='error'>
+          <AlertTitle>Erreur</AlertTitle>
+          Impossible de charger l&apos;article
         </Alert>
       </Container>
     );
@@ -46,14 +41,14 @@ const ArticlePage = () => {
 
   if (isLoading) {
     return (
-      <Container maxW='container.xl' py={8}>
-        <Stack spacing={6}>
-          <Skeleton height='400px' />
-          <Skeleton height='40px' />
+      <Container maxWidth='xl' sx={{ py: 4 }}>
+        <Stack spacing={3}>
+          <Skeleton height={400} variant='rectangular' />
+          <Skeleton height={40} variant='text' />
           <Stack spacing={2}>
-            <Skeleton height='20px' />
-            <Skeleton height='20px' />
-            <Skeleton height='20px' />
+            <Skeleton variant='text' />
+            <Skeleton variant='text' />
+            <Skeleton variant='text' />
           </Stack>
         </Stack>
       </Container>
@@ -69,38 +64,36 @@ const ArticlePage = () => {
           article.category
             ? [
                 {
-                  id: crypto.randomUUID(), // Use random ID since category doesn't have id in type
+                  id: crypto.randomUUID(),
                   label: article.category.name,
-                  colorScheme: 'blue',
+                  color: 'primary',
                 },
               ]
             : []
         }
         image={article.heroImage || article.games[0]?.coverImage || undefined}
         metadata={
-          <HStack spacing={6}>
-            <HStack>
-              <Icon as={FaUser} />
-              <Text>{article.user.username}</Text>
-            </HStack>
+          <Stack alignItems='center' direction='row' spacing={3}>
+            <Stack alignItems='center' direction='row' spacing={1}>
+              <Person />
+              <Typography variant='body2'>{article.user.username}</Typography>
+            </Stack>
             <DateDisplay
-              color='white'
               date={
                 article.publishedAt ? new Date(article.publishedAt) : new Date()
               }
             />
-          </HStack>
+          </Stack>
         }
         title={article.title}
       />
 
       {/* Content Section */}
-      <Container maxW='container.xl' py={8}>
-        <Stack spacing={8}>
+      <Container maxWidth='xl'>
+        <Stack spacing={2}>
           <Button
-            alignSelf='flex-start'
-            leftIcon={<BsArrowLeft />}
-            variant='ghost'
+            startIcon={<ArrowBack />}
+            sx={{ alignSelf: 'flex-start' }}
             onClick={() => router.back()}
           >
             Retour aux articles
@@ -108,59 +101,55 @@ const ArticlePage = () => {
 
           {/* Article Content */}
           <Box
-            bg={bgColor}
-            border='1px'
-            borderColor={borderColor}
-            p={8}
-            rounded='lg'
-            shadow='sm'
+            sx={{
+              backgroundColor: theme.palette.background.paper,
+              border: 1,
+              borderColor: theme.palette.divider,
+              borderRadius: 1,
+              p: 4,
+            }}
           >
-            <Text whiteSpace='pre-wrap'>{article.content}</Text>
+            <Typography
+              component='div'
+              sx={{ whiteSpace: 'pre-wrap' }}
+              variant='body1'
+            >
+              {article.content}
+            </Typography>
           </Box>
 
           {/* Games Section */}
           {article.games.length > 0 && (
             <Box>
-              <HStack mb={4}>
-                <Icon as={BsController} />
-                <Heading size='md'>Jeux mentionnés</Heading>
-              </HStack>
-              <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
-                {article.games.map(gameDetails => {
-                  const game: Partial<GameData> = {
-                    ...gameDetails,
-                    platforms: [],
-                    articles: [],
-                    developer: {
-                      id: '',
-                      name: '',
-                      isDeveloper: true,
-                      isPublisher: false,
-                      createdAt: new Date(),
-                      updatedAt: new Date(),
-                      _count: {
-                        gamesAsDev: 0,
-                        gamesAsPub: 0,
-                      },
-                    },
-                    publisher: {
-                      id: '',
-                      name: '',
-                      isDeveloper: false,
-                      isPublisher: true,
-                      createdAt: new Date(),
-                      updatedAt: new Date(),
-                      _count: {
-                        gamesAsDev: 0,
-                        gamesAsPub: 0,
-                      },
-                    },
-                    releaseDate: null,
-                    description: '',
-                  };
-                  return <GameCard key={game.id} game={game} />;
+              <Stack
+                alignItems='center'
+                direction='row'
+                spacing={1}
+                sx={{ mb: 2 }}
+              >
+                <SportsEsports />
+                <Typography variant='h5'>Jeux mentionnés</Typography>
+              </Stack>
+              <Grid container spacing={3}>
+                {article.games.map(game => {
+                  return (
+                    <Grid key={game.id} size={4}>
+                      <GameCard
+                        game={{
+                          id: game.id,
+                          title: game.title,
+                          description: game.description || undefined,
+                          coverImage: game.coverImage || undefined,
+                          releaseDate: game.releaseDate
+                            ? dayjs(game.releaseDate).format('YYYY-MM-DD')
+                            : undefined,
+                          platforms: game.platforms,
+                        }}
+                      />
+                    </Grid>
+                  );
                 })}
-              </SimpleGrid>
+              </Grid>
             </Box>
           )}
         </Stack>

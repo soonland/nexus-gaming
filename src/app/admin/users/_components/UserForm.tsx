@@ -1,106 +1,103 @@
 'use client';
 
 import {
-  Box,
+  Checkbox,
   FormControl,
-  FormLabel,
-  Input,
-  Stack,
-  Button,
+  FormControlLabel,
+  FormHelperText,
+  InputLabel,
+  MenuItem,
   Select,
-  FormErrorMessage,
-} from '@chakra-ui/react';
-import { Role } from '@prisma/client';
+  Stack,
+  TextField,
+} from '@mui/material';
+import type { Role } from '@prisma/client';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import PasswordStrengthIndicator from '@/components/common/PasswordStrengthIndicator';
+import { AdminForm } from '@/components/admin';
+import { useNotifier } from '@/components/common/Notifier';
 import { useAuth } from '@/hooks/useAuth';
+import { useCreateUser, useUpdateUser } from '@/hooks/useUsers';
 
-interface IUserFormData {
-  username: string;
-  email: string;
-  password?: string;
-  confirmPassword?: string;
-  role: Role;
-}
+import { AVAILABLE_ROLES, ROLE_STYLES, isRoleManageable } from './userStyles';
 
 interface IUserFormProps {
-  initialData?: Omit<IUserFormData, 'password'> & { id?: string };
-  onSubmit: (data: IUserFormData) => Promise<void>;
-  isLoading: boolean;
+  initialData?: {
+    id: string;
+    username: string;
+    email: string;
+    role: Role;
+    isActive: boolean;
+  };
+  mode: 'create' | 'edit';
 }
 
-const UserForm = ({ initialData, onSubmit, isLoading }: IUserFormProps) => {
-  const { user: currentUser } = useAuth();
+export const UserForm = ({ initialData, mode }: IUserFormProps) => {
   const router = useRouter();
-  const [errors, setErrors] = useState<
-    Partial<Record<keyof IUserFormData, string>>
-  >({});
-  const [formData, setFormData] = useState<IUserFormData>({
-    username: initialData?.username || '',
-    email: initialData?.email || '',
-    password: '',
-    confirmPassword: '',
-    role: initialData?.role || Role.USER,
-  });
+  const { user: currentUser } = useAuth();
+  const [username, setUsername] = useState(initialData?.username || '');
+  const [usernameError, setUsernameError] = useState('');
+  const [email, setEmail] = useState(initialData?.email || '');
+  const [emailError, setEmailError] = useState('');
+  const [password, setPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [role, setRole] = useState<Role>(initialData?.role || 'USER');
+  const [roleError, setRoleError] = useState('');
+  const [isActive, setIsActive] = useState(initialData?.isActive ?? true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value,
-    }));
+  const createUser = useCreateUser();
+  const updateUser = useUpdateUser(initialData?.id || '');
+  const { showSuccess, showError } = useNotifier();
 
-    // Clear current field error
-    setErrors(prev => ({
-      ...prev,
-      [name]: undefined,
-    }));
+  const availableRoles = AVAILABLE_ROLES.filter(
+    role => currentUser && isRoleManageable(currentUser.role, role, mode)
+  );
 
-    // Real-time password match validation
-    if (name === 'password' || name === 'confirmPassword') {
-      const otherValue =
-        name === 'password' ? formData.confirmPassword : formData.password;
+  const validateForm = () => {
+    let isValid = true;
 
-      if (value && otherValue && value !== otherValue) {
-        setErrors(prev => ({
-          ...prev,
-          confirmPassword: 'Passwords do not match',
-        }));
-      } else {
-        setErrors(prev => ({
-          ...prev,
-          confirmPassword: undefined,
-        }));
-      }
-    }
-  };
-
-  const validateForm = (): boolean => {
-    const newErrors: Partial<Record<keyof IUserFormData, string>> = {};
-
-    if (!formData.username) {
-      newErrors.username = 'Username is required';
-    }
-    if (!formData.email) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Invalid email format';
-    }
-    if (!initialData && !formData.password) {
-      newErrors.password = 'Password is required';
-    } else if (
-      formData.password &&
-      formData.password !== formData.confirmPassword
-    ) {
-      newErrors.confirmPassword = 'Passwords do not match';
+    if (!username.trim()) {
+      setUsernameError("Le nom d'utilisateur est requis");
+      isValid = false;
+    } else if (username.trim().length < 3) {
+      setUsernameError(
+        "Le nom d'utilisateur doit contenir au moins 3 caractères"
+      );
+      isValid = false;
+    } else {
+      setUsernameError('');
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    if (!email.trim()) {
+      setEmailError("L'adresse email est requise");
+      isValid = false;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setEmailError("L'adresse email n'est pas valide");
+      isValid = false;
+    } else {
+      setEmailError('');
+    }
+
+    if (mode === 'create' && !password.trim()) {
+      setPasswordError('Le mot de passe est requis');
+      isValid = false;
+    } else if (password && password.length < 8) {
+      setPasswordError('Le mot de passe doit contenir au moins 8 caractères');
+      isValid = false;
+    } else {
+      setPasswordError('');
+    }
+
+    if (!availableRoles.includes(role)) {
+      setRoleError('Rôle non autorisé');
+      isValid = false;
+    } else {
+      setRoleError('');
+    }
+
+    return isValid;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -110,112 +107,123 @@ const UserForm = ({ initialData, onSubmit, isLoading }: IUserFormProps) => {
       return;
     }
 
-    try {
-      // Only include password in the submission if it's provided
-      const dataToSubmit = {
-        ...formData,
-        password: formData.password || undefined,
-      };
+    setIsSubmitting(true);
 
-      await onSubmit(dataToSubmit);
+    try {
+      if (mode === 'create') {
+        await createUser.mutateAsync({
+          username: username.trim(),
+          email: email.trim(),
+          password: password.trim(), // obligatoire pour la création
+          role,
+          isActive,
+        });
+        showSuccess('Utilisateur créé avec succès');
+      } else if (initialData?.id) {
+        await updateUser.mutateAsync({
+          username: username.trim(),
+          email: email.trim(),
+          role,
+          isActive,
+          ...(password.trim() ? { password: password.trim() } : {}),
+        });
+        showSuccess('Utilisateur modifié avec succès');
+      }
+
       router.push('/admin/users');
+      router.refresh();
     } catch (error) {
-      console.error('Form submission error:', error);
-      // Handle error (you might want to show a toast notification)
+      console.error('Error saving user:', error);
+      showError("Une erreur est survenue lors de l'enregistrement");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <Box as='form' onSubmit={handleSubmit}>
-      <Stack spacing={4}>
-        <FormControl isRequired isInvalid={!!errors.username}>
-          <FormLabel>Username</FormLabel>
-          <Input
-            name='username'
-            value={formData.username}
-            onChange={handleChange}
-          />
-          <FormErrorMessage>{errors.username}</FormErrorMessage>
-        </FormControl>
-
-        <FormControl isRequired isInvalid={!!errors.email}>
-          <FormLabel>Email</FormLabel>
-          <Input
-            name='email'
-            type='email'
-            value={formData.email}
-            onChange={handleChange}
-          />
-          <FormErrorMessage>{errors.email}</FormErrorMessage>
-        </FormControl>
-
-        <FormControl isInvalid={!!errors.password} isRequired={!initialData}>
-          <FormLabel>
-            {initialData ? 'New Password (optional)' : 'Password'}
-          </FormLabel>
-          <Input
-            name='password'
-            type='password'
-            value={formData.password}
-            onChange={handleChange}
-          />
-          <FormErrorMessage>{errors.password}</FormErrorMessage>
-          {formData.password && (
-            <PasswordStrengthIndicator password={formData.password} />
-          )}
-        </FormControl>
-
-        <FormControl
-          isInvalid={!!errors.confirmPassword}
-          isRequired={!initialData && !!formData.password}
-        >
-          <FormLabel>Confirm Password</FormLabel>
-          <Input
-            name='confirmPassword'
-            type='password'
-            value={formData.confirmPassword}
-            onChange={handleChange}
-          />
-          <FormErrorMessage>{errors.confirmPassword}</FormErrorMessage>
-        </FormControl>
-
-        <FormControl isRequired>
-          <FormLabel>Role</FormLabel>
+    <AdminForm
+      cancelHref='/admin/users'
+      isSubmitting={isSubmitting}
+      onSubmit={handleSubmit}
+    >
+      <Stack spacing={3}>
+        <TextField
+          autoFocus
+          fullWidth
+          required
+          error={!!usernameError}
+          helperText={usernameError}
+          label="Nom d'utilisateur"
+          name='username'
+          value={username}
+          onChange={e => {
+            setUsername(e.target.value);
+            if (usernameError) setUsernameError('');
+          }}
+        />
+        <TextField
+          fullWidth
+          required
+          error={!!emailError}
+          helperText={emailError}
+          label='Email'
+          name='email'
+          type='email'
+          value={email}
+          onChange={e => {
+            setEmail(e.target.value);
+            if (emailError) setEmailError('');
+          }}
+        />
+        <TextField
+          fullWidth
+          error={!!passwordError}
+          helperText={
+            passwordError ||
+            (mode === 'edit' &&
+              'Laissez vide pour conserver le mot de passe actuel')
+          }
+          label='Mot de passe'
+          name='password'
+          required={mode === 'create'}
+          type='password'
+          value={password}
+          onChange={e => {
+            setPassword(e.target.value);
+            if (passwordError) setPasswordError('');
+          }}
+        />
+        <FormControl fullWidth error={!!roleError}>
+          <InputLabel id='role-label'>Rôle</InputLabel>
           <Select
-            isDisabled={
-              (initialData?.role === 'SYSADMIN' &&
-                currentUser?.role !== 'SYSADMIN') ||
-              initialData?.id === currentUser?.id
-            }
+            required
+            label='Rôle'
+            labelId='role-label'
             name='role'
-            value={formData.role}
-            onChange={handleChange}
+            value={role}
+            onChange={e => {
+              setRole(e.target.value as Role);
+              if (roleError) setRoleError('');
+            }}
           >
-            <option value={Role.USER}>User</option>
-            <option value={Role.EDITOR}>Editor</option>
-            <option value={Role.MODERATOR}>Moderator</option>
-            <option value={Role.ADMIN}>Admin</option>
-            {currentUser?.role === 'SYSADMIN' && (
-              <option value={Role.SYSADMIN}>System Admin</option>
-            )}
+            {availableRoles.map(role => (
+              <MenuItem key={role} value={role}>
+                {ROLE_STYLES[role].label}
+              </MenuItem>
+            ))}
           </Select>
+          {roleError && <FormHelperText>{roleError}</FormHelperText>}
         </FormControl>
-
-        <Stack direction='row' justify='flex-end' spacing={4}>
-          <Button
-            isDisabled={isLoading}
-            variant='outline'
-            onClick={() => router.back()}
-          >
-            Cancel
-          </Button>
-          <Button colorScheme='blue' isLoading={isLoading} type='submit'>
-            {initialData ? 'Update' : 'Create'} User
-          </Button>
-        </Stack>
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={isActive}
+              onChange={e => setIsActive(e.target.checked)}
+            />
+          }
+          label='Compte actif'
+        />
       </Stack>
-    </Box>
+    </AdminForm>
   );
 };
-
-export default UserForm;

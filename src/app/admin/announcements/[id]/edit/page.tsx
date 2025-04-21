@@ -1,61 +1,24 @@
 'use client';
 
-import {
-  Container,
-  Heading,
-  Card,
-  CardHeader,
-  CardBody,
-  Spinner,
-  Center,
-} from '@chakra-ui/react';
 import { useParams } from 'next/navigation';
 
+import { AdminPageLayout } from '@/components/admin';
 import { useAdminAnnouncement } from '@/hooks/useAdminAnnouncement';
-import dayjs from '@/lib/dayjs';
 
-import AnnouncementForm from '../../_components/AnnouncementForm';
+import { AnnouncementForm } from '../../_components/AnnouncementForm';
 
 const EditAnnouncementPage = () => {
   const params = useParams();
-  const id = params.id as string;
-  const { announcement, updateAnnouncement } = useAdminAnnouncement(id);
-
-  const handleSubmit = async (data: any) => {
-    await updateAnnouncement.mutateAsync({ id, ...data });
-  };
+  const { announcement } = useAdminAnnouncement(params.id as string);
 
   if (!announcement) {
-    return (
-      <Center py={8}>
-        <Spinner size='xl' />
-      </Center>
-    );
+    return null;
   }
 
   return (
-    <Container maxW='container.lg' py={8}>
-      <Card>
-        <CardHeader>
-          <Heading size='lg'>Modifier l'annonce</Heading>
-        </CardHeader>
-        <CardBody>
-          <AnnouncementForm
-            initialData={{
-              message: announcement.message,
-              type: announcement.type,
-              expiresAt: announcement.expiresAt
-                ? dayjs(announcement.expiresAt).toDate()
-                : null,
-              isActive: announcement.isActive,
-            }}
-            isLoading={updateAnnouncement.isPending}
-            mode='edit'
-            onSubmit={handleSubmit}
-          />
-        </CardBody>
-      </Card>
-    </Container>
+    <AdminPageLayout title='Modifier une annonce'>
+      <AnnouncementForm initialData={announcement} mode='edit' />
+    </AdminPageLayout>
   );
 };
 

@@ -1,17 +1,59 @@
+import type { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
 import prisma from '@/lib/prisma';
 
 // GET - Liste des sociétés
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const companies = await prisma.company.findMany({
-      orderBy: {
-        name: 'asc',
+    // Get URL parameters
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get('page') ?? '1');
+    const limit = parseInt(searchParams.get('limit') ?? '10');
+    const search = searchParams.get('search') ?? '';
+    const role = searchParams.get('role');
+
+    // Build where clause
+    const where: Prisma.CompanyWhereInput = {
+      AND: [
+        search
+          ? {
+              name: {
+                contains: search,
+                mode: 'insensitive' as Prisma.QueryMode,
+              },
+            }
+          : {},
+        role === 'developer' ? { isDeveloper: true } : {},
+        role === 'publisher' ? { isPublisher: true } : {},
+      ],
+    };
+
+    // Calculate pagination
+    const skip = (page - 1) * limit;
+
+    // Get companies with pagination
+    const [companies, totalResults] = await Promise.all([
+      prisma.company.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: {
+          name: 'asc',
+        },
+      }),
+      prisma.company.count(),
+    ]);
+
+    return NextResponse.json({
+      companies,
+      pagination: {
+        total: totalResults,
+        pages: Math.ceil(totalResults / limit),
+        page,
+        limit,
       },
     });
-
-    return NextResponse.json(companies);
   } catch (error) {
     console.error('Error fetching companies:', error);
     return NextResponse.json(

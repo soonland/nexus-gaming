@@ -37,7 +37,15 @@ export async function GET(
           select: {
             id: true,
             title: true,
+            description: true,
             coverImage: true,
+            releaseDate: true,
+            platforms: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
           },
         },
       },
@@ -112,7 +120,15 @@ export async function PATCH(
           select: {
             id: true,
             title: true,
+            description: true,
             coverImage: true,
+            releaseDate: true,
+            platforms: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
           },
         },
       },

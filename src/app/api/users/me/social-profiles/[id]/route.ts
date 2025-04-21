@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { getCurrentUser } from '@/lib/jwt';
 import prisma from '@/lib/prisma';
-import { cleanUsername, generatePlatformUrl } from '@/lib/social';
+import { generateSocialUrl } from '@/lib/social';
 import type { IUserSocialProfileData } from '@/types/social';
 
 export async function PUT(
@@ -20,7 +20,6 @@ export async function PUT(
   }
   try {
     const body: IUserSocialProfileData = await request.json();
-    const cleanedUsername = cleanUsername(body.username);
 
     const profile = await prisma.userSocialProfile.findFirst({
       where: {
@@ -47,12 +46,13 @@ export async function PUT(
       });
     }
 
+    const url = generateSocialUrl(body.platform, body.username);
     const updatedProfile = await prisma.userSocialProfile.update({
       where: { id },
       data: {
         platform: body.platform,
-        username: cleanedUsername,
-        url: generatePlatformUrl(body.platform, cleanedUsername),
+        username: body.username,
+        url,
       },
     });
 

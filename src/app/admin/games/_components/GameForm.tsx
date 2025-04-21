@@ -1,253 +1,310 @@
 'use client';
 
 import {
-  Box,
-  FormControl,
-  FormLabel,
-  FormErrorMessage,
-  Input,
-  Button,
-  Stack,
-  useToast,
-  Textarea,
-  Select,
-  Text,
-  Link,
-} from '@chakra-ui/react';
+  ChevronLeft as ChevronLeftIcon,
+  ChevronRight as ChevronRightIcon,
+} from '@mui/icons-material';
+import { Backdrop, Box, Stack, Typography } from '@mui/material';
+import type { Dayjs } from 'dayjs';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { useForm, Controller } from 'react-hook-form';
 
-import { ChakraDateTimePicker } from '@/components/common/ChakraDateTimePicker';
+import { AdminForm } from '@/components/admin/common';
+import { useNotifier } from '@/components/common/Notifier';
 import { useCompanies } from '@/hooks/useCompanies';
-import type { GameForm as IGameForm } from '@/types';
+import { useCreateGame, useUpdateGame } from '@/hooks/useGames';
+import { usePlatforms } from '@/hooks/usePlatforms';
+import dayjs from '@/lib/dayjs';
+import { uploadImage } from '@/lib/upload/client';
+import type { GameForm as IGameForm, GameGenre } from '@/types/api';
 
-import InlineCompanyCreation from './InlineCompanyCreation';
-import PlatformSelect from './PlatformSelect';
+import {
+  GameMainContent,
+  GameMetadataPanel,
+  type IGameWithRelations,
+} from './form';
+import { QuickCompanyDialog } from './QuickCompanyDialog';
 
 interface IGameFormProps {
-  initialData?: Partial<IGameForm>;
-  onSubmit: (data: IGameForm) => Promise<void>;
-  isLoading?: boolean;
+  initialData?: IGameWithRelations;
   mode: 'create' | 'edit';
 }
 
-const GameForm = ({
-  initialData,
-  onSubmit,
-  isLoading,
-  mode,
-}: IGameFormProps) => {
+export const GameForm = ({ initialData, mode }: IGameFormProps) => {
   const router = useRouter();
-  const toast = useToast();
-  const { companies = [] } = useCompanies();
+  const [title, setTitle] = useState(initialData?.title || '');
+  const [titleError, setTitleError] = useState('');
+  const [description, setDescription] = useState(
+    initialData?.description || ''
+  );
+  const [developerId, setDeveloperId] = useState(
+    initialData?.developer?.id || ''
+  );
+  const [developerError, setDeveloperError] = useState('');
+  const [publisherId, setPublisherId] = useState(
+    initialData?.publisher?.id || ''
+  );
+  const [publisherError, setPublisherError] = useState('');
+  const [platformIds, setPlatformIds] = useState<string[]>(
+    initialData?.platforms
+      ?.map(platform => platform.id)
+      .filter((id): id is string => id !== undefined) || []
+  );
+  const [releaseDate, setReleaseDate] = useState<Dayjs | null>(
+    initialData?.releaseDate ? dayjs(initialData.releaseDate) : null
+  );
+  const [coverImage, setCoverImage] = useState(initialData?.coverImage || '');
+  const [isUploading, setIsUploading] = useState(false);
+  const [genre, setGenre] = useState<GameGenre | null>(
+    initialData?.genre || null
+  );
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isMetadataOpen, setIsMetadataOpen] = useState(false);
+  const [quickCompanyDialog, setQuickCompanyDialog] = useState<{
+    isOpen: boolean;
+    role?: 'developer' | 'publisher';
+  }>({ isOpen: false });
 
-  const {
-    register,
-    handleSubmit,
-    control,
-    setValue,
-    watch,
-    formState: { errors },
-  } = useForm<IGameForm & { releaseDateTemp: Date | null }>({
-    defaultValues: {
-      title: initialData?.title || '',
-      description: initialData?.description || '',
-      releaseDateTemp: initialData?.releaseDate
-        ? new Date(initialData.releaseDate)
-        : null,
-      coverImage: initialData?.coverImage || null,
-      platformIds: initialData?.platformIds || [],
-      developerId: initialData?.developerId || '',
-      publisherId: initialData?.publisherId || '',
-    },
+  const createGame = useCreateGame();
+  const updateGame = useUpdateGame();
+  const { showSuccess, showError } = useNotifier();
+
+  // Load companies and platforms
+  const { companies: developers } = useCompanies({
+    role: 'developer',
+    limit: 100,
+  });
+  const { companies: publishers } = useCompanies({
+    role: 'publisher',
+    limit: 100,
+  });
+  const { platforms } = usePlatforms({
+    page: 1,
+    limit: 100,
   });
 
-  const [inlineCreation, setInlineCreation] = useState<{
-    show: boolean;
-    type: 'developer' | 'publisher';
-  }>({ show: false, type: 'developer' });
+  const validateForm = () => {
+    let isValid = true;
 
-  const developers = companies.filter(company => company.isDeveloper);
-  const publishers = companies.filter(company => company.isPublisher);
+    if (!title.trim()) {
+      setTitleError('Le titre est requis');
+      isValid = false;
+    } else if (title.trim().length < 2) {
+      setTitleError('Le titre doit contenir au moins 2 caractères');
+      isValid = false;
+    } else {
+      setTitleError('');
+    }
 
-  const onSubmitForm = async (
-    data: IGameForm & { releaseDateTemp: Date | null }
+    if (!developerId) {
+      setDeveloperError('Le développeur est requis');
+      isValid = false;
+    } else {
+      setDeveloperError('');
+    }
+
+    if (!publisherId) {
+      setPublisherError("L'éditeur est requis");
+      isValid = false;
+    } else {
+      setPublisherError('');
+    }
+
+    return isValid;
+  };
+
+  const handleImageChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    const formData: IGameForm = {
-      ...data,
-      releaseDate: data.releaseDateTemp?.toISOString() || null,
-    };
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
     try {
-      await onSubmit(formData);
-      toast({
-        title: mode === 'create' ? 'Jeu créé' : 'Jeu mis à jour',
-        status: 'success',
-        duration: 3000,
-      });
-      router.push('/admin/games');
+      const result = await uploadImage(file, 'games');
+      setCoverImage(result.secure_url);
+      showSuccess('Image mise à jour avec succès');
     } catch (error) {
-      toast({
-        title: 'Erreur',
-        description: 'Une erreur est survenue',
-        status: 'error',
-        duration: 5000,
-      });
+      console.error('Error uploading image:', error);
+      showError("Une erreur est survenue lors de l'upload de l'image");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const data: IGameForm = {
+        title: title.trim(),
+        description: description.trim() || null,
+        releaseDate: releaseDate?.format('YYYY-MM-DD') || null,
+        coverImage: coverImage || null,
+        genre: genre || null,
+        platformIds,
+        developerId,
+        publisherId,
+      };
+
+      if (mode === 'create') {
+        await createGame.mutateAsync(data);
+        showSuccess('Jeu créé avec succès');
+      } else if (initialData?.id) {
+        await updateGame.mutateAsync({ id: initialData.id, data });
+        showSuccess('Jeu modifié avec succès');
+      }
+
+      router.push('/admin/games');
+      router.refresh();
+    } catch (error) {
+      console.error('Error saving game:', error);
+      showError("Une erreur est survenue lors de l'enregistrement");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <Box as='form' onSubmit={handleSubmit(onSubmitForm)}>
-      <Stack spacing={4}>
-        <FormControl isRequired isInvalid={!!errors.title}>
-          <FormLabel>Titre</FormLabel>
-          <Input
-            {...register('title', { required: 'Le titre est requis' })}
-            placeholder='Ex: The Legend of Zelda: Tears of the Kingdom'
-          />
-          {errors.title && (
-            <FormErrorMessage>{errors.title.message}</FormErrorMessage>
-          )}
-        </FormControl>
-
-        <FormControl>
-          <FormLabel>Description</FormLabel>
-          <Textarea
-            {...register('description')}
-            placeholder='Description du jeu...'
-            rows={5}
-          />
-        </FormControl>
-
-        <FormControl isRequired isInvalid={!!errors.developerId}>
-          <FormLabel>Développeur</FormLabel>
-          <Select
-            {...register('developerId', {
-              required: 'Le développeur est requis',
-            })}
-            placeholder='Sélectionner un développeur'
-          >
-            {developers.map(developer => (
-              <option key={developer.id} value={developer.id}>
-                {developer.name}
-              </option>
-            ))}
-          </Select>
-          {!inlineCreation.show && (
-            <Text fontSize='sm' mt={1}>
-              <Link
-                color='blue.500'
-                onClick={() =>
-                  setInlineCreation({ show: true, type: 'developer' })
-                }
-              >
-                Créer un nouveau développeur
-              </Link>
-            </Text>
-          )}
-          {inlineCreation.show && inlineCreation.type === 'developer' && (
-            <InlineCompanyCreation
-              type='developer'
-              onCancel={() =>
-                setInlineCreation(prev => ({ ...prev, show: false }))
+    <AdminForm
+      cancelHref='/admin/games'
+      isSubmitting={isSubmitting || isUploading}
+      onSubmit={handleSubmit}
+    >
+      <Box sx={{ display: 'flex', position: 'relative', minHeight: '70vh' }}>
+        {quickCompanyDialog.isOpen && (
+          <QuickCompanyDialog
+            defaultRole={quickCompanyDialog.role}
+            isOpen={true}
+            onClose={() => setQuickCompanyDialog({ isOpen: false })}
+            onSuccess={newCompany => {
+              if (
+                newCompany.isDeveloper &&
+                quickCompanyDialog.role === 'developer'
+              ) {
+                setDeveloperId(newCompany.id);
               }
-              onSuccess={newCompany => {
-                if (newCompany.isDeveloper) {
-                  setValue('developerId', newCompany.id);
-                }
-                setInlineCreation(prev => ({ ...prev, show: false }));
-              }}
-            />
-          )}
-        </FormControl>
-
-        <FormControl isRequired isInvalid={!!errors.publisherId}>
-          <FormLabel>Éditeur</FormLabel>
-          <Select
-            {...register('publisherId', { required: "L'éditeur est requis" })}
-            placeholder='Sélectionner un éditeur'
-          >
-            {publishers.map(publisher => (
-              <option key={publisher.id} value={publisher.id}>
-                {publisher.name}
-              </option>
-            ))}
-          </Select>
-          {!inlineCreation.show && (
-            <Text fontSize='sm' mt={1}>
-              <Link
-                color='blue.500'
-                onClick={() =>
-                  setInlineCreation({ show: true, type: 'publisher' })
-                }
-              >
-                Créer un nouvel éditeur
-              </Link>
-            </Text>
-          )}
-          {inlineCreation.show && inlineCreation.type === 'publisher' && (
-            <InlineCompanyCreation
-              type='publisher'
-              onCancel={() =>
-                setInlineCreation(prev => ({ ...prev, show: false }))
+              if (
+                newCompany.isPublisher &&
+                quickCompanyDialog.role === 'publisher'
+              ) {
+                setPublisherId(newCompany.id);
               }
-              onSuccess={newCompany => {
-                if (newCompany.isPublisher) {
-                  setValue('publisherId', newCompany.id);
-                }
-                setInlineCreation(prev => ({ ...prev, show: false }));
-              }}
-            />
-          )}
-        </FormControl>
-
-        <FormControl>
-          <FormLabel>Date de sortie</FormLabel>
-          <Controller
-            control={control}
-            name='releaseDateTemp'
-            render={({ field: { onChange, value } }) => (
-              <ChakraDateTimePicker
-                minDate={undefined}
-                placeholderText='Sélectionner une date de sortie'
-                selectedDate={value}
-                showTimeSelect={false}
-                onChange={(date: Date | null) => onChange(date)}
-              />
-            )}
+            }}
           />
-        </FormControl>
+        )}
 
-        <FormControl>
-          <FormLabel>Image de couverture</FormLabel>
-          <Input {...register('coverImage')} placeholder="URL de l'image" />
-        </FormControl>
+        {/* Main Content */}
+        <GameMainContent
+          description={description}
+          title={title}
+          titleError={titleError}
+          onDescriptionChange={setDescription}
+          onTitleChange={setTitle}
+        />
 
-        <FormControl>
-          <FormLabel>Plateformes</FormLabel>
-          <PlatformSelect
-            selectedIds={watch('platformIds')}
-            onChange={platformIds => setValue('platformIds', platformIds)}
-          />
-        </FormControl>
-
-        <Stack
-          direction='row'
-          justify='flex-end'
-          pt={4}
-          spacing={4}
-          width='100%'
+        {/* Metadata Panel */}
+        <Backdrop
+          open={isMetadataOpen}
+          sx={{
+            zIndex: 9,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          }}
+          onClick={() => setIsMetadataOpen(false)}
+        />
+        <Box
+          sx={{ position: 'fixed', right: 0, top: 0, bottom: 0, zIndex: 10 }}
         >
-          <Button variant='ghost' onClick={() => router.push('/admin/games')}>
-            Annuler
-          </Button>
-          <Button colorScheme='blue' isLoading={isLoading} type='submit'>
-            {mode === 'create' ? 'Créer' : 'Mettre à jour'}
-          </Button>
-        </Stack>
-      </Stack>
-    </Box>
+          {/* Vertical Tab */}
+          <Box
+            sx={{
+              'position': 'absolute',
+              'right': isMetadataOpen ? '350px' : 0,
+              'top': '50%',
+              'width': '160px',
+              'height': '40px',
+              'transform': 'translateY(-50%) translateX(140px) rotate(90deg)',
+              'transformOrigin': 'left center',
+              'display': 'flex',
+              'alignItems': 'center',
+              'justifyContent': 'center',
+              'bgcolor': isMetadataOpen ? 'primary.main' : 'primary.light',
+              'color': 'white',
+              'borderRadius': '0 0 8px 8px',
+              'cursor': 'pointer',
+              'transition': 'all 0.2s ease-in-out',
+              'boxShadow': 2,
+              'zIndex': 2,
+              '&:hover': {
+                bgcolor: 'primary.dark',
+              },
+            }}
+            onClick={() => setIsMetadataOpen(!isMetadataOpen)}
+          >
+            <Stack
+              alignItems='center'
+              direction='row'
+              spacing={1}
+              sx={{
+                'transform': 'rotate(-180deg)',
+                '& svg': {
+                  fontSize: '1.2rem',
+                },
+              }}
+            >
+              <Typography sx={{ fontWeight: 500, fontSize: '0.95rem' }}>
+                Métadonnées
+              </Typography>
+              {isMetadataOpen ? (
+                <ChevronRightIcon
+                  sx={{
+                    transform: 'rotate(90deg)',
+                    transition: 'transform 0.3s ease-in-out',
+                  }}
+                />
+              ) : (
+                <ChevronLeftIcon
+                  sx={{
+                    transform: 'rotate(90deg)',
+                    transition: 'transform 0.3s ease-in-out',
+                  }}
+                />
+              )}
+            </Stack>
+          </Box>
+
+          <GameMetadataPanel
+            coverImage={coverImage}
+            developerError={developerError}
+            developerId={developerId}
+            developers={developers}
+            genre={genre}
+            isOpen={isMetadataOpen}
+            isUploading={isUploading}
+            platformIds={platformIds}
+            platforms={platforms}
+            publisherError={publisherError}
+            publisherId={publisherId}
+            publishers={publishers}
+            releaseDate={releaseDate}
+            onDeveloperChange={setDeveloperId}
+            onGenreChange={setGenre}
+            onImageChange={handleImageChange}
+            onPlatformsChange={setPlatformIds}
+            onPublisherChange={setPublisherId}
+            onQuickCompanyCreate={role =>
+              setQuickCompanyDialog({ isOpen: true, role })
+            }
+            onReleaseDateChange={setReleaseDate}
+          />
+        </Box>
+      </Box>
+    </AdminForm>
   );
 };
-
-export default GameForm;

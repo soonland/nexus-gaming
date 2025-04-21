@@ -1,34 +1,79 @@
 import type { Role } from '@prisma/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
-interface ICreateUserData {
+interface IUserQueryParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  role?: Role;
+  status?: string;
+}
+
+export interface IUserData {
+  id: string;
+  username: string;
+  email: string;
+  role: Role;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  lastPasswordChange?: string;
+  _count?: {
+    articles: number;
+  };
+}
+
+export interface IUsersResponse {
+  users: IUserData[];
+  pagination: {
+    total: number;
+    pages: number;
+    page: number;
+    limit: number;
+  };
+}
+
+export interface IUserResponse {
+  user: IUserData;
+}
+
+export interface ICreateUserData {
   username: string;
   email: string;
   password: string;
   role: Role;
+  isActive: boolean;
 }
 
-interface IUpdateUserData {
+export interface IUpdateUserData {
   username: string;
   email: string;
   password?: string;
   role: Role;
+  isActive: boolean;
 }
 
-const fetchUsers = async (params?: Record<string, string>) => {
-  const searchParams = new URLSearchParams(params);
-  const response = await fetch(`/api/users?${searchParams.toString()}`);
+const fetchUsers = async (
+  params: IUserQueryParams = {}
+): Promise<IUsersResponse> => {
+  const queryParams = new URLSearchParams(
+    Object.entries(params)
+      .filter(([_, value]) => value !== undefined)
+      .map(([key, value]) => [key, String(value)])
+  );
+  const response = await fetch(`/api/users?${queryParams.toString()}`);
   if (!response.ok) throw new Error('Failed to fetch users');
   return response.json();
 };
 
-const fetchUser = async (id: string) => {
+const fetchUser = async (id: string): Promise<IUserData> => {
   const response = await fetch(`/api/users/${id}`);
   if (!response.ok) throw new Error('Failed to fetch user');
-  return response.json();
+  const data: IUserResponse = await response.json();
+  return data.user;
 };
 
-const createUser = async (data: ICreateUserData) => {
+const createUser = async (data: ICreateUserData): Promise<IUserData> => {
   const response = await fetch('/api/users', {
     method: 'POST',
     headers: {
@@ -40,10 +85,14 @@ const createUser = async (data: ICreateUserData) => {
     const error = await response.json();
     throw new Error(error.error || 'Failed to create user');
   }
-  return response.json();
+  const result: IUserResponse = await response.json();
+  return result.user;
 };
 
-const updateUser = async (id: string, data: IUpdateUserData) => {
+const updateUser = async (
+  id: string,
+  data: IUpdateUserData
+): Promise<IUserData> => {
   const response = await fetch(`/api/users/${id}`, {
     method: 'PUT',
     headers: {
@@ -55,10 +104,11 @@ const updateUser = async (id: string, data: IUpdateUserData) => {
     const error = await response.json();
     throw new Error(error.error || 'Failed to update user');
   }
-  return response.json();
+  const result: IUserResponse = await response.json();
+  return result.user;
 };
 
-const deleteUser = async (id: string) => {
+const deleteUser = async (id: string): Promise<void> => {
   const response = await fetch(`/api/users/${id}`, {
     method: 'DELETE',
   });
@@ -66,10 +116,12 @@ const deleteUser = async (id: string) => {
     const error = await response.json();
     throw new Error(error.error || 'Failed to delete user');
   }
-  return response.json();
 };
 
-const toggleUserStatus = async (id: string, isActive: boolean) => {
+const toggleUserStatus = async (
+  id: string,
+  isActive: boolean
+): Promise<IUserData> => {
   const response = await fetch(`/api/users/${id}`, {
     method: 'PATCH',
     headers: {
@@ -81,20 +133,22 @@ const toggleUserStatus = async (id: string, isActive: boolean) => {
     const error = await response.json();
     throw new Error(error.error || 'Failed to update user status');
   }
-  return response.json();
+  const result: IUserResponse = await response.json();
+  return result.user;
 };
 
-export function useUsers(params?: Record<string, string>) {
-  return useQuery({
+export function useUsers(params: IUserQueryParams = {}) {
+  return useQuery<IUsersResponse>({
     queryKey: ['users', params],
     queryFn: () => fetchUsers(params),
   });
 }
 
 export function useUser(id: string) {
-  return useQuery({
+  return useQuery<IUserData>({
     queryKey: ['user', id],
     queryFn: () => fetchUser(id),
+    enabled: !!id,
   });
 }
 

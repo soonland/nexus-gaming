@@ -71,12 +71,26 @@ model Category {
   updatedAt DateTime  @updatedAt
 }
 
+enum GameGenre {
+  RPG
+  ACTION
+  ADVENTURE
+  SPORTS
+  RACING
+  STRATEGY
+  SHOOTER
+  PUZZLE
+  SIMULATION
+  FIGHTING
+}
+
 model Game {
   id          String    @id @default(uuid())
   title       String
   description String?
   coverImage  String?
   releaseDate DateTime?
+  genre       GameGenre?
   developer   Company    @relation("developer", fields: [developerId], references: [id])
   developerId String
   publisher   Company    @relation("publisher", fields: [publisherId], references: [id])

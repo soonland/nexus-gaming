@@ -18,6 +18,7 @@ export async function GET(
         description: true,
         coverImage: true,
         releaseDate: true,
+        genre: true,
         createdAt: true,
         updatedAt: true,
         platforms: {
@@ -143,6 +144,7 @@ export async function PATCH(
         description: data.description,
         releaseDate: data.releaseDate ? new Date(data.releaseDate) : null,
         coverImage: data.coverImage,
+        genre: data.genre,
         platforms: {
           set: [], // Disconnect all platforms first
           connect: data.platformIds.map(platformId => ({ id: platformId })),
@@ -160,6 +162,7 @@ export async function PATCH(
         description: true,
         coverImage: true,
         releaseDate: true,
+        genre: true,
         createdAt: true,
         updatedAt: true,
         platforms: {

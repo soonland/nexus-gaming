@@ -4,15 +4,28 @@ import { getCurrentUser } from '@/lib/jwt';
 import prisma from '@/lib/prisma';
 import type { AuthUser } from '@/types/auth';
 
+const TOKEN_COOKIE = 'auth_token';
+
 export async function GET() {
   try {
     const tokenUser = await getCurrentUser();
 
     if (!tokenUser) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+      // Clear invalid token cookie
+      const response = NextResponse.json(
+        { error: 'Not authenticated' },
+        { status: 401 }
+      );
+
+      response.cookies.set(TOKEN_COOKIE, '', {
+        expires: new Date(0),
+        path: '/',
+      });
+
+      return response;
     }
 
-    // Get fresh user data from database
+    // Verify user in database
     const user = await prisma.user.findUnique({
       where: { id: tokenUser.id },
       select: {
@@ -26,11 +39,20 @@ export async function GET() {
       },
     });
 
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    if (!user || !user.isActive) {
+      const response = NextResponse.json(
+        { error: 'User not found or inactive' },
+        { status: 401 }
+      );
+
+      response.cookies.set(TOKEN_COOKIE, '', {
+        expires: new Date(0),
+        path: '/',
+      });
+
+      return response;
     }
 
-    // Convert Date objects to ISO strings for API response
     return NextResponse.json<{ user: AuthUser }>({
       user: {
         ...user,

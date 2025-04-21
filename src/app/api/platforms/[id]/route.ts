@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import prisma from '@/lib/prisma';
-import type { PlatformForm } from '@/types';
+import type { IPlatformForm } from '@/types';
 
 // GET - Détails d'une plateforme
 export async function GET(
@@ -73,7 +73,7 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
-    const body = (await request.json()) as PlatformForm;
+    const body = (await request.json()) as IPlatformForm;
     const { name, manufacturer, releaseDate } = body;
 
     if (!id) {
