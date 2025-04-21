@@ -5,30 +5,44 @@ import {
   Button,
   Container,
   FormControl,
-  FormLabel,
-  Heading,
-  Input,
   Stack,
-  Text,
-  useToast,
-} from '@chakra-ui/react';
-import { useRouter } from 'next/navigation';
-import React from 'react';
+  TextField,
+  Typography,
+  Alert,
+  Snackbar,
+} from '@mui/material';
+import { useRouter, useSearchParams } from 'next/navigation';
+import React, { Suspense, useEffect } from 'react';
 
 import { useAuth } from '@/hooks/useAuth';
 
-const LoginPage = () => {
+const LoginContent = () => {
   const { login, user } = useAuth();
   const router = useRouter();
-  const toast = useToast();
-
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('redirect') || undefined;
   const [isLoading, setIsLoading] = React.useState(false);
+  const [toast, setToast] = React.useState<{
+    open: boolean;
+    message: string;
+    severity: 'success' | 'error';
+  }>({
+    open: false,
+    message: '',
+    severity: 'success',
+  });
 
-  React.useEffect(() => {
+  // Don't redirect immediately on user change to allow loading overlay to work
+  useEffect(() => {
+    let redirectTimer: NodeJS.Timeout;
     if (user) {
-      router.replace('/games');
+      // Small delay to allow loading overlay to show
+      redirectTimer = setTimeout(() => {
+        router.replace(redirectTo || '/games');
+      }, 100);
     }
-  }, [user, router]);
+    return () => clearTimeout(redirectTimer);
+  }, [user, router, redirectTo]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -39,78 +53,109 @@ const LoginPage = () => {
     const password = formData.get('password') as string;
 
     try {
-      await login({ email, password });
-      toast({
-        title: 'Connexion réussie',
-        status: 'success',
-        duration: 3000,
-        isClosable: true,
+      await login({ email, password }, redirectTo);
+      setToast({
+        open: true,
+        message: 'Connexion réussie',
+        severity: 'success',
       });
     } catch (error) {
-      toast({
-        title: 'Erreur de connexion',
-        description: 'Email ou mot de passe incorrect',
-        status: 'error',
-        duration: 3000,
-        isClosable: true,
+      setToast({
+        open: true,
+        message: 'Email ou mot de passe incorrect',
+        severity: 'error',
       });
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Don't show the login form if we're authenticated and about to redirect
+  if (user) {
+    return null;
+  }
+
   return (
-    <Container maxW='container.sm' py={8}>
-      <Box
-        bg='bg.surface'
-        borderColor='border.default'
-        borderWidth='1px'
-        p={8}
-        rounded='lg'
-        shadow='base'
+    <>
+      <Container maxWidth='sm' sx={{ py: 8 }}>
+        <Box
+          sx={{
+            bgcolor: 'background.paper',
+            border: '1px solid',
+            borderColor: 'divider',
+            p: 4,
+            borderRadius: 2,
+            boxShadow: 1,
+          }}
+        >
+          <Stack spacing={3}>
+            <Typography align='center' variant='h4'>
+              Connexion
+            </Typography>
+            <Typography align='center'>
+              Connectez-vous à votre compte
+            </Typography>
+
+            <form onSubmit={handleSubmit}>
+              <Stack spacing={3}>
+                <FormControl fullWidth required>
+                  <TextField
+                    autoComplete='email'
+                    label='Email'
+                    name='email'
+                    placeholder='votre@email.com'
+                    type='email'
+                    variant='outlined'
+                  />
+                </FormControl>
+
+                <FormControl fullWidth required>
+                  <TextField
+                    autoComplete='current-password'
+                    label='Mot de passe'
+                    name='password'
+                    placeholder='Votre mot de passe'
+                    type='password'
+                    variant='outlined'
+                  />
+                </FormControl>
+
+                <Button
+                  disabled={isLoading}
+                  size='large'
+                  sx={{ fontSize: '1rem' }}
+                  type='submit'
+                  variant='contained'
+                >
+                  Se connecter
+                </Button>
+              </Stack>
+            </form>
+          </Stack>
+        </Box>
+      </Container>
+
+      <Snackbar
+        autoHideDuration={3000}
+        open={toast.open}
+        onClose={() => setToast(prev => ({ ...prev, open: false }))}
       >
-        <Stack spacing={4}>
-          <Heading size='lg' textAlign='center'>
-            Connexion
-          </Heading>
-          <Text textAlign='center'>Connectez-vous à votre compte</Text>
+        <Alert
+          severity={toast.severity}
+          onClose={() => setToast(prev => ({ ...prev, open: false }))}
+        >
+          {toast.message}
+        </Alert>
+      </Snackbar>
+    </>
+  );
+};
 
-          <form onSubmit={handleSubmit}>
-            <Stack spacing={4}>
-              <FormControl isRequired>
-                <FormLabel>Email</FormLabel>
-                <Input
-                  autoComplete='email'
-                  name='email'
-                  placeholder='votre@email.com'
-                  type='email'
-                />
-              </FormControl>
-
-              <FormControl isRequired>
-                <FormLabel>Mot de passe</FormLabel>
-                <Input
-                  autoComplete='current-password'
-                  name='password'
-                  placeholder='Votre mot de passe'
-                  type='password'
-                />
-              </FormControl>
-
-              <Button
-                colorScheme='blue'
-                fontSize='md'
-                isLoading={isLoading}
-                size='lg'
-                type='submit'
-              >
-                Se connecter
-              </Button>
-            </Stack>
-          </form>
-        </Stack>
-      </Box>
-    </Container>
+const LoginPage = () => {
+  return (
+    <Suspense fallback={null}>
+      <LoginContent />
+    </Suspense>
   );
 };
 

@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 
 import { cloudinaryConfig } from '@/lib/cloudinary';
 import { getCurrentUser } from '@/lib/jwt';
+import { deleteImageServer } from '@/lib/upload/server';
 
 cloudinary.config(cloudinaryConfig);
 
@@ -23,21 +24,8 @@ export async function DELETE(request: Request) {
       );
     }
 
-    const result = await new Promise<{ result: string }>((resolve, reject) => {
-      cloudinary.uploader.destroy(
-        publicId,
-        (error: Error | undefined, result: { result: string }) => {
-          if (error) {
-            console.error('Cloudinary delete error:', error);
-            reject(error);
-          } else {
-            resolve(result);
-          }
-        }
-      );
-    });
-
-    return NextResponse.json(result);
+    await deleteImageServer(publicId);
+    return NextResponse.json({ result: 'ok' });
   } catch (error) {
     console.error('Delete error:', error);
     return NextResponse.json({ error: 'Delete failed' }, { status: 500 });

@@ -76,7 +76,7 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { username, email, role } = body;
+    const { username, email, role, isActive } = body;
 
     // Basic validation
     if (!username || !email) {
@@ -132,6 +132,7 @@ export async function PUT(
       username,
       email,
       role: role as Role,
+      isActive,
     };
 
     // Add hashed password and update expiration if password is provided

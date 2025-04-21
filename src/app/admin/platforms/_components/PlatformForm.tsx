@@ -1,136 +1,147 @@
 'use client';
 
-import {
-  Box,
-  FormControl,
-  FormLabel,
-  Input,
-  Button,
-  Stack,
-  useToast,
-} from '@chakra-ui/react';
+import { FormControl, Stack, TextField } from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers';
+import type { Dayjs } from 'dayjs';
 import { useRouter } from 'next/navigation';
-import { useForm, Controller } from 'react-hook-form';
+import { useState } from 'react';
 
-import { ChakraDateTimePicker } from '@/components/common/ChakraDateTimePicker';
-import type { PlatformForm as IPlatformForm } from '@/types';
+import { AdminForm } from '@/components/admin/common';
+import { useNotifier } from '@/components/common/Notifier';
+import { usePlatforms } from '@/hooks/usePlatforms';
+import dayjs from '@/lib/dayjs';
 
 interface IPlatformFormProps {
-  initialData?: IPlatformForm;
-  onSubmit: (data: IPlatformForm) => Promise<void>;
-  isLoading?: boolean;
+  initialData?: {
+    id: string;
+    name: string;
+    manufacturer: string;
+    releaseDate?: string | null;
+  };
   mode: 'create' | 'edit';
 }
 
-const PlatformForm = ({
-  initialData,
-  onSubmit,
-  isLoading,
-  mode,
-}: IPlatformFormProps) => {
+export const PlatformForm = ({ initialData, mode }: IPlatformFormProps) => {
   const router = useRouter();
-  const toast = useToast();
-
-  const {
-    register,
-    handleSubmit,
-    control,
-    formState: { errors },
-  } = useForm<IPlatformForm & { releaseDateTemp: Date | null }>({
-    defaultValues: {
-      name: initialData?.name || '',
-      manufacturer: initialData?.manufacturer || '',
-      releaseDateTemp: initialData?.releaseDate
-        ? new Date(initialData.releaseDate)
-        : null,
-    },
+  const [name, setName] = useState(initialData?.name || '');
+  const [nameError, setNameError] = useState('');
+  const [manufacturer, setManufacturer] = useState(
+    initialData?.manufacturer || ''
+  );
+  const [manufacturerError, setManufacturerError] = useState('');
+  const [releaseDate, setReleaseDate] = useState<Dayjs | null>(
+    initialData?.releaseDate ? dayjs(initialData.releaseDate) : null
+  );
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { createPlatform, updatePlatform } = usePlatforms({
+    page: 1,
+    limit: 10,
   });
 
-  const onSubmitForm = async (
-    data: IPlatformForm & { releaseDateTemp: Date | null }
-  ) => {
-    const formData: IPlatformForm = {
-      name: data.name,
-      manufacturer: data.manufacturer,
-      releaseDate: data.releaseDateTemp?.toISOString() || null,
-    };
+  const validateForm = () => {
+    let isValid = true;
+
+    if (!name.trim()) {
+      setNameError('Le nom est requis');
+      isValid = false;
+    } else if (name.trim().length < 2) {
+      setNameError('Le nom doit contenir au moins 2 caractères');
+      isValid = false;
+    } else {
+      setNameError('');
+    }
+
+    if (!manufacturer.trim()) {
+      setManufacturerError('Le fabricant est requis');
+      isValid = false;
+    } else if (manufacturer.trim().length < 2) {
+      setManufacturerError('Le fabricant doit contenir au moins 2 caractères');
+      isValid = false;
+    } else {
+      setManufacturerError('');
+    }
+
+    return isValid;
+  };
+
+  const { showSuccess, showError } = useNotifier();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsSubmitting(true);
     try {
-      await onSubmit(formData);
-      toast({
-        title:
-          mode === 'create' ? 'Plateforme créée' : 'Plateforme mise à jour',
-        status: 'success',
-        duration: 3000,
-      });
+      const data = {
+        name,
+        manufacturer,
+        releaseDate: releaseDate
+          ? dayjs(releaseDate).format('YYYY-MM-DD')
+          : null,
+      };
+
+      if (mode === 'create') {
+        await createPlatform(data);
+        showSuccess('Plateforme créée avec succès');
+      } else if (initialData?.id) {
+        await updatePlatform({ id: initialData.id, data });
+        showSuccess('Plateforme modifiée avec succès');
+      }
       router.push('/admin/platforms');
+      router.refresh();
     } catch (error) {
-      toast({
-        title: 'Erreur',
-        description: 'Une erreur est survenue',
-        status: 'error',
-        duration: 5000,
-      });
+      console.error('Error saving platform:', error);
+      showError("Une erreur est survenue lors de l'enregistrement");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <Box as='form' onSubmit={handleSubmit(onSubmitForm)}>
-      <Stack spacing={4}>
-        <FormControl isRequired isInvalid={!!errors.name}>
-          <FormLabel>Nom</FormLabel>
-          <Input
-            {...register('name', { required: 'Le nom est requis' })}
-            placeholder='Ex: PlayStation 5'
-          />
-        </FormControl>
-
-        <FormControl isRequired isInvalid={!!errors.manufacturer}>
-          <FormLabel>Fabricant</FormLabel>
-          <Input
-            {...register('manufacturer', {
-              required: 'Le fabricant est requis',
-            })}
-            placeholder='Ex: Sony'
-          />
-        </FormControl>
-
+    <AdminForm
+      cancelHref='/admin/platforms'
+      isSubmitting={isSubmitting}
+      onSubmit={handleSubmit}
+    >
+      <Stack spacing={3}>
+        <TextField
+          autoFocus
+          fullWidth
+          required
+          error={!!nameError}
+          helperText={nameError}
+          label='Nom'
+          name='name'
+          value={name}
+          onChange={e => {
+            setName(e.target.value);
+            if (nameError) setNameError('');
+          }}
+        />
+        <TextField
+          fullWidth
+          required
+          error={!!manufacturerError}
+          helperText={manufacturerError}
+          label='Fabricant'
+          name='manufacturer'
+          value={manufacturer}
+          onChange={e => {
+            setManufacturer(e.target.value);
+            if (manufacturerError) setManufacturerError('');
+          }}
+        />
         <FormControl>
-          <FormLabel>Date de sortie</FormLabel>
-          <Controller
-            control={control}
-            name='releaseDateTemp'
-            render={({ field: { onChange, value } }) => (
-              <ChakraDateTimePicker
-                minDate={undefined}
-                placeholderText='Sélectionner une date de sortie'
-                selectedDate={value}
-                showTimeSelect={false}
-                onChange={(date: Date | null) => onChange(date)}
-              />
-            )}
+          <DatePicker
+            label='Date de sortie'
+            value={releaseDate}
+            onChange={date => setReleaseDate(date)}
           />
         </FormControl>
-
-        <Stack
-          direction='row'
-          justify='flex-end'
-          pt={4}
-          spacing={4}
-          width='100%'
-        >
-          <Button
-            variant='ghost'
-            onClick={() => router.push('/admin/platforms')}
-          >
-            Annuler
-          </Button>
-          <Button colorScheme='blue' isLoading={isLoading} type='submit'>
-            {mode === 'create' ? 'Créer' : 'Mettre à jour'}
-          </Button>
-        </Stack>
       </Stack>
-    </Box>
+    </AdminForm>
   );
 };
-
-export default PlatformForm;

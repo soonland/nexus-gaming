@@ -51,6 +51,8 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
   const payload = await verifyToken(token);
   if (!payload) return null;
 
+  // Only verify token validity in middleware
+  // Full user verification happens in API routes
   return {
     id: payload.sub,
     email: payload.email,

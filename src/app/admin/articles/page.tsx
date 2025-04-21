@@ -1,351 +1,244 @@
 'use client';
 
+import { useState } from 'react';
+import { FiCheck } from 'react-icons/fi';
+
 import {
-  SearchIcon,
-  AddIcon,
-  EditIcon,
-  DeleteIcon,
-  ExternalLinkIcon,
-  CloseIcon,
-} from '@chakra-ui/icons';
-import {
-  Box,
-  Button,
-  Container,
-  Heading,
-  VStack,
-  HStack,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  IconButton,
-  Input,
-  InputGroup,
-  InputLeftElement,
-  Badge,
-  useToast,
-  useColorModeValue,
-  AlertDialog,
-  AlertDialogBody,
-  AlertDialogContent,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogOverlay,
-  useDisclosure,
-} from '@chakra-ui/react';
-import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import { useState, useMemo, useRef } from 'react';
-import { BiFilter } from 'react-icons/bi';
+  AdminActionButtons,
+  AdminActions,
+  AdminDataTable,
+  AdminDeleteDialog,
+  AdminFilters,
+  AdminList,
+  AdminPageLayout,
+  Pagination,
+  defaultActions,
+} from '@/components/admin';
+import { SideColorBadge, useNotifier } from '@/components/common';
+import { useAdminArticles } from '@/hooks/admin/useAdminArticles';
+import dayjs from '@/lib/dayjs';
+import type { IArticleData } from '@/types';
 
-import { DateDisplay } from '@/components/common/DateDisplay';
-import { useArticles } from '@/hooks/useArticles';
-import { useCategories } from '@/hooks/useCategories';
-import { useUsers } from '@/hooks/useUsers';
-import type { ArticleStatus } from '@/types';
+import { getStatusStyle } from './_components/articleStyles';
 
-import { FiltersPanel } from './_components/FiltersPanel';
+type ArticleSortField = keyof Pick<
+  IArticleData,
+  'title' | 'createdAt' | 'updatedAt' | 'status'
+>;
 
-const getStatusBadge = (status: ArticleStatus) => {
-  switch (status) {
-    case 'PUBLISHED':
-      return <Badge colorScheme='green'>🟢 Publié</Badge>;
-    case 'PENDING_APPROVAL':
-      return <Badge colorScheme='orange'>🔶 En attente</Badge>;
-    case 'ARCHIVED':
-      return <Badge colorScheme='gray'>⚪ Archivé</Badge>;
-    default:
-      return <Badge colorScheme='yellow'>🔸 Brouillon</Badge>;
-  }
-};
+const DEFAULT_PAGE_SIZE = 10;
 
-const ArticlesPage = () => {
-  // Hooks
-  const searchParams = useSearchParams();
-  const toast = useToast();
-  const deleteDialog = useDisclosure();
-  const cancelRef = useRef<HTMLButtonElement>(null);
-  const borderColor = useColorModeValue('gray.200', 'gray.700');
+interface IDeleteDialogState {
+  isOpen: boolean;
+  articleId: string | null;
+}
 
-  // State
-  const [page, setPage] = useState(parseInt(searchParams.get('page') ?? '1'));
-  const [limit] = useState(10);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedStatuses, setSelectedStatuses] = useState<ArticleStatus[]>([]);
-  const [selectedUser, setSelectedUser] = useState<string>('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [showFilters, setShowFilters] = useState<boolean>(false);
-  const [articleToDelete, setArticleToDelete] = useState<string | null>(null);
-
-  // Queries
-  const { data, deleteArticle, isDeleting } = useArticles({
-    page: page.toString(),
-    limit: limit.toString(),
-    search: searchTerm,
-    status: selectedStatuses.length === 1 ? selectedStatuses[0] : undefined,
+const AdminArticlesPage = () => {
+  const [deleteDialog, setDeleteDialog] = useState<IDeleteDialogState>({
+    isOpen: false,
+    articleId: null,
   });
-  const { data: users, isLoading: isLoadingUsers } = useUsers();
-  const { categories, isLoading: isLoadingCategories } = useCategories();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortField, setSortField] = useState<ArticleSortField>('createdAt');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const {
+    articles,
+    pagination,
+    deleteArticle,
+    isLoading,
+    updateArticleStatus,
+  } = useAdminArticles({
+    page,
+    limit: pageSize,
+    search: searchQuery,
+  });
+  const { showSuccess, showError } = useNotifier();
 
-  // Memoized values
-  const hasActiveFilters = useMemo(() => {
-    return (
-      searchTerm ||
-      selectedUser ||
-      selectedCategory ||
-      selectedStatuses.length > 0
+  const handleSort = (field: ArticleSortField) => {
+    setSortField(field);
+    setSortOrder(
+      field === sortField ? (sortOrder === 'asc' ? 'desc' : 'asc') : 'asc'
     );
-  }, [searchTerm, selectedUser, selectedCategory, selectedStatuses]);
+  };
 
-  const activeFiltersCount = useMemo(
-    () =>
-      [
-        searchTerm ? 1 : 0,
-        selectedUser ? 1 : 0,
-        selectedCategory ? 1 : 0,
-        selectedStatuses.length,
-      ].reduce((a, b) => a + b, 0),
-    [searchTerm, selectedUser, selectedCategory, selectedStatuses]
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setPage(1); // Reset to first page when changing page size
+  };
+
+  const sortedArticles = [...articles].sort((a, b) => {
+    const aValue = a[sortField];
+    const bValue = b[sortField];
+    const order = sortOrder === 'asc' ? 1 : -1;
+
+    if (sortField === 'createdAt') {
+      const dateA = aValue ? dayjs(String(aValue)) : dayjs(0);
+      const dateB = bValue ? dayjs(String(bValue)) : dayjs(0);
+      return dateA.diff(dateB) * order;
+    }
+
+    if (typeof aValue === 'string' && typeof bValue === 'string') {
+      return aValue.localeCompare(bValue) * order;
+    }
+    return 0;
+  });
+
+  const filteredArticles = sortedArticles.filter(article =>
+    article.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const statusCounts = useMemo(() => {
-    const initialCounts = {
-      DRAFT: 0,
-      PENDING_APPROVAL: 0,
-      PUBLISHED: 0,
-      ARCHIVED: 0,
-    };
-    if (!data?.articles) return initialCounts;
-    return data.articles.reduce(
-      (acc: Record<ArticleStatus, number>, article) => {
-        acc[article.status] = (acc[article.status] || 0) + 1;
-        return acc;
-      },
-      { ...initialCounts }
-    );
-  }, [data?.articles]);
+  const isEmpty = filteredArticles.length === 0;
 
-  const filteredArticles = data?.articles || [];
-
-  const handleResetFilters = () => {
-    setSearchTerm('');
-    setSelectedUser('');
-    setSelectedCategory('');
-    setSelectedStatuses([]);
-  };
-
-  const handleDeleteClick = (id: string) => {
-    setArticleToDelete(id);
-    deleteDialog.onOpen();
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!articleToDelete) return;
-
-    try {
-      await deleteArticle(articleToDelete);
-      toast({
-        title: 'Article supprimé',
-        status: 'success',
-        duration: 3000,
-      });
-      deleteDialog.onClose();
-      setArticleToDelete(null);
-    } catch (error) {
-      toast({
-        title: 'Erreur',
-        description: 'Une erreur est survenue lors de la suppression',
-        status: 'error',
-        duration: 5000,
-      });
+  const handleDelete = async () => {
+    if (deleteDialog.articleId) {
+      try {
+        await deleteArticle.mutateAsync(deleteDialog.articleId);
+        showSuccess('Article supprimé avec succès');
+        setDeleteDialog({ isOpen: false, articleId: null });
+      } catch (error) {
+        console.error('Error deleting article:', error);
+        showError('Une erreur est survenue lors de la suppression');
+      }
     }
   };
 
+  const renderActions = (row: IArticleData) => {
+    const actions = [];
+
+    if (row.status === 'PENDING_APPROVAL') {
+      actions.push({
+        label: 'Publier',
+        icon: FiCheck,
+        color: 'success.main',
+        onClick: async () => {
+          try {
+            await updateArticleStatus.mutateAsync({
+              id: row.id,
+              status: 'PUBLISHED',
+            });
+            showSuccess('Article publié avec succès');
+          } catch (error) {
+            console.error('Error publishing article:', error);
+            showError('Une erreur est survenue lors de la publication');
+          }
+        },
+        disabled: updateArticleStatus.isPending,
+      });
+    }
+
+    actions.push(
+      defaultActions.edit(`/admin/articles/${row.id}/edit`),
+      defaultActions.delete(
+        () =>
+          setDeleteDialog({
+            isOpen: true,
+            articleId: row.id,
+          }),
+        deleteArticle.isPending && deleteDialog.articleId === row.id
+      )
+    );
+
+    return <AdminActionButtons actions={actions} />;
+  };
+
   return (
-    <Container maxW='container.xl' py={8}>
-      <VStack align='stretch' spacing={8}>
-        <HStack justify='space-between'>
-          <Heading size='lg'>Gestion des articles</Heading>
-          <Button
-            as={Link}
-            colorScheme='blue'
-            href='/admin/articles/new'
-            leftIcon={<AddIcon />}
-          >
-            Nouvel article
-          </Button>
-        </HStack>
-
-        <Box>
-          <HStack mb={4} spacing={4}>
-            <HStack flex='1' spacing={4}>
-              <InputGroup maxW='sm'>
-                <InputLeftElement pointerEvents='none'>
-                  <SearchIcon color='gray.300' />
-                </InputLeftElement>
-                <Input
-                  placeholder='Rechercher...'
-                  value={searchTerm}
-                  onChange={e => setSearchTerm(e.target.value)}
-                />
-              </InputGroup>
-              {searchTerm && (
-                <IconButton
-                  aria-label='Clear search'
-                  icon={<CloseIcon />}
-                  size='sm'
-                  onClick={() => setSearchTerm('')}
-                />
-              )}
-            </HStack>
-
-            <HStack>
-              <Button
-                colorScheme={hasActiveFilters ? 'blue' : 'gray'}
-                leftIcon={<BiFilter />}
-                variant='outline'
-                onClick={() => setShowFilters(prev => !prev)}
-              >
-                Filtres {hasActiveFilters && `(${activeFiltersCount})`}
-              </Button>
-            </HStack>
-          </HStack>
-
-          <FiltersPanel
-            categories={categories ?? []}
-            filteredCount={filteredArticles.length}
-            hasActiveFilters={Boolean(hasActiveFilters)}
-            isLoadingCategories={isLoadingCategories}
-            isLoadingUsers={isLoadingUsers}
-            isVisible={showFilters}
-            selectedCategory={selectedCategory}
-            selectedStatuses={selectedStatuses}
-            selectedUser={selectedUser}
-            statusCounts={statusCounts}
-            totalCount={data?.articles?.length || 0}
-            users={users}
-            onCategoryChange={setSelectedCategory}
-            onReset={handleResetFilters}
-            onStatusesChange={setSelectedStatuses}
-            onUserChange={setSelectedUser}
-          />
-
-          <Box
-            borderColor={borderColor}
-            borderWidth='1px'
-            mt={4}
-            overflowX='auto'
-            rounded='lg'
-          >
-            <Table variant='simple'>
-              <Thead>
-                <Tr>
-                  <Th>Titre</Th>
-                  <Th>Catégorie</Th>
-                  <Th>Auteur</Th>
-                  <Th>Status</Th>
-                  <Th>Date de publication</Th>
-                  <Th width='150px'>Actions</Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {filteredArticles.map(article => (
-                  <Tr key={article.id}>
-                    <Td>{article.title}</Td>
-                    <Td>{article.category.name}</Td>
-                    <Td>{article.user.username}</Td>
-                    <Td>{getStatusBadge(article.status)}</Td>
-                    <Td>
-                      {article.publishedAt && (
-                        <DateDisplay date={article.publishedAt} format='long' />
-                      )}
-                    </Td>
-                    <Td>
-                      <HStack spacing={2}>
-                        <IconButton
-                          aria-label='Modifier'
-                          as={Link}
-                          colorScheme='blue'
-                          href={`/admin/articles/${article.id}/edit`}
-                          icon={<EditIcon />}
-                          size='sm'
-                        />
-                        <IconButton
-                          aria-label='Voir'
-                          as={Link}
-                          colorScheme='green'
-                          href={`/articles/${article.id}`}
-                          icon={<ExternalLinkIcon />}
-                          rel='noopener noreferrer'
-                          size='sm'
-                          target='_blank'
-                        />
-                        <IconButton
-                          aria-label='Supprimer'
-                          colorScheme='red'
-                          icon={<DeleteIcon />}
-                          isLoading={isDeleting}
-                          size='sm'
-                          onClick={() => handleDeleteClick(article.id)}
-                        />
-                      </HStack>
-                    </Td>
-                  </Tr>
-                ))}
-              </Tbody>
-            </Table>
-          </Box>
-
-          {data?.pagination && data.pagination.pages > 1 && (
-            <HStack justify='center' mt={4} spacing={2}>
-              {Array.from({ length: data.pagination.pages }, (_, i) => (
-                <Button
-                  key={i + 1}
-                  size='sm'
-                  variant={page === i + 1 ? 'solid' : 'outline'}
-                  onClick={() => setPage(i + 1)}
-                >
-                  {i + 1}
-                </Button>
-              ))}
-            </HStack>
-          )}
-        </Box>
-      </VStack>
-
-      <AlertDialog
-        isOpen={deleteDialog.isOpen}
-        leastDestructiveRef={cancelRef}
-        onClose={deleteDialog.onClose}
+    <AdminPageLayout
+      actions={
+        <AdminActions
+          createHref='/admin/articles/new'
+          createLabel='Ajouter un article'
+        />
+      }
+      title='Gestion des articles'
+    >
+      <AdminFilters
+        searchPlaceholder='Rechercher un article...'
+        onSearch={setSearchQuery}
+      />
+      {pagination && (
+        <Pagination
+          currentPage={page}
+          pageSize={pageSize}
+          total={pagination.total}
+          totalPages={pagination.pages}
+          onPageChange={setPage}
+          onPageSizeChange={handlePageSizeChange}
+        />
+      )}
+      <AdminList
+        emptyMessage='Aucun article trouvé'
+        isEmpty={isEmpty}
+        isLoading={deleteArticle.isPending || isLoading}
       >
-        <AlertDialogOverlay>
-          <AlertDialogContent>
-            <AlertDialogHeader>Supprimer l'article</AlertDialogHeader>
-            <AlertDialogBody>
-              Êtes-vous sûr de vouloir supprimer cet article ? Cette action ne
-              peut pas être annulée.
-            </AlertDialogBody>
-            <AlertDialogFooter>
-              <Button ref={cancelRef} onClick={deleteDialog.onClose}>
-                Annuler
-              </Button>
-              <Button
-                colorScheme='red'
-                isLoading={isDeleting}
-                ml={3}
-                onClick={handleDeleteConfirm}
-              >
-                Supprimer
-              </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialogOverlay>
-      </AlertDialog>
-    </Container>
+        <AdminDataTable<IArticleData, ArticleSortField>
+          columns={[
+            {
+              field: 'title',
+              headerName: 'Titre',
+              sortable: true,
+              width: '150px',
+            },
+            {
+              field: 'status',
+              headerName: 'Statut',
+              sortable: true,
+              render: row => {
+                const style = getStatusStyle(row.status);
+                return (
+                  <SideColorBadge
+                    backgroundColor={style.backgroundColor}
+                    color={style.color}
+                    label={style.label}
+                  />
+                );
+              },
+              width: '120px',
+            },
+            {
+              field: 'createdAt',
+              headerName: 'Créé le',
+              render: row => dayjs(row.createdAt).format('LL'),
+              sortable: true,
+              width: '200px',
+            },
+            {
+              field: 'actions',
+              headerName: 'Actions',
+              render: renderActions,
+              width: '120px',
+            },
+          ]}
+          rows={filteredArticles}
+          sortField={sortField}
+          sortOrder={sortOrder}
+          onSort={handleSort}
+        />
+      </AdminList>
+      {pagination && (
+        <Pagination
+          currentPage={page}
+          pageSize={pageSize}
+          total={pagination.total}
+          totalPages={pagination.pages}
+          onPageChange={setPage}
+          onPageSizeChange={handlePageSizeChange}
+        />
+      )}
+      <AdminDeleteDialog
+        isLoading={deleteArticle.isPending}
+        isOpen={deleteDialog.isOpen}
+        message='Êtes-vous sûr de vouloir supprimer cette annonce ?'
+        title="Supprimer l'annonce"
+        onClose={() =>
+          !deleteArticle.isPending &&
+          setDeleteDialog({ isOpen: false, articleId: null })
+        }
+        onConfirm={handleDelete}
+      />
+    </AdminPageLayout>
   );
 };
 
-export default ArticlesPage;
+export default AdminArticlesPage;

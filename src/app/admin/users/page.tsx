@@ -1,251 +1,253 @@
 'use client';
 
+import { useState } from 'react';
+import { FiEye, FiEyeOff } from 'react-icons/fi';
+
 import {
-  Container,
-  Heading,
-  Button,
-  HStack,
-  VStack,
-  Input,
-  Select,
-  useDisclosure,
-  useToast,
-  AlertDialog,
-  AlertDialogOverlay,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogBody,
-  AlertDialogFooter,
-  Box,
-  InputGroup,
-  InputLeftElement,
-} from '@chakra-ui/react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useRef, useState } from 'react';
-import { BiPlus, BiSearch } from 'react-icons/bi';
-
+  AdminActionButtons,
+  AdminActions,
+  AdminDataTable,
+  AdminDeleteDialog,
+  AdminFilters,
+  AdminList,
+  AdminPageLayout,
+  Pagination,
+  defaultActions,
+} from '@/components/admin';
+import { SideColorBadge } from '@/components/common';
+import { useNotifier } from '@/components/common/Notifier';
+import { useAuth } from '@/hooks/useAuth';
 import { useUsers, useDeleteUser, useToggleUserStatus } from '@/hooks/useUsers';
+import type { IUserData } from '@/hooks/useUsers';
 
-import UsersTable from './_components/UsersTable';
+import {
+  getRoleStyle,
+  getStatusStyle,
+  isRoleManageable,
+} from './_components/userStyles';
 
-const UserListPage = () => {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const toast = useToast();
-  const deleteDialog = useDisclosure();
-  const cancelRef = useRef<HTMLButtonElement>(null);
+type UserSortField = keyof Pick<
+  IUserData,
+  'username' | 'email' | 'role' | 'createdAt'
+>;
 
-  // State
-  const [userToDelete, setUserToDelete] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState(
-    searchParams.get('search') || ''
-  );
-  const [roleFilter, setRoleFilter] = useState(searchParams.get('role') || '');
-  const [statusFilter, setStatusFilter] = useState(
-    searchParams.get('status') || ''
-  );
-  const page = parseInt(searchParams.get('page') || '1');
-  const limit = parseInt(searchParams.get('limit') || '10');
+interface IDeleteDialogState {
+  isOpen: boolean;
+  userId: string | null;
+}
 
-  // Queries and Mutations
-  const { data } = useUsers({
-    page: page.toString(),
-    limit: limit.toString(),
-    search: searchTerm,
-    role: roleFilter,
-    status: statusFilter,
+const DEFAULT_PAGE_SIZE = 10;
+
+const AdminUsersPage = () => {
+  const { user: currentUser } = useAuth();
+  const [deleteDialog, setDeleteDialog] = useState<IDeleteDialogState>({
+    isOpen: false,
+    userId: null,
+  });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortField, setSortField] = useState<UserSortField>('username');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const { data: response, isLoading } = useUsers({
+    page,
+    limit: pageSize,
+    search: searchQuery,
+  });
+  const deleteUser = useDeleteUser();
+  const toggleStatus = useToggleUserStatus();
+  const { showSuccess, showError } = useNotifier();
+
+  const handleSort = (field: UserSortField) => {
+    setSortField(field);
+    setSortOrder(
+      field === sortField ? (sortOrder === 'asc' ? 'desc' : 'asc') : 'asc'
+    );
+  };
+
+  const handleDelete = async () => {
+    if (deleteDialog.userId) {
+      try {
+        await deleteUser.mutateAsync(deleteDialog.userId);
+        showSuccess('Utilisateur supprimé avec succès');
+        setDeleteDialog({ isOpen: false, userId: null });
+      } catch (error) {
+        console.error('Error deleting user:', error);
+        showError('Une erreur est survenue lors de la suppression');
+      }
+    }
+  };
+
+  const handleToggleStatus = async (user: IUserData) => {
+    try {
+      await toggleStatus.mutateAsync({
+        id: user.id,
+        isActive: !user.isActive,
+      });
+      showSuccess(
+        `Utilisateur ${user.isActive ? 'désactivé' : 'activé'} avec succès`
+      );
+    } catch (error) {
+      console.error('Error toggling user status:', error);
+      showError("Une erreur est survenue lors du changement d'état");
+    }
+  };
+
+  const canManageUser = (user: IUserData) => {
+    if (!currentUser) return false;
+    return isRoleManageable(currentUser.role, user.role, 'edit');
+  };
+
+  const sortedUsers = [...(response?.users || [])].sort((a, b) => {
+    const aValue = a[sortField];
+    const bValue = b[sortField];
+    const order = sortOrder === 'asc' ? 1 : -1;
+
+    if (typeof aValue === 'string' && typeof bValue === 'string') {
+      return aValue.localeCompare(bValue) * order;
+    }
+    return 0;
   });
 
-  const deleteUserMutation = useDeleteUser();
-  const toggleStatusMutation = useToggleUserStatus();
-
-  // Handlers
-  const handleSearch = (value: string) => {
-    setSearchTerm(value);
-    updateURL({ search: value || null, page: '1' });
-  };
-
-  const handleRoleFilter = (value: string) => {
-    setRoleFilter(value);
-    updateURL({ role: value || null, page: '1' });
-  };
-
-  const handleStatusFilter = (value: string) => {
-    setStatusFilter(value);
-    updateURL({ status: value || null, page: '1' });
-  };
-
-  const handlePageChange = (newPage: number) => {
-    updateURL({ page: newPage.toString() });
-  };
-
-  const updateURL = (params: Record<string, string | null>) => {
-    const current = new URLSearchParams(Array.from(searchParams.entries()));
-
-    Object.entries(params).forEach(([key, value]) => {
-      if (value === null) {
-        current.delete(key);
-      } else {
-        current.set(key, value);
-      }
-    });
-
-    router.push(`/admin/users?${current.toString()}`);
-  };
-
-  const handleDeleteClick = (id: string) => {
-    setUserToDelete(id);
-    deleteDialog.onOpen();
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!userToDelete) return;
-
-    try {
-      await deleteUserMutation.mutateAsync(userToDelete);
-      toast({
-        title: 'User deleted',
-        status: 'success',
-        duration: 3000,
-      });
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description:
-          error instanceof Error ? error.message : 'Failed to delete user',
-        status: 'error',
-        duration: 5000,
-      });
-    } finally {
-      deleteDialog.onClose();
-      setUserToDelete(null);
-    }
-  };
-
-  const handleToggleStatus = async (id: string, isActive: boolean) => {
-    try {
-      await toggleStatusMutation.mutateAsync({ id, isActive });
-      toast({
-        title: `User ${isActive ? 'activated' : 'deactivated'}`,
-        status: 'success',
-        duration: 3000,
-      });
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description:
-          error instanceof Error
-            ? error.message
-            : 'Failed to update user status',
-        status: 'error',
-        duration: 5000,
-      });
-    }
-  };
+  const filteredUsers = sortedUsers.filter(user =>
+    user.username.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
-    <Container maxW='container.xl' py={8}>
-      <VStack align='stretch' spacing={8}>
-        <HStack justify='space-between'>
-          <Heading size='lg'>Users</Heading>
-          <Button
-            colorScheme='blue'
-            leftIcon={<BiPlus />}
-            onClick={() => router.push('/admin/users/new')}
-          >
-            Add User
-          </Button>
-        </HStack>
-
-        <HStack spacing={4}>
-          <InputGroup maxW='300px'>
-            <InputLeftElement>
-              <BiSearch />
-            </InputLeftElement>
-            <Input
-              placeholder='Search users...'
-              value={searchTerm}
-              onChange={e => handleSearch(e.target.value)}
-            />
-          </InputGroup>
-
-          <Select
-            maxW='200px'
-            placeholder='Filter by role'
-            value={roleFilter}
-            onChange={e => handleRoleFilter(e.target.value)}
-          >
-            <option value='ADMIN'>Admin</option>
-            <option value='MODERATOR'>Moderator</option>
-            <option value='EDITOR'>Editor</option>
-            <option value='USER'>User</option>
-          </Select>
-
-          <Select
-            maxW='200px'
-            placeholder='Filter by status'
-            value={statusFilter}
-            onChange={e => handleStatusFilter(e.target.value)}
-          >
-            <option value='active'>Active</option>
-            <option value='inactive'>Inactive</option>
-          </Select>
-        </HStack>
-
-        <Box>
-          <UsersTable
-            users={data?.users || []}
-            onDelete={handleDeleteClick}
-            onToggleStatus={handleToggleStatus}
-          />
-        </Box>
-
-        {data?.pagination && (
-          <HStack justify='center' spacing={2}>
-            {Array.from({ length: data.pagination.pages }, (_, i) => (
-              <Button
-                key={i + 1}
-                size='sm'
-                variant={page === i + 1 ? 'solid' : 'outline'}
-                onClick={() => handlePageChange(i + 1)}
-              >
-                {i + 1}
-              </Button>
-            ))}
-          </HStack>
-        )}
-      </VStack>
-
-      <AlertDialog
-        isOpen={deleteDialog.isOpen}
-        leastDestructiveRef={cancelRef}
-        onClose={deleteDialog.onClose}
+    <AdminPageLayout
+      actions={
+        <AdminActions
+          createHref='/admin/users/new'
+          createLabel='Ajouter un utilisateur'
+        />
+      }
+      title='Gestion des utilisateurs'
+    >
+      <AdminFilters
+        searchPlaceholder='Rechercher un utilisateur...'
+        onSearch={setSearchQuery}
+      />
+      {response?.pagination && (
+        <Pagination
+          currentPage={page}
+          pageSize={pageSize}
+          total={response.pagination.total}
+          totalPages={response.pagination.pages}
+          onPageChange={setPage}
+          onPageSizeChange={setPageSize}
+        />
+      )}
+      <AdminList
+        emptyMessage='Aucun utilisateur trouvé'
+        isEmpty={!response?.users.length}
+        isLoading={isLoading || deleteUser.isPending || toggleStatus.isPending}
       >
-        <AlertDialogOverlay>
-          <AlertDialogContent>
-            <AlertDialogHeader>Delete User</AlertDialogHeader>
-            <AlertDialogBody>
-              Are you sure you want to delete this user? This action cannot be
-              undone.
-            </AlertDialogBody>
-            <AlertDialogFooter>
-              <Button ref={cancelRef} onClick={deleteDialog.onClose}>
-                Cancel
-              </Button>
-              <Button
-                colorScheme='red'
-                isLoading={deleteUserMutation.isPending}
-                ml={3}
-                onClick={handleDeleteConfirm}
-              >
-                Delete
-              </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialogOverlay>
-      </AlertDialog>
-    </Container>
+        <AdminDataTable<IUserData, UserSortField>
+          columns={[
+            {
+              field: 'username',
+              headerName: "Nom d'utilisateur",
+              sortable: true,
+            },
+            {
+              field: 'email',
+              headerName: 'Email',
+              sortable: true,
+            },
+            {
+              field: 'role',
+              headerName: 'Rôle',
+              render: row => {
+                const style = getRoleStyle(row.role);
+                return (
+                  <SideColorBadge
+                    backgroundColor={style.backgroundColor}
+                    borderWidth={style.borderWidth}
+                    color={style.color}
+                    label={style.label}
+                  />
+                );
+              },
+              sortable: true,
+              width: '150px',
+            },
+            {
+              field: 'isActive',
+              headerName: 'État',
+              render: row => {
+                const style = getStatusStyle(row.isActive);
+                return (
+                  <SideColorBadge
+                    backgroundColor={style.backgroundColor}
+                    color={style.color}
+                    label={style.label}
+                  />
+                );
+              },
+              width: '120px',
+            },
+            {
+              field: 'actions',
+              headerName: 'Actions',
+              render: row => {
+                if (!canManageUser(row)) return null;
+                return (
+                  <AdminActionButtons
+                    actions={[
+                      defaultActions.edit(`/admin/users/${row.id}/edit`),
+                      {
+                        label: row.isActive ? 'Désactiver' : 'Activer',
+                        icon: row.isActive ? FiEyeOff : FiEye,
+                        onClick: () => handleToggleStatus(row),
+                        color: row.isActive ? 'warning.main' : 'success.main',
+                      },
+                      defaultActions.delete(
+                        () =>
+                          setDeleteDialog({
+                            isOpen: true,
+                            userId: row.id,
+                          }),
+                        deleteUser.isPending && deleteDialog.userId === row.id
+                      ),
+                    ]}
+                  />
+                );
+              },
+              width: '120px',
+            },
+          ]}
+          page={page}
+          pages={response?.pagination.pages || 1}
+          rows={filteredUsers || []}
+          sortField={sortField}
+          sortOrder={sortOrder}
+          onPageChange={setPage}
+          onSort={handleSort}
+        />
+      </AdminList>
+      {response?.pagination && (
+        <Pagination
+          currentPage={page}
+          pageSize={pageSize}
+          total={response.pagination.total}
+          totalPages={response.pagination.pages}
+          onPageChange={setPage}
+          onPageSizeChange={setPageSize}
+        />
+      )}
+      <AdminDeleteDialog
+        isLoading={deleteUser.isPending}
+        isOpen={deleteDialog.isOpen}
+        message='Êtes-vous sûr de vouloir supprimer cet utilisateur ?'
+        title="Supprimer l'utilisateur"
+        onClose={() =>
+          !deleteUser.isPending &&
+          setDeleteDialog({ isOpen: false, userId: null })
+        }
+        onConfirm={handleDelete}
+      />
+    </AdminPageLayout>
   );
 };
 
-export default UserListPage;
+export default AdminUsersPage;

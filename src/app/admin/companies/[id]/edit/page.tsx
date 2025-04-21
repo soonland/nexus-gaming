@@ -1,91 +1,32 @@
 'use client';
 
-import {
-  Container,
-  useToast,
-  Alert,
-  AlertIcon,
-  Card,
-  CardHeader,
-  CardBody,
-  Heading,
-} from '@chakra-ui/react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 
-import CompanyFormLoading from '@/components/loading/CompanyFormLoading';
-import { useCompanies, useCompany } from '@/hooks/useCompanies';
+import { AdminPageLayout } from '@/components/admin';
+import { useCompany } from '@/hooks/useCompanies';
 
-import CompanyForm from '../../_components/CompanyForm';
+import { CompanyForm } from '../../_components/CompanyForm';
 
 const EditCompanyPage = () => {
   const params = useParams();
-  const id = params.id as string;
-  const { company, isLoading } = useCompany(id);
-  const { updateCompany, isUpdating } = useCompanies();
-  const router = useRouter();
-  const toast = useToast();
-
-  const handleSubmit = async (data: any) => {
-    try {
-      await updateCompany({ id, data });
-      toast({
-        title: 'Société modifiée',
-        status: 'success',
-        duration: 3000,
-      });
-      router.push('/admin/companies');
-    } catch {
-      toast({
-        title: 'Erreur',
-        description: 'Impossible de modifier la société',
-        status: 'error',
-        duration: 3000,
-      });
-    }
-  };
-
-  if (isLoading) {
-    return (
-      <Container maxW='container.md' py={8}>
-        <CompanyFormLoading />
-      </Container>
-    );
-  }
+  const { company } = useCompany(params.id as string);
 
   if (!company) {
-    return (
-      <Container maxW='container.md' py={8}>
-        <Alert status='error'>
-          <AlertIcon />
-          Société non trouvée
-        </Alert>
-      </Container>
-    );
+    return null;
   }
 
-  const initialData = {
-    name: company.name,
-    isDeveloper: company.isDeveloper,
-    isPublisher: company.isPublisher,
-  };
-
   return (
-    <Container maxW='container.md' py={8}>
-      <Card>
-        <CardHeader>
-          <Heading size='lg'>Modifier la société</Heading>
-        </CardHeader>
-        <CardBody>
-          <CompanyForm
-            initialData={initialData}
-            isLoading={isUpdating}
-            mode='edit'
-            onCancel={() => router.push('/admin/companies')}
-            onSubmit={handleSubmit}
-          />
-        </CardBody>
-      </Card>
-    </Container>
+    <AdminPageLayout title='Modifier une société'>
+      <CompanyForm
+        initialData={{
+          id: company.id,
+          name: company.name,
+          isDeveloper: company.isDeveloper,
+          isPublisher: company.isPublisher,
+        }}
+        mode='edit'
+      />
+    </AdminPageLayout>
   );
 };
 

@@ -51,7 +51,7 @@ export async function POST(request: Request) {
     }
 
     const data = await request.json();
-    const { message, type, expiresAt } = data;
+    const { message, type, expiresAt, isActive = 'active' } = data;
 
     if (!message || !type || !Object.values(AnnouncementType).includes(type)) {
       return NextResponse.json(
@@ -60,10 +60,18 @@ export async function POST(request: Request) {
       );
     }
 
+    if (isActive && !['active', 'inactive'].includes(isActive)) {
+      return NextResponse.json(
+        { error: 'isActive must be "active" or "inactive"' },
+        { status: 400 }
+      );
+    }
+
     const announcement = await prisma.adminAnnouncement.create({
       data: {
         message,
         type,
+        isActive,
         expiresAt: expiresAt ? new Date(expiresAt) : null,
         createdById: user.id,
       },
@@ -101,7 +109,14 @@ export async function PUT(request: Request) {
     }
 
     const data = await request.json();
-    const { id, isActive } = data;
+    const { id, message, type, expiresAt, isActive } = data;
+
+    if (!message || !type || !Object.values(AnnouncementType).includes(type)) {
+      return NextResponse.json(
+        { error: 'Message and valid type are required' },
+        { status: 400 }
+      );
+    }
 
     if (!['active', 'inactive'].includes(isActive)) {
       return NextResponse.json(
@@ -113,9 +128,10 @@ export async function PUT(request: Request) {
     const announcement = await prisma.adminAnnouncement.update({
       where: { id },
       data: {
-        isActive: ['active', 'inactive'].includes(isActive)
-          ? isActive
-          : 'active',
+        message,
+        type,
+        isActive,
+        expiresAt: expiresAt ? new Date(expiresAt) : null,
       },
       select: {
         id: true,

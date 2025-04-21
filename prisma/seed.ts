@@ -3,7 +3,6 @@ import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import dayjs from 'dayjs';
 
-import type { GameForm, ArticleForm } from '../src/types';
 import { seedAdmin } from './seeds/admin';
 
 const prisma = new PrismaClient();
@@ -111,7 +110,7 @@ async function main() {
   console.log('Created companies');
 
   // Create games
-  const zeldaData: GameForm = {
+  const zeldaData = {
     title: 'The Legend of Zelda: Tears of the Kingdom',
     description: 'Suite de Breath of the Wild',
     releaseDate: '2023-05-12',
@@ -121,7 +120,7 @@ async function main() {
     publisherId: nintendo.id,
   };
 
-  const spiderManData: GameForm = {
+  const spiderManData = {
     title: "Marvel's Spider-Man 2",
     description: 'Nouvelle aventure de Spider-Man',
     releaseDate: '2023-10-20',
@@ -131,7 +130,7 @@ async function main() {
     publisherId: sony.id,
   };
 
-  const baldursGateData: GameForm = {
+  const baldursGateData = {
     title: "Baldur's Gate 3",
     description: "RPG dans l'univers de D&D",
     releaseDate: '2023-08-03',
@@ -181,7 +180,7 @@ async function main() {
 
   // Create articles
   // Create articles
-  const articlesData: ArticleForm[] = [
+  const articlesData = [
     {
       title: 'Le retour triomphal de Link',
       content: 'Une analyse approfondie du nouveau Zelda...',
@@ -213,7 +212,7 @@ async function main() {
       data: {
         title: articleData.title,
         content: articleData.content,
-        status: articleData.status,
+        status: undefined,
         publishedAt: articleData.publishedAt
           ? dayjs(articleData.publishedAt).toDate()
           : null,

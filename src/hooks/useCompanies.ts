@@ -1,51 +1,136 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 
-import type { CompanyData, CompanyWithGamesData, CompanyForm } from '@/types';
+import type { ICompanyData } from '@/types/api';
 
-// Hook principal pour la gestion des sociétés
-export function useCompanies() {
+interface ICompaniesResponse {
+  companies: ICompanyData[];
+  pagination: {
+    total: number;
+    pages: number;
+    page: number;
+    limit: number;
+  };
+}
+
+interface ICompaniesParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  role?: 'developer' | 'publisher';
+}
+
+interface ICompanyFormData {
+  name: string;
+  isDeveloper: boolean;
+  isPublisher: boolean;
+}
+
+const companiesApi = {
+  getAll: async (params: ICompaniesParams = {}) => {
+    const queryParams = new URLSearchParams(
+      Object.entries(params)
+        .filter(([_, value]) => value !== undefined)
+        .map(([key, value]) => [key, String(value)])
+    );
+    const response = await axios.get(
+      `/api/companies?${queryParams.toString()}`
+    );
+    return response.data as ICompaniesResponse;
+  },
+
+  create: async (data: ICompanyFormData) => {
+    const response = await axios.post('/api/companies', data);
+    return response.data as ICompanyData;
+  },
+
+  update: async (id: string, data: ICompanyFormData) => {
+    const response = await axios.patch(`/api/companies/${id}`, data);
+    return response.data as ICompanyData;
+  },
+
+  delete: async (id: string) => {
+    await axios.delete(`/api/companies/${id}`);
+  },
+};
+
+const queryKeys = {
+  all: ['companies'] as const,
+  lists: (params: ICompaniesParams = {}) => [...queryKeys.all, params] as const,
+  filtered: (role: 'developer' | 'publisher') =>
+    [...queryKeys.all, { role, limit: 100 }] as const,
+};
+
+export function useCompanies(params: ICompaniesParams = {}) {
   const queryClient = useQueryClient();
 
-  const { data: companies, isLoading } = useQuery<CompanyData[]>({
-    queryKey: ['companies'],
-    queryFn: async () => {
-      const response = await axios.get('/api/companies');
-      return response.data;
-    },
+  const { data, isLoading } = useQuery<ICompaniesResponse>({
+    queryKey: queryKeys.lists(params),
+    queryFn: () => companiesApi.getAll(params),
   });
 
   const createCompany = useMutation({
-    mutationFn: async (data: CompanyForm) => {
-      const response = await axios.post('/api/companies', data);
-      return response.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['companies'] });
+    mutationFn: (data: ICompanyFormData) => companiesApi.create(data),
+    onSuccess: newCompany => {
+      // Mise à jour optimiste du cache pour toutes les listes
+      queryClient.setQueryData<ICompaniesResponse | undefined>(
+        queryKeys.lists(),
+        old => {
+          if (!old) return;
+          return {
+            ...old,
+            companies: [...old.companies, newCompany],
+          };
+        }
+      );
+
+      // Mise à jour des listes filtrées si nécessaire
+      if (newCompany.isDeveloper) {
+        queryClient.setQueryData<ICompaniesResponse | undefined>(
+          queryKeys.filtered('developer'),
+          old => {
+            if (!old) return;
+            return {
+              ...old,
+              companies: [...old.companies, newCompany],
+            };
+          }
+        );
+      }
+
+      if (newCompany.isPublisher) {
+        queryClient.setQueryData<ICompaniesResponse | undefined>(
+          queryKeys.filtered('publisher'),
+          old => {
+            if (!old) return;
+            return {
+              ...old,
+              companies: [...old.companies, newCompany],
+            };
+          }
+        );
+      }
     },
   });
 
   const updateCompany = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: CompanyForm }) => {
-      const response = await axios.patch(`/api/companies/${id}`, data);
-      return response.data;
-    },
+    mutationFn: ({ id, data }: { id: string; data: ICompanyFormData }) =>
+      companiesApi.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['companies'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.all });
     },
   });
 
   const deleteCompany = useMutation({
-    mutationFn: async (id: string) => {
-      await axios.delete(`/api/companies/${id}`);
-    },
+    mutationFn: (id: string) => companiesApi.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['companies'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.all });
     },
   });
 
   return {
-    companies,
+    companies: data?.companies ?? [],
+    pagination: data?.pagination,
     isLoading,
     createCompany: createCompany.mutateAsync,
     updateCompany: updateCompany.mutateAsync,
@@ -58,7 +143,7 @@ export function useCompanies() {
 
 // Hook pour les détails d'une société
 export function useCompany(id: string) {
-  const { data: company, isLoading } = useQuery<CompanyWithGamesData>({
+  const { data: company, isLoading } = useQuery<ICompanyData>({
     queryKey: ['company', id],
     queryFn: async () => {
       const response = await axios.get(`/api/companies/${id}`);

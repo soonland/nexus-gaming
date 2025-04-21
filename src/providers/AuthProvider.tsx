@@ -9,7 +9,8 @@ import type { AuthUser, ILoginCredentials } from '@/types/auth';
 interface IAuthContextType {
   user: AuthUser | null;
   isLoading: boolean;
-  login: (credentials: ILoginCredentials) => Promise<void>;
+  isError: boolean;
+  login: (credentials: ILoginCredentials, redirectTo?: string) => Promise<void>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
 }
@@ -17,18 +18,33 @@ interface IAuthContextType {
 export const AuthContext = createContext<IAuthContextType>({
   user: null,
   isLoading: true,
+  isError: false,
   login: async () => {},
   logout: async () => {},
   refresh: async () => {},
 });
 
+interface IAuthState {
+  user: AuthUser | null;
+  isLoading: boolean;
+  isError: boolean;
+}
+
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [authState, setAuthState] = useState<IAuthState>({
+    user: null,
+    isLoading: true,
+    isError: false,
+  });
   const router = useRouter();
 
   const login = useCallback(
-    async (credentials: ILoginCredentials) => {
+    async (credentials: ILoginCredentials, redirectTo?: string) => {
+      setAuthState((prev: IAuthState) => ({
+        ...prev,
+        isLoading: true,
+        isError: false,
+      }));
       try {
         const response = await fetch('/api/auth/login', {
           method: 'POST',
@@ -43,10 +59,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
 
         const data = await response.json();
-        setUser(data.user);
-        router.push('/games');
+        setAuthState({ user: data.user, isLoading: false, isError: false });
+        router.push(redirectTo || '/games');
       } catch (error) {
         console.error('Login error:', error);
+        setAuthState((prev: IAuthState) => ({
+          ...prev,
+          isLoading: false,
+          isError: true,
+        }));
         throw error;
       }
     },
@@ -54,41 +75,63 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   );
 
   const logout = useCallback(async () => {
+    setAuthState((prev: IAuthState) => ({ ...prev, isLoading: true }));
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
-      setUser(null);
-      router.push('/login');
+      setAuthState({ user: null, isLoading: false, isError: false });
+      router.push('/');
     } catch (error) {
       console.error('Logout error:', error);
+      setAuthState((prev: IAuthState) => ({
+        ...prev,
+        isLoading: false,
+        isError: true,
+      }));
     }
   }, [router]);
 
   const refresh = useCallback(async () => {
+    setAuthState((prev: IAuthState) => ({
+      ...prev,
+      isLoading: true,
+      isError: false,
+    }));
     try {
       const response = await fetch('/api/auth/me');
       if (response.ok) {
         const data = await response.json();
-        setUser(data.user);
+        setAuthState({ user: data.user, isLoading: false, isError: false });
+      } else if (response.status === 401) {
+        // Handle unauthorized gracefully
+        setAuthState({ user: null, isLoading: false, isError: false });
+      } else {
+        throw new Error('Auth check failed');
       }
     } catch (error) {
       console.error('Auth check error:', error);
+      setAuthState((prev: IAuthState) => ({
+        ...prev,
+        isLoading: false,
+        isError: true,
+      }));
     }
   }, []);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        await refresh();
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    checkAuth();
+    refresh();
   }, [refresh]);
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout, refresh }}>
+    <AuthContext.Provider
+      value={{
+        user: authState.user,
+        isLoading: authState.isLoading,
+        isError: authState.isError,
+        login,
+        logout,
+        refresh,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

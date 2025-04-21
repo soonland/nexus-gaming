@@ -1,111 +1,91 @@
 'use client';
 
 import {
-  Box,
   Card,
-  CardBody,
-  Heading,
-  Image,
+  CardContent,
+  CardMedia,
+  Typography,
   Stack,
-  Text,
-  Badge,
-  HStack,
-  Icon,
-  useColorModeValue,
-} from '@chakra-ui/react';
+  Chip,
+  Box,
+} from '@mui/material';
 import Link from 'next/link';
-import { BsCalendar4 } from 'react-icons/bs';
-import { FaUser } from 'react-icons/fa';
 
 import { DateDisplay } from '@/components/common/DateDisplay';
 import type { ArticleData } from '@/types';
 
 interface IArticleCardProps {
-  article: ArticleData & { publishedAt: Date };
+  article: ArticleData;
 }
 
 export const ArticleCard = ({ article }: IArticleCardProps) => {
-  const bgColor = useColorModeValue('white', 'gray.800');
-  const coverImage = article.heroImage || '/images/placeholder-game.png';
-  const categoryColor = useColorModeValue('blue.500', 'blue.300');
-  const overlayGradient = useColorModeValue(
-    'linear(to-t, blackAlpha.600, blackAlpha.300)',
-    'linear(to-t, blackAlpha.700, blackAlpha.400)'
-  );
-
   return (
     <Card
-      _hover={{ transform: 'translateY(-4px)', textDecoration: 'none' }}
-      as={Link}
-      bg={bgColor}
-      h='100%'
+      component={Link}
       href={`/articles/${article.id}`}
-      overflow='hidden'
-      transition='transform 0.2s'
+      sx={{
+        'height': '100%',
+        'display': 'flex',
+        'flexDirection': 'column',
+        'transition': 'transform 0.2s',
+        'textDecoration': 'none',
+        '&:hover': {
+          transform: 'translateY(-4px)',
+        },
+      }}
     >
-      <Box height='200px' overflow='hidden' position='relative'>
-        <Box
-          bgGradient={overlayGradient}
-          bottom={0}
-          left={0}
-          position='absolute'
-          right={0}
-          top={0}
-          zIndex={1}
-        />
-        <Image
-          alt={article.title}
-          height='100%'
-          objectFit='cover'
-          src={coverImage}
-          width='100%'
-          onError={e => {
-            const img = e.target as HTMLImageElement;
-            img.src = '/images/placeholder-game.png';
-          }}
-        />
-        {article.category && (
-          <Badge
-            alignItems='center'
-            colorScheme='blue'
-            display='flex'
-            gap={1}
-            left={4}
-            position='absolute'
-            px={2}
-            py={1}
-            top={4}
-            zIndex={2}
-          >
-            <Box as='span' bg={categoryColor} h='12px' mr={2} w='2px' />
-            {article.category.name}
-          </Badge>
-        )}
-      </Box>
-      <CardBody>
-        <Stack spacing={3}>
-          <Heading noOfLines={2} size='md'>
-            {article.title}
-          </Heading>
-          <Text color='gray.600' fontSize='sm' noOfLines={3}>
-            {article.content}
-          </Text>
-          <HStack color='gray.500' fontSize='sm' spacing={4}>
-            <HStack>
-              <Icon as={FaUser} />
-              <Text>{article.user.username}</Text>
-            </HStack>
-            <HStack>
-              <Icon as={BsCalendar4} />
-              <DateDisplay
-                date={article.publishedAt}
-                format='relative'
-                tooltipFormat='calendar'
+      <CardMedia
+        alt={article.title}
+        component='img'
+        height={200}
+        image={article.heroImage || '/images/placeholder-game.png'}
+        sx={{ objectFit: 'cover' }}
+      />
+      <CardContent sx={{ flexGrow: 1 }}>
+        <Stack spacing={2}>
+          <Box>
+            <Typography
+              gutterBottom
+              sx={{
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+              }}
+              variant='h6'
+            >
+              {article.title}
+            </Typography>
+            <Stack alignItems='center' direction='row' spacing={1}>
+              <Chip
+                color='primary'
+                label={article.category.name}
+                size='small'
+                variant='outlined'
               />
-            </HStack>
-          </HStack>
+              {article.publishedAt && (
+                <DateDisplay
+                  color='text.secondary'
+                  date={article.publishedAt}
+                  format='calendar'
+                />
+              )}
+            </Stack>
+          </Box>
+          {article.games.length > 0 && (
+            <Stack direction='row' flexWrap='wrap' spacing={1}>
+              {article.games.map(game => (
+                <Chip
+                  key={game.id}
+                  label={game.title}
+                  size='small'
+                  variant='outlined'
+                />
+              ))}
+            </Stack>
+          )}
         </Stack>
-      </CardBody>
+      </CardContent>
     </Card>
   );
 };

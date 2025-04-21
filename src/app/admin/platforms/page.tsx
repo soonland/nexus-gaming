@@ -1,219 +1,209 @@
 'use client';
 
-import {
-  SearchIcon,
-  AddIcon,
-  EditIcon,
-  DeleteIcon,
-  CloseIcon,
-} from '@chakra-ui/icons';
-import {
-  Box,
-  Button,
-  Container,
-  Heading,
-  VStack,
-  HStack,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  IconButton,
-  Input,
-  InputGroup,
-  InputLeftElement,
-  useToast,
-  useColorModeValue,
-  AlertDialog,
-  AlertDialogBody,
-  AlertDialogContent,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogOverlay,
-  useDisclosure,
-} from '@chakra-ui/react';
-import Link from 'next/link';
-import { useState, useMemo, useRef } from 'react';
+import { useState } from 'react';
 
-import { DateDisplay } from '@/components/common/DateDisplay';
+import {
+  AdminActionButtons,
+  AdminActions,
+  AdminDataTable,
+  AdminDeleteDialog,
+  AdminFilters,
+  AdminList,
+  AdminPageLayout,
+  Pagination,
+  defaultActions,
+} from '@/components/admin';
+import { useNotifier } from '@/components/common/Notifier';
 import { usePlatforms } from '@/hooks/usePlatforms';
+import dayjs from '@/lib/dayjs';
+import type { IPlatformData } from '@/types/api';
 
-const PlatformsPage = () => {
-  const toast = useToast();
-  const [searchTerm, setSearchTerm] = useState('');
-  const { platforms, deletePlatform, isDeleting } = usePlatforms();
-  const borderColor = useColorModeValue('gray.200', 'gray.700');
-  const deleteDialog = useDisclosure();
-  const cancelRef = useRef<HTMLButtonElement>(null);
-  const [platformToDelete, setPlatformToDelete] = useState<string | null>(null);
+type PlatformSortField = keyof Pick<
+  IPlatformData,
+  'name' | 'manufacturer' | 'releaseDate' | 'createdAt' | 'updatedAt'
+>;
 
-  // Filtrage des plateformes
-  const filteredPlatforms = useMemo(() => {
-    if (!platforms) return [];
+interface IDeleteDialogState {
+  isOpen: boolean;
+  platformId: string | null;
+}
 
-    return platforms.filter(platform => {
-      const searchString = searchTerm.toLowerCase();
-      return (
-        platform.name.toLowerCase().includes(searchString) ||
-        platform.manufacturer.toLowerCase().includes(searchString)
-      );
-    });
-  }, [platforms, searchTerm]);
+const AdminPlatformsPage = () => {
+  const [deleteDialog, setDeleteDialog] = useState<IDeleteDialogState>({
+    isOpen: false,
+    platformId: null,
+  });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortField, setSortField] = useState<PlatformSortField>('name');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const DEFAULT_PAGE_SIZE = 10;
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const {
+    platforms = [],
+    pagination,
+    isLoading,
+    error,
+    deletePlatform,
+  } = usePlatforms({
+    page,
+    limit: pageSize,
+  });
 
-  const handleDeleteClick = (id: string) => {
-    setPlatformToDelete(id);
-    deleteDialog.onOpen();
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setPage(1); // Reset to first page when changing page size
+  };
+  const { showSuccess, showError } = useNotifier();
+
+  const handleSort = (field: PlatformSortField) => {
+    setSortField(field);
+    setSortOrder(
+      field === sortField ? (sortOrder === 'asc' ? 'desc' : 'asc') : 'asc'
+    );
   };
 
-  const handleDeleteConfirm = async () => {
-    if (!platformToDelete) return;
+  const sortedPlatforms = [...platforms].sort((a, b) => {
+    const aValue = a[sortField];
+    const bValue = b[sortField];
+    const order = sortOrder === 'asc' ? 1 : -1;
 
-    try {
-      await deletePlatform(platformToDelete);
-      toast({
-        title: 'Plateforme supprimée',
-        status: 'success',
-        duration: 3000,
-      });
-      deleteDialog.onClose();
-      setPlatformToDelete(null);
-    } catch (error) {
-      toast({
-        title: 'Erreur',
-        description: 'Une erreur est survenue lors de la suppression',
-        status: 'error',
-        duration: 5000,
-      });
+    if (
+      sortField === 'releaseDate' ||
+      sortField === 'createdAt' ||
+      sortField === 'updatedAt'
+    ) {
+      const dateA = aValue ? dayjs(String(aValue)) : dayjs(0);
+      const dateB = bValue ? dayjs(String(bValue)) : dayjs(0);
+      return dateA.diff(dateB) * order;
+    }
+
+    if (typeof aValue === 'string' && typeof bValue === 'string') {
+      return aValue.localeCompare(bValue) * order;
+    }
+    return 0;
+  });
+
+  const filteredPlatforms = sortedPlatforms.filter(
+    platform =>
+      platform.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      platform.manufacturer.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const isEmpty = !isLoading && filteredPlatforms.length === 0;
+
+  const handleDelete = async () => {
+    if (deleteDialog.platformId) {
+      try {
+        await deletePlatform(deleteDialog.platformId);
+        showSuccess('Plateforme supprimée avec succès');
+        setDeleteDialog({ isOpen: false, platformId: null });
+      } catch (error) {
+        console.error('Error deleting platform:', error);
+        showError('Une erreur est survenue lors de la suppression');
+      }
     }
   };
 
+  const renderActions = (row: IPlatformData) => (
+    <AdminActionButtons
+      actions={[
+        defaultActions.edit(`/admin/platforms/${row.id}/edit`),
+        defaultActions.delete(() =>
+          setDeleteDialog({
+            isOpen: true,
+            platformId: row.id,
+          })
+        ),
+      ]}
+    />
+  );
+
   return (
-    <Container maxW='container.xl' py={8}>
-      <VStack align='stretch' spacing={8}>
-        <HStack justify='space-between'>
-          <Heading size='lg'>Gestion des plateformes</Heading>
-          <Button
-            as={Link}
-            colorScheme='blue'
-            href='/admin/platforms/new'
-            leftIcon={<AddIcon />}
-          >
-            Ajouter une plateforme
-          </Button>
-        </HStack>
-
-        <Box>
-          <HStack mb={4}>
-            <InputGroup maxW='sm'>
-              <InputLeftElement pointerEvents='none'>
-                <SearchIcon color='gray.300' />
-              </InputLeftElement>
-              <Input
-                placeholder='Rechercher...'
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-              />
-            </InputGroup>
-            {searchTerm && (
-              <IconButton
-                aria-label='Clear search'
-                icon={<CloseIcon />}
-                size='sm'
-                onClick={() => setSearchTerm('')}
-              />
-            )}
-          </HStack>
-
-          <Box
-            borderColor={borderColor}
-            borderWidth='1px'
-            overflowX='auto'
-            rounded='lg'
-          >
-            <Table variant='simple'>
-              <Thead>
-                <Tr>
-                  <Th>Nom</Th>
-                  <Th>Fabricant</Th>
-                  <Th>Date de sortie</Th>
-                  <Th>Nombre de jeux</Th>
-                  <Th width='100px'>Actions</Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {filteredPlatforms.map(platform => (
-                  <Tr key={platform.id}>
-                    <Td>{platform.name}</Td>
-                    <Td>{platform.manufacturer}</Td>
-                    <Td>
-                      {platform.releaseDate && (
-                        <DateDisplay
-                          date={platform.releaseDate}
-                          format='short'
-                        />
-                      )}
-                    </Td>
-                    <Td>{platform.games?.length || 0}</Td>
-                    <Td>
-                      <HStack spacing={2}>
-                        <IconButton
-                          aria-label='Modifier'
-                          as={Link}
-                          colorScheme='blue'
-                          href={`/admin/platforms/${platform.id}/edit`}
-                          icon={<EditIcon />}
-                          size='sm'
-                        />
-                        <IconButton
-                          aria-label='Supprimer'
-                          colorScheme='red'
-                          icon={<DeleteIcon />}
-                          isLoading={isDeleting}
-                          size='sm'
-                          onClick={() => handleDeleteClick(platform.id)}
-                        />
-                      </HStack>
-                    </Td>
-                  </Tr>
-                ))}
-              </Tbody>
-            </Table>
-          </Box>
-        </Box>
-      </VStack>
-
-      <AlertDialog
-        isOpen={deleteDialog.isOpen}
-        leastDestructiveRef={cancelRef}
-        onClose={deleteDialog.onClose}
+    <AdminPageLayout
+      actions={
+        <AdminActions
+          createHref='/admin/platforms/new'
+          createLabel='Ajouter une plateforme'
+        />
+      }
+      title='Gestion des plateformes'
+    >
+      <AdminFilters
+        searchPlaceholder='Rechercher une plateforme...'
+        onSearch={setSearchQuery}
+      />
+      {pagination && (
+        <Pagination
+          currentPage={page}
+          pageSize={pageSize}
+          total={pagination.total}
+          totalPages={pagination.pages}
+          onPageChange={setPage}
+          onPageSizeChange={handlePageSizeChange}
+        />
+      )}
+      <AdminList
+        emptyMessage='Aucune plateforme trouvée'
+        error={error}
+        isEmpty={isEmpty}
+        isLoading={isLoading}
       >
-        <AlertDialogOverlay>
-          <AlertDialogContent>
-            <AlertDialogHeader>Supprimer la plateforme</AlertDialogHeader>
-            <AlertDialogBody>
-              Êtes-vous sûr de vouloir supprimer cette plateforme ? Cette action
-              ne peut pas être annulée.
-            </AlertDialogBody>
-            <AlertDialogFooter>
-              <Button ref={cancelRef} onClick={deleteDialog.onClose}>
-                Annuler
-              </Button>
-              <Button
-                colorScheme='red'
-                isLoading={isDeleting}
-                ml={3}
-                onClick={handleDeleteConfirm}
-              >
-                Supprimer
-              </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialogOverlay>
-      </AlertDialog>
-    </Container>
+        <AdminDataTable<IPlatformData, PlatformSortField>
+          columns={[
+            {
+              field: 'name',
+              headerName: 'Nom',
+              sortable: true,
+            },
+            {
+              field: 'manufacturer',
+              headerName: 'Fabricant',
+              sortable: true,
+            },
+            {
+              field: 'releaseDate',
+              headerName: 'Date de sortie',
+              render: row =>
+                row.releaseDate ? dayjs(row.releaseDate).format('LL') : '-',
+              sortable: true,
+              width: '150px',
+            },
+            {
+              field: 'actions',
+              headerName: 'Actions',
+              render: renderActions,
+              width: '120px',
+            },
+          ]}
+          rows={filteredPlatforms}
+          sortField={sortField}
+          sortOrder={sortOrder}
+          onSort={handleSort}
+        />
+      </AdminList>
+      {pagination && (
+        <Pagination
+          currentPage={page}
+          pageSize={pageSize}
+          total={pagination.total}
+          totalPages={pagination.pages}
+          onPageChange={setPage}
+          onPageSizeChange={handlePageSizeChange}
+        />
+      )}
+      <AdminDeleteDialog
+        isLoading={isLoading}
+        isOpen={deleteDialog.isOpen}
+        message='Êtes-vous sûr de vouloir supprimer cette plateforme ?'
+        title='Supprimer la plateforme'
+        onClose={() =>
+          !isLoading && setDeleteDialog({ isOpen: false, platformId: null })
+        }
+        onConfirm={handleDelete}
+      />
+    </AdminPageLayout>
   );
 };
 
-export default PlatformsPage;
+export default AdminPlatformsPage;

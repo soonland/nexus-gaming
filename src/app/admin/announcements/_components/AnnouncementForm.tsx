@@ -1,147 +1,187 @@
 'use client';
 
 import {
-  Box,
-  Button,
   FormControl,
-  FormLabel,
-  FormErrorMessage,
-  Stack,
-  Textarea,
-  HStack,
+  InputLabel,
+  MenuItem,
   Select,
-  useToast,
-} from '@chakra-ui/react';
-import { AnnouncementType } from '@prisma/client';
+  Stack,
+  TextField,
+} from '@mui/material';
+import { DateTimePicker } from '@mui/x-date-pickers';
+import type { AnnouncementType } from '@prisma/client';
+import type { Dayjs } from 'dayjs';
 import { useRouter } from 'next/navigation';
-import { useForm, Controller } from 'react-hook-form';
+import { useState } from 'react';
 
-import { ChakraDateTimePicker } from '@/components/common/ChakraDateTimePicker';
+import { AdminForm } from '@/components/admin/common';
+import { useNotifier } from '@/components/common/Notifier';
+import { useAdminAnnouncement } from '@/hooks/useAdminAnnouncement';
 import type { ActiveStatus } from '@/hooks/useAdminAnnouncement';
+import dayjs from '@/lib/dayjs';
 
-interface IAnnouncementForm {
-  message: string;
-  type: AnnouncementType;
-  expiresAt?: Date | null;
-  isActive: ActiveStatus;
-}
+const ANNOUNCEMENT_TYPES: { value: AnnouncementType; label: string }[] = [
+  { value: 'INFO', label: 'Information' },
+  { value: 'ATTENTION', label: 'Attention' },
+  { value: 'URGENT', label: 'Urgent' },
+];
+
+const STATUS_OPTIONS: { value: ActiveStatus; label: string }[] = [
+  { value: 'active', label: 'Actif' },
+  { value: 'inactive', label: 'Inactif' },
+];
 
 interface IAnnouncementFormProps {
-  initialData?: Partial<IAnnouncementForm>;
-  onSubmit: (data: IAnnouncementForm) => Promise<void>;
-  isLoading?: boolean;
-  mode?: 'create' | 'edit';
+  initialData?: {
+    id: string;
+    message: string;
+    type: AnnouncementType;
+    isActive: ActiveStatus;
+    expiresAt?: string | null;
+  };
+  mode: 'create' | 'edit';
 }
 
-const AnnouncementForm = ({
+export const AnnouncementForm = ({
   initialData,
-  onSubmit,
-  isLoading,
-  mode = 'create',
+  mode,
 }: IAnnouncementFormProps) => {
   const router = useRouter();
-  const toast = useToast();
+  const [message, setMessage] = useState(initialData?.message || '');
+  const [messageError, setMessageError] = useState('');
+  const [type, setType] = useState<AnnouncementType>(
+    initialData?.type || 'INFO'
+  );
+  const [isActive, setIsActive] = useState<ActiveStatus>(
+    initialData?.isActive || 'active'
+  );
+  const [expiresAt, setExpiresAt] = useState<Dayjs | null>(
+    initialData?.expiresAt ? dayjs(initialData.expiresAt) : null
+  );
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const {
-    register,
-    handleSubmit,
-    control,
-    formState: { errors },
-  } = useForm<IAnnouncementForm>({
-    defaultValues: {
-      message: initialData?.message || '',
-      type: initialData?.type || AnnouncementType.INFO,
-      expiresAt: initialData?.expiresAt
-        ? new Date(initialData.expiresAt)
-        : null,
-      isActive: initialData?.isActive ?? 'active',
-    },
-  });
+  const { createAnnouncement, updateAnnouncement } = useAdminAnnouncement();
+  const { showSuccess, showError } = useNotifier();
 
-  const onSubmitForm = async (data: IAnnouncementForm) => {
+  const validateForm = () => {
+    let isValid = true;
+
+    if (!message.trim()) {
+      setMessageError('Le message est requis');
+      isValid = false;
+    } else if (message.trim().length < 3) {
+      setMessageError('Le message doit contenir au moins 3 caractères');
+      isValid = false;
+    } else {
+      setMessageError('');
+    }
+
+    return isValid;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsSubmitting(true);
+
     try {
-      await onSubmit(data);
-      toast({
-        title: mode === 'create' ? 'Annonce créée' : 'Annonce mise à jour',
-        status: 'success',
-        duration: 3000,
-      });
+      const data = {
+        message: message.trim(),
+        type,
+        isActive,
+        expiresAt: expiresAt?.toDate(),
+      };
+
+      if (mode === 'create') {
+        await createAnnouncement.mutateAsync(data);
+        showSuccess('Annonce créée avec succès');
+      } else if (initialData?.id) {
+        await updateAnnouncement.mutateAsync({
+          id: initialData.id,
+          ...data,
+        });
+        showSuccess('Annonce modifiée avec succès');
+      }
+
       router.push('/admin/announcements');
+      router.refresh();
     } catch (error) {
-      toast({
-        title: 'Erreur',
-        description: 'Une erreur est survenue',
-        status: 'error',
-        duration: 5000,
-      });
+      console.error('Error saving announcement:', error);
+      showError("Une erreur est survenue lors de l'enregistrement");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <Box as='form' onSubmit={handleSubmit(onSubmitForm)}>
-      <Stack spacing={6}>
-        <FormControl isRequired isInvalid={!!errors.message}>
-          <FormLabel>Message</FormLabel>
-          <Textarea
-            {...register('message', { required: 'Le message est requis' })}
-            placeholder="Message de l'annonce"
-            rows={4}
-          />
-          {errors.message && (
-            <FormErrorMessage>{errors.message.message}</FormErrorMessage>
-          )}
-        </FormControl>
-
-        <FormControl isRequired isInvalid={!!errors.type}>
-          <FormLabel>Type</FormLabel>
-          <Select {...register('type', { required: 'Le type est requis' })}>
-            <option value={AnnouncementType.INFO}>Information</option>
-            <option value={AnnouncementType.ATTENTION}>Attention</option>
-            <option value={AnnouncementType.URGENT}>Urgent</option>
-          </Select>
-          {errors.type && (
-            <FormErrorMessage>{errors.type.message}</FormErrorMessage>
-          )}
-        </FormControl>
-
+    <AdminForm
+      cancelHref='/admin/announcements'
+      isSubmitting={isSubmitting}
+      onSubmit={handleSubmit}
+    >
+      <Stack spacing={3}>
+        <TextField
+          autoFocus
+          fullWidth
+          multiline
+          required
+          error={!!messageError}
+          helperText={messageError}
+          label='Message'
+          name='message'
+          rows={4}
+          value={message}
+          onChange={e => {
+            setMessage(e.target.value);
+            if (messageError) setMessageError('');
+          }}
+        />
         <FormControl>
-          <FormLabel>Date d'expiration (optionnelle)</FormLabel>
-          <Controller
-            control={control}
-            name='expiresAt'
-            render={({ field: { onChange, value } }) => (
-              <ChakraDateTimePicker
-                minDate={new Date()}
-                placeholderText="Sélectionner une date d'expiration"
-                selectedDate={value || null}
-                onChange={(date: Date | null) => onChange(date)}
-              />
-            )}
-          />
-        </FormControl>
-
-        <FormControl>
-          <FormLabel>Statut</FormLabel>
-          <Select {...register('isActive')}>
-            <option value='active'>Active</option>
-            <option value='inactive'>Inactive</option>
-          </Select>
-        </FormControl>
-
-        <HStack justify='flex-end' pt={4} spacing={4}>
-          <Button
-            variant='ghost'
-            onClick={() => router.push('/admin/announcements')}
+          <InputLabel id='type-label'>Type</InputLabel>
+          <Select
+            required
+            label='Type'
+            labelId='type-label'
+            name='type'
+            value={type}
+            onChange={e => setType(e.target.value as AnnouncementType)}
           >
-            Annuler
-          </Button>
-          <Button colorScheme='blue' isLoading={isLoading} type='submit'>
-            {mode === 'create' ? 'Créer' : 'Mettre à jour'}
-          </Button>
-        </HStack>
+            {ANNOUNCEMENT_TYPES.map(option => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <FormControl>
+          <InputLabel id='status-label'>État</InputLabel>
+          <Select
+            required
+            label='État'
+            labelId='status-label'
+            name='isActive'
+            value={isActive}
+            onChange={e => setIsActive(e.target.value as ActiveStatus)}
+          >
+            {STATUS_OPTIONS.map(option => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <FormControl>
+          <DateTimePicker
+            label="Date d'expiration"
+            value={expiresAt}
+            onChange={date => setExpiresAt(date)}
+          />
+        </FormControl>
       </Stack>
-    </Box>
+    </AdminForm>
   );
 };
-
-export default AnnouncementForm;

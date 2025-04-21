@@ -8,6 +8,7 @@ export async function GET(request: Request) {
   try {
     // Get URL parameters
     const { searchParams } = new URL(request.url);
+    const isAdminRoute = searchParams.get('admin') === 'true';
     const page = parseInt(searchParams.get('page') ?? '1');
     const limit = parseInt(searchParams.get('limit') ?? '10');
     const search = searchParams.get('search') ?? '';
@@ -16,89 +17,99 @@ export async function GET(request: Request) {
     const skip = (page - 1) * limit;
 
     // Build where clause
-    const where = {
-      OR: search
-        ? [
-            {
-              title: {
-                contains: search,
-                mode: 'insensitive' as Prisma.QueryMode,
+    const where: Prisma.GameWhereInput = {
+      ...(search
+        ? {
+            OR: [
+              {
+                title: {
+                  contains: search,
+                  mode: 'insensitive' as Prisma.QueryMode,
+                },
               },
-            },
-            {
-              description: {
-                contains: search,
-                mode: 'insensitive' as Prisma.QueryMode,
+              {
+                description: {
+                  contains: search,
+                  mode: 'insensitive' as Prisma.QueryMode,
+                },
               },
-            },
-          ]
-        : undefined,
+            ],
+          }
+        : {}),
     };
 
-    // Get games with pagination
+    // Optimized select clause based on route type
+    const select: Prisma.GameSelect = {
+      id: true,
+      title: true,
+      description: true,
+      coverImage: true,
+      releaseDate: true,
+      createdAt: true,
+      updatedAt: true,
+      developer: {
+        select: {
+          id: true,
+          name: true,
+          ...(isAdminRoute && {
+            isDeveloper: true,
+            isPublisher: true,
+            createdAt: true,
+            updatedAt: true,
+            _count: {
+              select: {
+                gamesAsDev: true,
+                gamesAsPub: true,
+              },
+            },
+          }),
+        },
+      },
+      publisher: {
+        select: {
+          id: true,
+          name: true,
+          ...(isAdminRoute && {
+            isDeveloper: true,
+            isPublisher: true,
+            createdAt: true,
+            updatedAt: true,
+            _count: {
+              select: {
+                gamesAsDev: true,
+                gamesAsPub: true,
+              },
+            },
+          }),
+        },
+      },
+      platforms: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      articles: {
+        where: {
+          status: 'PUBLISHED',
+        },
+        select: {
+          id: true,
+          title: true,
+          heroImage: true,
+        },
+      },
+    };
+
+    // Get games with pagination and optimized select
     const [games, totalCount] = await Promise.all([
       prisma.game.findMany({
         where,
         skip,
         take: limit,
-        select: {
-          id: true,
-          title: true,
-          description: true,
-          coverImage: true,
-          releaseDate: true,
-          createdAt: true,
-          updatedAt: true,
-          developer: {
-            select: {
-              id: true,
-              name: true,
-              isDeveloper: true,
-              isPublisher: true,
-              createdAt: true,
-              updatedAt: true,
-              _count: {
-                select: {
-                  gamesAsDev: true,
-                  gamesAsPub: true,
-                },
-              },
-            },
-          },
-          publisher: {
-            select: {
-              id: true,
-              name: true,
-              isDeveloper: true,
-              isPublisher: true,
-              createdAt: true,
-              updatedAt: true,
-              _count: {
-                select: {
-                  gamesAsDev: true,
-                  gamesAsPub: true,
-                },
-              },
-            },
-          },
-          platforms: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-          articles: {
-            where: {
-              status: 'PUBLISHED',
-            },
-            select: {
-              id: true,
-              title: true,
-            },
-          },
-        },
+        select,
         orderBy: {
-          title: 'asc',
+          releaseDate: 'desc',
         },
       }),
       prisma.game.count({ where }),

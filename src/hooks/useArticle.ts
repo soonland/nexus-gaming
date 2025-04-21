@@ -1,12 +1,16 @@
 import type { Article, User, Category, Game } from '@prisma/client';
 import { useQuery } from '@tanstack/react-query';
 
-type GameWithDetails = Pick<Game, 'id' | 'title' | 'coverImage'> & {
-  developer: { name: string };
-  publisher: { name: string };
+import type { IPlatformData } from '@/types';
+
+type GameWithDetails = Pick<
+  Game,
+  'id' | 'title' | 'description' | 'coverImage' | 'releaseDate'
+> & {
+  platforms: IPlatformData[];
 };
 
-type ArticleWithRelations = Omit<Article, 'userId' | 'categoryId'> & {
+type ArticleWithRelations = Article & {
   heroImage?: string | null;
   user: Pick<User, 'username'>;
   category: Pick<Category, 'name'> | null;
@@ -25,10 +29,20 @@ async function fetchArticle(id: string): Promise<ArticleWithRelations> {
 }
 
 export function useArticle(id: string) {
-  return useQuery({
+  const {
+    data: article,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: [ARTICLE_QUERY_KEY, id],
     queryFn: () => fetchArticle(id),
     retry: 1,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
+
+  return {
+    article,
+    isLoading,
+    error,
+  };
 }

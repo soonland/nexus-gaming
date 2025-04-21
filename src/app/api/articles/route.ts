@@ -1,11 +1,9 @@
-import type { Prisma, ArticleStatus } from '@prisma/client';
+import type { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
-import { getCurrentUser } from '@/lib/jwt';
 import prisma from '@/lib/prisma';
-import type { ArticleForm } from '@/types';
 
-// GET - Liste des articles
+// GET - Liste des articles publics uniquement
 export async function GET(request: Request) {
   try {
     // Get URL parameters
@@ -13,20 +11,19 @@ export async function GET(request: Request) {
     const page = parseInt(searchParams.get('page') ?? '1');
     const limit = parseInt(searchParams.get('limit') ?? '10');
     const search = searchParams.get('search') ?? '';
-    const status = searchParams.get('status') ?? undefined;
 
     // Calculate pagination
     const skip = (page - 1) * limit;
 
-    // Build where clause
+    // Build where clause for public route (only published articles)
     const where: Prisma.ArticleWhereInput = {
-      OR: search
-        ? [
-            { title: { contains: search, mode: 'insensitive' } },
-            { content: { contains: search, mode: 'insensitive' } },
-          ]
-        : undefined,
-      status: status ? (status as ArticleStatus) : undefined,
+      status: 'PUBLISHED',
+      ...(search && {
+        OR: [
+          { title: { contains: search, mode: 'insensitive' } },
+          { content: { contains: search, mode: 'insensitive' } },
+        ],
+      }),
     };
 
     // Get articles with pagination
@@ -42,7 +39,6 @@ export async function GET(request: Request) {
           id: true,
           title: true,
           content: true,
-          status: true,
           heroImage: true,
           publishedAt: true,
           createdAt: true,
@@ -57,6 +53,7 @@ export async function GET(request: Request) {
             select: {
               id: true,
               username: true,
+              avatarUrl: true,
             },
           },
           games: {
@@ -73,9 +70,11 @@ export async function GET(request: Request) {
 
     const formattedArticles = articles.map(article => ({
       ...article,
-      createdAt: new Date(article.createdAt),
-      updatedAt: new Date(article.updatedAt),
-      publishedAt: article.publishedAt ? new Date(article.publishedAt) : null,
+      createdAt: new Date(article.createdAt).toISOString(),
+      updatedAt: new Date(article.updatedAt).toISOString(),
+      publishedAt: article.publishedAt
+        ? new Date(article.publishedAt).toISOString()
+        : null,
     }));
 
     return NextResponse.json({
@@ -91,92 +90,6 @@ export async function GET(request: Request) {
     console.error('Error fetching articles:', error);
     return NextResponse.json(
       { error: 'Error fetching articles' },
-      { status: 500 }
-    );
-  }
-}
-
-// POST - Créer un article
-export async function POST(request: Request) {
-  try {
-    const data = (await request.json()) as ArticleForm;
-    const {
-      title,
-      content,
-      categoryId,
-      status,
-      publishedAt,
-      gameIds = [],
-      heroImage,
-    } = data;
-
-    if (!title || !content || !categoryId) {
-      return NextResponse.json(
-        { error: 'Title, content and category are required' },
-        { status: 400 }
-      );
-    }
-
-    // Get the authenticated user
-    const currentUser = await getCurrentUser();
-    if (!currentUser) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const article = await prisma.article.create({
-      data: {
-        title,
-        content,
-        status: status || 'DRAFT',
-        publishedAt: publishedAt ? new Date(publishedAt) : null,
-        categoryId,
-        userId: currentUser.id,
-        heroImage,
-        games: {
-          connect: gameIds.map(id => ({ id })),
-        },
-      },
-      select: {
-        id: true,
-        title: true,
-        content: true,
-        status: true,
-        heroImage: true,
-        publishedAt: true,
-        createdAt: true,
-        updatedAt: true,
-        category: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        user: {
-          select: {
-            id: true,
-            username: true,
-          },
-        },
-        games: {
-          select: {
-            id: true,
-            title: true,
-          },
-        },
-      },
-    });
-
-    const formattedArticle = {
-      ...article,
-      createdAt: new Date(article.createdAt),
-      updatedAt: new Date(article.updatedAt),
-      publishedAt: article.publishedAt ? new Date(article.publishedAt) : null,
-    };
-    return NextResponse.json(formattedArticle, { status: 201 });
-  } catch (error) {
-    console.error('Error creating article:', error);
-    return NextResponse.json(
-      { error: 'Error creating article' },
       { status: 500 }
     );
   }

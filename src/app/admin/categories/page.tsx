@@ -1,205 +1,166 @@
 'use client';
 
-import {
-  SearchIcon,
-  AddIcon,
-  EditIcon,
-  DeleteIcon,
-  CloseIcon,
-} from '@chakra-ui/icons';
-import {
-  Box,
-  Button,
-  Container,
-  Heading,
-  VStack,
-  HStack,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  IconButton,
-  Input,
-  InputGroup,
-  InputLeftElement,
-  useToast,
-  useColorModeValue,
-  AlertDialog,
-  AlertDialogBody,
-  AlertDialogContent,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogOverlay,
-  useDisclosure,
-} from '@chakra-ui/react';
-import Link from 'next/link';
-import { useState, useMemo, useRef } from 'react';
+import { useState } from 'react';
 
+import {
+  AdminActionButtons,
+  AdminActions,
+  AdminDataTable,
+  AdminDeleteDialog,
+  AdminFilters,
+  AdminList,
+  AdminPageLayout,
+  defaultActions,
+} from '@/components/admin';
+import { useNotifier } from '@/components/common/Notifier';
 import { useCategories } from '@/hooks/useCategories';
+import dayjs from '@/lib/dayjs';
+import type { ICategoryData } from '@/types/api';
 
-const CategoriesPage = () => {
-  const toast = useToast();
-  const [searchTerm, setSearchTerm] = useState('');
-  const { categories, deleteCategory, isDeleting } = useCategories();
-  const borderColor = useColorModeValue('gray.200', 'gray.700');
-  const deleteDialog = useDisclosure();
-  const cancelRef = useRef<HTMLButtonElement>(null);
-  const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
+type CategorySortField = keyof Pick<
+  ICategoryData,
+  'name' | 'createdAt' | 'updatedAt'
+>;
 
-  // Filtrage des catégories
-  const filteredCategories = useMemo(() => {
-    if (!categories) return [];
+interface IDeleteDialogState {
+  isOpen: boolean;
+  categoryId: string | null;
+}
 
-    return categories.filter(category =>
-      category.name.toLowerCase().includes(searchTerm.toLowerCase())
+const AdminCategoriesPage = () => {
+  const [deleteDialog, setDeleteDialog] = useState<IDeleteDialogState>({
+    isOpen: false,
+    categoryId: null,
+  });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortField, setSortField] = useState<CategorySortField>('name');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const { categories = [], isLoading, error, deleteCategory } = useCategories();
+  const { showSuccess, showError } = useNotifier();
+
+  const handleSort = (field: CategorySortField) => {
+    setSortField(field);
+    setSortOrder(
+      field === sortField ? (sortOrder === 'asc' ? 'desc' : 'asc') : 'asc'
     );
-  }, [categories, searchTerm]);
-
-  const handleDeleteClick = (id: string) => {
-    setCategoryToDelete(id);
-    deleteDialog.onOpen();
   };
 
-  const handleDeleteConfirm = async () => {
-    if (!categoryToDelete) return;
+  const sortedCategories = [...(categories || [])].sort((a, b) => {
+    const aValue = a[sortField];
+    const bValue = b[sortField];
+    const order = sortOrder === 'asc' ? 1 : -1;
 
-    try {
-      await deleteCategory(categoryToDelete);
-      toast({
-        title: 'Catégorie supprimée',
-        status: 'success',
-        duration: 3000,
-        isClosable: true,
-      });
-      deleteDialog.onClose();
-      setCategoryToDelete(null);
-    } catch {
-      toast({
-        title: 'Erreur',
-        description: 'Impossible de supprimer la catégorie',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
+    if (sortField === 'createdAt' || sortField === 'updatedAt') {
+      const dateA = aValue ? dayjs(String(aValue)) : dayjs(0);
+      const dateB = bValue ? dayjs(String(bValue)) : dayjs(0);
+      return dateA.diff(dateB) * order;
+    }
+
+    if (typeof aValue === 'string' && typeof bValue === 'string') {
+      return aValue.localeCompare(bValue) * order;
+    }
+    return 0;
+  });
+
+  const filteredCategories = sortedCategories.filter(category =>
+    category.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const isEmpty = !isLoading && filteredCategories.length === 0;
+
+  const handleDelete = async () => {
+    if (deleteDialog.categoryId) {
+      try {
+        await deleteCategory(deleteDialog.categoryId);
+        showSuccess('Catégorie supprimée avec succès');
+        setDeleteDialog({ isOpen: false, categoryId: null });
+      } catch (error) {
+        console.error('Error deleting category:', error);
+        showError('Une erreur est survenue lors de la suppression');
+      }
     }
   };
 
+  const renderActions = (row: ICategoryData) => (
+    <AdminActionButtons
+      actions={[
+        defaultActions.edit(`/admin/categories/${row.id}/edit`),
+        defaultActions.delete(() =>
+          setDeleteDialog({
+            isOpen: true,
+            categoryId: row.id,
+          })
+        ),
+      ]}
+    />
+  );
+
   return (
-    <Container maxW='container.xl' py={8}>
-      <VStack align='stretch' spacing={8}>
-        <HStack justify='space-between'>
-          <Heading size='lg'>Gestion des catégories</Heading>
-          <Button
-            as={Link}
-            colorScheme='blue'
-            href='/admin/categories/new'
-            leftIcon={<AddIcon />}
-          >
-            Ajouter une catégorie
-          </Button>
-        </HStack>
-
-        <Box>
-          <HStack mb={4}>
-            <InputGroup maxW='sm'>
-              <InputLeftElement pointerEvents='none'>
-                <SearchIcon color='gray.300' />
-              </InputLeftElement>
-              <Input
-                placeholder='Rechercher...'
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-              />
-            </InputGroup>
-            {searchTerm && (
-              <IconButton
-                aria-label='Clear search'
-                icon={<CloseIcon />}
-                size='sm'
-                onClick={() => setSearchTerm('')}
-              />
-            )}
-          </HStack>
-
-          <Box
-            borderColor={borderColor}
-            borderWidth='1px'
-            overflowX='auto'
-            rounded='lg'
-          >
-            <Table variant='simple'>
-              <Thead>
-                <Tr>
-                  <Th>Nom</Th>
-                  <Th>Nombre d'articles</Th>
-                  <Th width='100px'>Actions</Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {filteredCategories.map(category => (
-                  <Tr key={category.id}>
-                    <Td>{category.name}</Td>
-                    <Td>{category.articleCount}</Td>
-                    <Td>
-                      <HStack spacing={2}>
-                        <IconButton
-                          aria-label='Modifier'
-                          as={Link}
-                          colorScheme='blue'
-                          href={`/admin/categories/${category.id}/edit`}
-                          icon={<EditIcon />}
-                          size='sm'
-                        />
-                        <IconButton
-                          aria-label='Supprimer'
-                          colorScheme='red'
-                          icon={<DeleteIcon />}
-                          isLoading={isDeleting}
-                          size='sm'
-                          onClick={() => handleDeleteClick(category.id)}
-                        />
-                      </HStack>
-                    </Td>
-                  </Tr>
-                ))}
-              </Tbody>
-            </Table>
-          </Box>
-        </Box>
-      </VStack>
-
-      <AlertDialog
-        isOpen={deleteDialog.isOpen}
-        leastDestructiveRef={cancelRef}
-        onClose={deleteDialog.onClose}
+    <AdminPageLayout
+      actions={
+        <AdminActions
+          createHref='/admin/categories/new'
+          createLabel='Ajouter une catégorie'
+        />
+      }
+      title='Gestion des catégories'
+    >
+      <AdminFilters
+        searchPlaceholder='Rechercher une catégorie...'
+        onSearch={setSearchQuery}
+      />
+      <AdminList
+        emptyMessage='Aucune catégorie trouvée'
+        error={error}
+        isEmpty={isEmpty}
+        isLoading={isLoading}
       >
-        <AlertDialogOverlay>
-          <AlertDialogContent>
-            <AlertDialogHeader>Supprimer la catégorie</AlertDialogHeader>
-            <AlertDialogBody>
-              Êtes-vous sûr de vouloir supprimer cette catégorie ? Cette action
-              ne peut pas être annulée.
-            </AlertDialogBody>
-            <AlertDialogFooter>
-              <Button ref={cancelRef} onClick={deleteDialog.onClose}>
-                Annuler
-              </Button>
-              <Button
-                colorScheme='red'
-                isLoading={isDeleting}
-                ml={3}
-                onClick={handleDeleteConfirm}
-              >
-                Supprimer
-              </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialogOverlay>
-      </AlertDialog>
-    </Container>
+        <AdminDataTable<ICategoryData, CategorySortField>
+          columns={[
+            {
+              field: 'name',
+              headerName: 'Nom',
+              sortable: true,
+            },
+            {
+              field: 'createdAt',
+              headerName: 'Créé le',
+              render: row => dayjs(row.createdAt).format('LL'),
+              sortable: true,
+              width: '200px',
+            },
+            {
+              field: 'updatedAt',
+              headerName: 'Modifié le',
+              render: row => dayjs(row.updatedAt).format('LL'),
+              sortable: true,
+              width: '200px',
+            },
+            {
+              field: 'actions',
+              headerName: 'Actions',
+              render: renderActions,
+              width: '120px',
+            },
+          ]}
+          rows={filteredCategories}
+          sortField={sortField}
+          sortOrder={sortOrder}
+          onSort={handleSort}
+        />
+      </AdminList>
+      <AdminDeleteDialog
+        isLoading={isLoading}
+        isOpen={deleteDialog.isOpen}
+        message='Êtes-vous sûr de vouloir supprimer cette catégorie ?'
+        title='Supprimer la catégorie'
+        onClose={() =>
+          !isLoading && setDeleteDialog({ isOpen: false, categoryId: null })
+        }
+        onConfirm={handleDelete}
+      />
+    </AdminPageLayout>
   );
 };
 
-export default CategoriesPage;
+export default AdminCategoriesPage;

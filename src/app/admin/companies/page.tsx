@@ -1,202 +1,223 @@
 'use client';
 
-import { AddIcon, EditIcon, DeleteIcon, SearchIcon } from '@chakra-ui/icons';
+import { useState } from 'react';
+
 import {
-  Box,
-  Button,
-  Container,
-  Heading,
-  HStack,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  IconButton,
-  Badge,
-  useToast,
-  Input,
-  InputGroup,
-  InputLeftElement,
-  VStack,
-  AlertDialog,
-  AlertDialogBody,
-  AlertDialogContent,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogOverlay,
-  useDisclosure,
-} from '@chakra-ui/react';
-import Link from 'next/link';
-import { useState, useMemo, useRef } from 'react';
-
+  AdminActionButtons,
+  AdminActions,
+  AdminDataTable,
+  AdminDeleteDialog,
+  AdminFilters,
+  AdminList,
+  AdminPageLayout,
+  Pagination,
+  defaultActions,
+} from '@/components/admin';
+import { SideColorBadge } from '@/components/common';
+import { useNotifier } from '@/components/common/Notifier';
 import { useCompanies } from '@/hooks/useCompanies';
+import type { ICompanyData } from '@/types/api';
 
-const CompaniesPage = () => {
-  const toast = useToast();
-  const [searchTerm, setSearchTerm] = useState('');
-  const { companies, deleteCompany, isLoading } = useCompanies();
-  const deleteDialog = useDisclosure();
-  const cancelRef = useRef<HTMLButtonElement>(null);
-  const [companyToDelete, setCompanyToDelete] = useState<string | null>(null);
+type CompanySortField = keyof Pick<ICompanyData, 'name'>;
 
-  const filteredCompanies = useMemo(() => {
-    if (!companies) return [];
+interface IDeleteDialogState {
+  isOpen: boolean;
+  companyId: string | null;
+}
 
-    return companies.filter(company => {
-      const searchString = searchTerm.toLowerCase();
-      return company.name.toLowerCase().includes(searchString);
-    });
-  }, [companies, searchTerm]);
+const ROLE_STYLES = {
+  developer: {
+    label: 'Développeur',
+    color: 'rgb(0, 105, 92)',
+    backgroundColor: 'rgb(232, 245, 233)',
+  },
+  publisher: {
+    label: 'Éditeur',
+    color: 'rgb(66, 33, 99)',
+    backgroundColor: 'rgb(237, 231, 246)',
+  },
+} as const;
 
-  const handleDeleteClick = (id: string) => {
-    setCompanyToDelete(id);
-    deleteDialog.onOpen();
+const AdminCompaniesPage = () => {
+  const [deleteDialog, setDeleteDialog] = useState<IDeleteDialogState>({
+    isOpen: false,
+    companyId: null,
+  });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortField, setSortField] = useState<CompanySortField>('name');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const DEFAULT_PAGE_SIZE = 10;
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const {
+    companies = [],
+    pagination,
+    deleteCompany,
+  } = useCompanies({
+    page,
+    limit: pageSize,
+  });
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setPage(1); // Reset to first page when changing page size
+  };
+  const { showSuccess, showError } = useNotifier();
+
+  const handleSort = (field: CompanySortField) => {
+    setSortField(field);
+    setSortOrder(
+      field === sortField ? (sortOrder === 'asc' ? 'desc' : 'asc') : 'asc'
+    );
   };
 
-  const handleDeleteConfirm = async () => {
-    if (!companyToDelete) return;
+  const sortedCompanies = [...(companies || [])].sort((a, b) => {
+    const aValue = a[sortField];
+    const bValue = b[sortField];
+    const order = sortOrder === 'asc' ? 1 : -1;
 
-    try {
-      await deleteCompany(companyToDelete);
-      toast({
-        title: 'Société supprimée',
-        status: 'success',
-        duration: 3000,
-      });
-      deleteDialog.onClose();
-      setCompanyToDelete(null);
-    } catch (error) {
-      toast({
-        title: 'Erreur',
-        description: 'Une erreur est survenue lors de la suppression',
-        status: 'error',
-        duration: 5000,
-      });
+    if (typeof aValue === 'string' && typeof bValue === 'string') {
+      return aValue.localeCompare(bValue) * order;
+    }
+    return 0;
+  });
+
+  const filteredCompanies = sortedCompanies.filter(company =>
+    company.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const isEmpty = !filteredCompanies.length;
+
+  const handleDelete = async () => {
+    if (deleteDialog.companyId) {
+      try {
+        await deleteCompany(deleteDialog.companyId);
+        showSuccess('Société supprimée avec succès');
+        setDeleteDialog({ isOpen: false, companyId: null });
+      } catch (error) {
+        console.error('Error deleting company:', error);
+        showError('Une erreur est survenue lors de la suppression');
+      }
     }
   };
 
+  const renderRoles = (company: ICompanyData) => {
+    const badges = [];
+
+    if (company.isDeveloper) {
+      const style = ROLE_STYLES.developer;
+      badges.push(
+        <SideColorBadge
+          key='dev'
+          backgroundColor={style.backgroundColor}
+          color={style.color}
+          label={style.label}
+        />
+      );
+    }
+
+    if (company.isPublisher) {
+      const style = ROLE_STYLES.publisher;
+      badges.push(
+        <SideColorBadge
+          key='pub'
+          backgroundColor={style.backgroundColor}
+          color={style.color}
+          label={style.label}
+        />
+      );
+    }
+
+    return (
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        {badges}
+      </div>
+    );
+  };
+
   return (
-    <Container maxW='container.xl' py={8}>
-      <VStack align='stretch' spacing={8}>
-        <HStack justify='space-between'>
-          <Heading size='lg'>Gestion des sociétés</Heading>
-          <Button
-            as={Link}
-            colorScheme='blue'
-            href='/admin/companies/new'
-            leftIcon={<AddIcon />}
-          >
-            Ajouter une société
-          </Button>
-        </HStack>
-
-        <Box>
-          <InputGroup maxW='md' mb={4}>
-            <InputLeftElement pointerEvents='none'>
-              <SearchIcon color='gray.300' />
-            </InputLeftElement>
-            <Input
-              placeholder='Rechercher une société...'
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-            />
-          </InputGroup>
-
-          <Table variant='simple'>
-            <Thead>
-              <Tr>
-                <Th>Nom</Th>
-                <Th>Type</Th>
-                <Th>Jeux</Th>
-                <Th width='100px'>Actions</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {filteredCompanies.map(company => (
-                <Tr key={company.id}>
-                  <Td>{company.name}</Td>
-                  <Td>
-                    <HStack spacing={2}>
-                      {company.isDeveloper && (
-                        <Badge colorScheme='blue'>Développeur</Badge>
-                      )}
-                      {company.isPublisher && (
-                        <Badge colorScheme='green'>Éditeur</Badge>
-                      )}
-                    </HStack>
-                  </Td>
-                  <Td>
-                    <HStack spacing={2}>
-                      {(company._count?.gamesAsDev ?? 0) > 0 && (
-                        <Badge colorScheme='blue'>
-                          {company._count?.gamesAsDev} dév.
-                        </Badge>
-                      )}
-                      {(company._count?.gamesAsPub ?? 0) > 0 && (
-                        <Badge colorScheme='green'>
-                          {company._count?.gamesAsPub} pub.
-                        </Badge>
-                      )}
-                    </HStack>
-                  </Td>
-                  <Td>
-                    <HStack spacing={2}>
-                      <IconButton
-                        aria-label='Modifier'
-                        as={Link}
-                        colorScheme='blue'
-                        href={`/admin/companies/${company.id}/edit`}
-                        icon={<EditIcon />}
-                        size='sm'
-                      />
-                      <IconButton
-                        aria-label='Supprimer'
-                        colorScheme='red'
-                        icon={<DeleteIcon />}
-                        size='sm'
-                        onClick={() => handleDeleteClick(company.id)}
-                      />
-                    </HStack>
-                  </Td>
-                </Tr>
-              ))}
-            </Tbody>
-          </Table>
-        </Box>
-      </VStack>
-
-      <AlertDialog
+    <AdminPageLayout
+      actions={
+        <AdminActions
+          createHref='/admin/companies/new'
+          createLabel='Ajouter une société'
+        />
+      }
+      title='Gestion des sociétés'
+    >
+      <AdminFilters
+        searchPlaceholder='Rechercher une société...'
+        onSearch={setSearchQuery}
+      />
+      {pagination && (
+        <Pagination
+          currentPage={page}
+          pageSize={pageSize}
+          total={pagination.total}
+          totalPages={pagination.pages}
+          onPageChange={setPage}
+          onPageSizeChange={handlePageSizeChange}
+        />
+      )}
+      <AdminList emptyMessage='Aucune société trouvée' isEmpty={isEmpty}>
+        <AdminDataTable<ICompanyData, CompanySortField>
+          columns={[
+            {
+              field: 'name',
+              headerName: 'Nom',
+              sortable: true,
+            },
+            {
+              field: 'isDeveloper',
+              headerName: 'Rôles',
+              render: renderRoles,
+              width: '250px',
+            },
+            {
+              field: 'actions',
+              headerName: 'Actions',
+              render: row => (
+                <AdminActionButtons
+                  actions={[
+                    defaultActions.edit(`/admin/companies/${row.id}/edit`),
+                    defaultActions.delete(() =>
+                      setDeleteDialog({
+                        isOpen: true,
+                        companyId: row.id,
+                      })
+                    ),
+                  ]}
+                />
+              ),
+              width: '120px',
+            },
+          ]}
+          rows={filteredCompanies}
+          sortField={sortField}
+          sortOrder={sortOrder}
+          onSort={handleSort}
+        />
+      </AdminList>
+      {pagination && (
+        <Pagination
+          currentPage={page}
+          pageSize={pageSize}
+          total={pagination.total}
+          totalPages={pagination.pages}
+          onPageChange={setPage}
+          onPageSizeChange={handlePageSizeChange}
+        />
+      )}
+      <AdminDeleteDialog
+        isLoading={false}
         isOpen={deleteDialog.isOpen}
-        leastDestructiveRef={cancelRef}
-        onClose={deleteDialog.onClose}
-      >
-        <AlertDialogOverlay>
-          <AlertDialogContent>
-            <AlertDialogHeader>Supprimer la société</AlertDialogHeader>
-            <AlertDialogBody>
-              Êtes-vous sûr de vouloir supprimer cette société ? Cette action ne
-              peut pas être annulée.
-            </AlertDialogBody>
-            <AlertDialogFooter>
-              <Button ref={cancelRef} onClick={deleteDialog.onClose}>
-                Annuler
-              </Button>
-              <Button
-                colorScheme='red'
-                isLoading={isLoading}
-                ml={3}
-                onClick={handleDeleteConfirm}
-              >
-                Supprimer
-              </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialogOverlay>
-      </AlertDialog>
-    </Container>
+        message='Êtes-vous sûr de vouloir supprimer cette société ?'
+        title='Supprimer la société'
+        onClose={() => setDeleteDialog({ isOpen: false, companyId: null })}
+        onConfirm={handleDelete}
+      />
+    </AdminPageLayout>
   );
 };
 
-export default CompaniesPage;
+export default AdminCompaniesPage;

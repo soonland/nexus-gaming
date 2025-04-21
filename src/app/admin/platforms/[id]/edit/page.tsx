@@ -1,73 +1,37 @@
 'use client';
 
-import {
-  Container,
-  Alert,
-  AlertIcon,
-  Card,
-  CardHeader,
-  CardBody,
-  Heading,
-} from '@chakra-ui/react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 
-import PlatformFormLoading from '@/components/loading/PlatformFormLoading';
-import { usePlatform, usePlatforms } from '@/hooks/usePlatforms';
-import type { PlatformForm as PlatformFormType } from '@/types';
+import { AdminList, AdminPageLayout } from '@/components/admin';
+import { usePlatform } from '@/hooks/usePlatforms';
 
-import PlatformForm from '../../_components/PlatformForm';
+import { PlatformForm } from '../../_components/PlatformForm';
 
 const EditPlatformPage = () => {
   const params = useParams();
-  const id = params.id as string;
-  const { platform, isLoading } = usePlatform(id);
-  const { updatePlatform, isUpdating } = usePlatforms();
-  const router = useRouter();
-
-  if (isLoading) {
-    return (
-      <Container maxW='container.md' py={8}>
-        <PlatformFormLoading />
-      </Container>
-    );
-  }
-
-  if (!platform) {
-    return (
-      <Container maxW='container.md' py={8}>
-        <Alert status='error'>
-          <AlertIcon />
-          Plateforme non trouvée
-        </Alert>
-      </Container>
-    );
-  }
-
-  const handleSubmit = async (data: PlatformFormType) => {
-    await updatePlatform({ id, data });
-    router.push('/admin/platforms');
-  };
+  const { platform, isLoading, error } = usePlatform(params.id as string);
 
   return (
-    <Container maxW='container.md' py={8}>
-      <Card>
-        <CardHeader>
-          <Heading size='lg'>Modifier la plateforme</Heading>
-        </CardHeader>
-        <CardBody>
+    <AdminPageLayout title='Modifier la plateforme'>
+      <AdminList
+        emptyMessage='Plateforme introuvable'
+        error={error}
+        isEmpty={!platform}
+        isLoading={isLoading}
+      >
+        {platform && (
           <PlatformForm
             initialData={{
+              id: platform.id,
               name: platform.name,
               manufacturer: platform.manufacturer,
-              releaseDate: platform.releaseDate?.toISOString() || null,
+              releaseDate: platform.releaseDate || null,
             }}
-            isLoading={isUpdating}
             mode='edit'
-            onSubmit={handleSubmit}
           />
-        </CardBody>
-      </Card>
-    </Container>
+        )}
+      </AdminList>
+    </AdminPageLayout>
   );
 };
 

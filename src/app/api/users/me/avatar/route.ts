@@ -1,26 +1,67 @@
+import { v2 as cloudinary } from 'cloudinary';
 import { NextResponse } from 'next/server';
 
+import { cloudinaryConfig } from '@/lib/cloudinary';
+import { getPublicIdFromUrl } from '@/lib/cloudinary';
 import { getCurrentUser } from '@/lib/jwt';
 import prisma from '@/lib/prisma';
+import { deleteImageServer } from '@/lib/upload/server';
 
-export async function PATCH(request: Request) {
+cloudinary.config(cloudinaryConfig);
+
+export async function POST(request: Request) {
   try {
+    // Vérifier l'authentification
     const currentUser = await getCurrentUser();
     if (!currentUser) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { avatarUrl } = await request.json();
-    // avatarUrl peut être null ou une string
-
-    const updatedUser = await prisma.user.update({
+    // Récupérer l'utilisateur complet avec l'ancien avatar
+    const user = await prisma.user.findUnique({
       where: { id: currentUser.id },
+      select: {
+        id: true,
+        avatarUrl: true,
+      },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    // Récupérer l'URL de l'avatar depuis le body
+    const { avatarUrl } = await request.json();
+    if (!avatarUrl) {
+      return NextResponse.json(
+        { error: 'Avatar URL is required' },
+        { status: 400 }
+      );
+    }
+
+    // Supprimer l'ancien avatar s'il existe
+    if (user.avatarUrl) {
+      const publicId = getPublicIdFromUrl(user.avatarUrl);
+      if (publicId) {
+        try {
+          await deleteImageServer(publicId);
+        } catch (error) {
+          console.error('Error deleting old avatar:', error);
+          // On continue malgré l'erreur de suppression
+        }
+      }
+    }
+
+    // Mettre à jour l'avatar de l'utilisateur
+    const updatedUser = await prisma.user.update({
+      where: { id: user.id },
       data: { avatarUrl },
       select: {
         id: true,
         username: true,
         email: true,
         avatarUrl: true,
+        role: true,
       },
     });
 

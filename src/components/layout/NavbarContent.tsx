@@ -3,19 +3,18 @@
 import {
   Avatar,
   Button,
-  HStack,
+  Stack,
   Menu,
-  MenuButton,
-  MenuList,
   MenuItem,
   IconButton,
-  Text,
-  useColorModeValue,
-} from '@chakra-ui/react';
+  Box,
+} from '@mui/material';
 import { Role } from '@prisma/client';
 import Link from 'next/link';
+import { useState } from 'react';
 import { BiPowerOff, BiUser } from 'react-icons/bi';
 import { FiMenu } from 'react-icons/fi';
+import { MdDashboard } from 'react-icons/md';
 
 import { NotificationBell } from '@/components/common/NotificationBell';
 import { useAuth } from '@/hooks/useAuth';
@@ -23,71 +22,118 @@ import { canManageAnnouncements } from '@/lib/permissions';
 
 export const NavbarContent = () => {
   const { user, logout } = useAuth();
-  const bgColor = useColorModeValue('white', 'gray.800');
-  const borderColor = useColorModeValue('gray.200', 'gray.700');
+  const [adminMenuAnchor, setAdminMenuAnchor] = useState<null | HTMLElement>(
+    null
+  );
+  const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(
+    null
+  );
 
   const isAdmin = user && user.role !== Role.USER;
   const hasAnnouncementAccess = canManageAnnouncements(user?.role);
 
   return (
-    <HStack
-      bg={bgColor}
-      borderBottom='1px'
-      borderColor={borderColor}
-      justify='space-between'
-      px={4}
-      py={2}
+    <Stack
+      direction='row'
+      justifyContent='space-between'
+      sx={{
+        bgcolor: 'background.paper',
+        borderBottom: 1,
+        borderColor: 'divider',
+        px: 2,
+        py: 1,
+      }}
     >
       {/* Navigation principale */}
-      <HStack spacing={8}>
-        <Button as={Link} href='/' variant='ghost'>
+      <Stack alignItems='center' direction='row' spacing={2}>
+        <Button component={Link} href='/' variant='text'>
           Accueil
         </Button>
-        <Button as={Link} href='/articles' variant='ghost'>
+        <Button component={Link} href='/articles' variant='text'>
           Articles
         </Button>
-        <Button as={Link} href='/games' variant='ghost'>
+        <Button component={Link} href='/games' variant='text'>
           Jeux
         </Button>
-      </HStack>
+      </Stack>
 
       {/* Menu de droite */}
-      <HStack>
+      <Stack alignItems='center' direction='row' spacing={2}>
         {/* Menu admin */}
         {isAdmin && (
-          <Menu>
-            <MenuButton
+          <>
+            <Button
+              component={Link}
+              href='/admin'
+              startIcon={<MdDashboard />}
+              variant='text'
+            >
+              Dashboard
+            </Button>
+            <IconButton
               aria-label="Menu d'administration"
-              as={IconButton}
-              icon={<FiMenu />}
-              variant='ghost'
-            />
-            <MenuList>
+              onClick={e => setAdminMenuAnchor(e.currentTarget)}
+            >
+              <FiMenu />
+            </IconButton>
+            <Menu
+              anchorEl={adminMenuAnchor}
+              open={Boolean(adminMenuAnchor)}
+              onClose={() => setAdminMenuAnchor(null)}
+            >
               {hasAnnouncementAccess && (
-                <MenuItem as={Link} href='/admin/announcements'>
+                <MenuItem
+                  component={Link}
+                  href='/admin/announcements'
+                  onClick={() => setAdminMenuAnchor(null)}
+                >
                   Annonces
                 </MenuItem>
               )}
-              <MenuItem as={Link} href='/admin/users'>
+              <MenuItem
+                component={Link}
+                href='/admin/users'
+                onClick={() => setAdminMenuAnchor(null)}
+              >
                 Utilisateurs
               </MenuItem>
-              <MenuItem as={Link} href='/admin/articles'>
+              <MenuItem
+                component={Link}
+                href='/admin/articles'
+                onClick={() => setAdminMenuAnchor(null)}
+              >
                 Articles
               </MenuItem>
-              <MenuItem as={Link} href='/admin/categories'>
+              <MenuItem
+                component={Link}
+                href='/admin/categories'
+                onClick={() => setAdminMenuAnchor(null)}
+              >
                 Catégories
               </MenuItem>
-              <MenuItem as={Link} href='/admin/games'>
+              <MenuItem
+                component={Link}
+                href='/admin/games'
+                onClick={() => setAdminMenuAnchor(null)}
+              >
                 Jeux
               </MenuItem>
-              <MenuItem as={Link} href='/admin/platforms'>
+              <MenuItem
+                component={Link}
+                href='/admin/platforms'
+                onClick={() => setAdminMenuAnchor(null)}
+              >
                 Plateformes
               </MenuItem>
-              <MenuItem as={Link} href='/admin/companies'>
+              <MenuItem
+                component={Link}
+                href='/admin/companies'
+                onClick={() => setAdminMenuAnchor(null)}
+              >
                 Entreprises
               </MenuItem>
-            </MenuList>
-          </Menu>
+            </Menu>
+          </>
         )}
 
         {/* Notifications */}
@@ -95,32 +141,51 @@ export const NavbarContent = () => {
 
         {/* Menu utilisateur ou bouton de connexion */}
         {user ? (
-          <Menu>
-            <MenuButton as={Button} px={2} variant='ghost'>
-              <HStack spacing={2}>
+          <>
+            <Button
+              startIcon={
                 <Avatar
-                  name={user.username}
-                  size='sm'
+                  alt={user.username}
                   src={user.avatarUrl || undefined}
+                  sx={{ width: 32, height: 32 }}
                 />
-                <Text>{user.username}</Text>
-              </HStack>
-            </MenuButton>
-            <MenuList>
-              <MenuItem as={Link} href='/profile' icon={<BiUser />}>
+              }
+              variant='text'
+              onClick={e => setUserMenuAnchor(e.currentTarget)}
+            >
+              {user.username}
+            </Button>
+            <Menu
+              anchorEl={userMenuAnchor}
+              open={Boolean(userMenuAnchor)}
+              onClose={() => setUserMenuAnchor(null)}
+            >
+              <MenuItem
+                component={Link}
+                href='/profile'
+                onClick={() => setUserMenuAnchor(null)}
+              >
+                <Box component={BiUser} sx={{ mr: 1 }} />
                 Mon profil
               </MenuItem>
-              <MenuItem color='red.500' icon={<BiPowerOff />} onClick={logout}>
+              <MenuItem
+                sx={{ color: 'error.main' }}
+                onClick={() => {
+                  setUserMenuAnchor(null);
+                  logout();
+                }}
+              >
+                <Box component={BiPowerOff} sx={{ mr: 1 }} />
                 Déconnexion
               </MenuItem>
-            </MenuList>
-          </Menu>
+            </Menu>
+          </>
         ) : (
-          <Button as={Link} href='/login' variant='ghost'>
+          <Button component={Link} href='/login' variant='text'>
             Connexion
           </Button>
         )}
-      </HStack>
-    </HStack>
+      </Stack>
+    </Stack>
   );
 };

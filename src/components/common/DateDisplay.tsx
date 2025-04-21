@@ -1,6 +1,7 @@
 'use client';
 
-import { Text, Tooltip } from '@chakra-ui/react';
+import { CalendarMonth } from '@mui/icons-material';
+import { Typography, Tooltip, Stack } from '@mui/material';
 
 import { formatters } from '@/lib/dayjs';
 
@@ -11,6 +12,7 @@ interface IDateDisplayProps {
   tooltipFormat?: 'relative' | 'short' | 'long' | 'calendar';
   customFormat?: string;
   color?: string;
+  sx?: React.CSSProperties;
 }
 
 export const DateDisplay = ({
@@ -19,7 +21,8 @@ export const DateDisplay = ({
   withTooltip = true,
   tooltipFormat,
   customFormat,
-  color = 'gray.500',
+  color = 'text.secondary',
+  sx,
 }: IDateDisplayProps) => {
   // Si un format personnalisé est fourni, l'utiliser
   const formattedDate = customFormat
@@ -34,14 +37,23 @@ export const DateDisplay = ({
       : formatters.relative(date);
 
   const content = (
-    <Text as='time' color={color} dateTime={formattedDate} fontSize='sm'>
-      {formattedDate}
-    </Text>
+    <Stack alignItems='center' direction='row' spacing={1}>
+      <CalendarMonth />
+      <Typography
+        color={color}
+        component='time'
+        dateTime={formattedDate}
+        sx={sx}
+        variant='body2'
+      >
+        {formattedDate}
+      </Typography>
+    </Stack>
   );
 
   if (withTooltip) {
     return (
-      <Tooltip hasArrow label={tooltipDate} placement='top'>
+      <Tooltip arrow placement='top' title={tooltipDate}>
         {content}
       </Tooltip>
     );
