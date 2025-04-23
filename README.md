@@ -1,180 +1,154 @@
-# Nexus Gaming 🎮
+# Nexus Gaming News
 
-[![Next.js](https://img.shields.io/badge/Next.js-15.0-black?style=flat&logo=next.js)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue?style=flat&logo=typescript)](https://www.typescriptlang.org/)
-[![Prisma](https://img.shields.io/badge/Prisma-5.10-2D3748?style=flat&logo=prisma)](https://www.prisma.io/)
-[![Chakra UI](https://img.shields.io/badge/Chakra%20UI-2.8-319795?style=flat&logo=chakra-ui)](https://chakra-ui.com/)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+Modern platform for managing and publishing video game content. Complete
+administration interface for managing articles, games, and system announcements.
 
-> Modern gaming platform for managing and discovering video games with an
-> advanced article and review system.
+## Project Status
 
-## ✨ Features
+- **Version**: 1.0.0
+- **Status**: Active Development
+- **Last Update**: April 2025
 
-- 🎯 **Complete Game Management** - Detailed game pages, categorization,
-  developer/publisher associations
-- 📝 **Article System** - Article publishing with approval workflow
-- 👥 **User Profiles** - Profile management with gaming social network
-  integration
-- 🎨 **Modern Interface** - Responsive design with light/dark theme
-- 🔐 **Robust Authentication** - Complete system with role management
-- 🌐 **RESTful API** - Modern architecture with Next.js API routes
-- 🔄 **Content Management** - Complete CRUD system for all content types
-- 📊 **Administration** - Comprehensive admin interface
+## Prerequisites
 
-## 🛠️ Technical Stack
+- Node.js (>= 20.0.0)
+- PostgreSQL (>= 15.0)
+- NPM (>= 10.0.0)
 
-- **Framework**: [Next.js 15](https://nextjs.org/)
-- **Language**: [TypeScript](https://www.typescriptlang.org/)
-- **ORM**: [Prisma](https://www.prisma.io/) with PostgreSQL
-- **UI**: [Chakra UI](https://chakra-ui.com/)
-- **State**: [TanStack Query](https://tanstack.com/query)
-- **Auth**: JWT with bcrypt
-- **Validation**: [Zod](https://zod.dev/)
-- **Testing**: Jest & React Testing Library
-- **Linting**: ESLint & Prettier
+## Quick Start
 
-## 🚀 Installation
-
-### Prerequisites
-
-- Node.js v20+
-- PostgreSQL 15+
-- Docker (optional)
-
-### Standard Method
-
-1. **Clone the repository**
+1. Clone the repository
 
 ```bash
-git clone <repository-url>
+git clone git@github.com:your-org/nexus-gaming.git
 cd nexus-gaming
 ```
 
-2. **Install dependencies**
+2. Install dependencies
 
 ```bash
 npm install
 ```
 
-3. **Configuration**
+3. Configure environment
 
 ```bash
 cp .env.example .env
+# Edit .env with your configurations
 ```
 
-Configure environment variables in .env:
-
-```env
-DATABASE_URL="postgresql://user:password@localhost:5432/nexus-gaming"
-JWT_SECRET="your-jwt-secret"
-CLOUDINARY_URL="your-cloudinary-url"
-```
-
-4. **Initialize database**
+4. Initialize database
 
 ```bash
 npx prisma migrate dev
 npm run db:seed
 ```
 
-5. **Start the application**
+5. Start development server
 
 ```bash
 npm run dev
 ```
 
-### Docker Method
+## Project Structure
 
-1. **Build and start containers**
+```
+src/
+├── app/          # Pages and routes (Next.js App Router)
+├── components/   # React components
+├── hooks/        # Custom hooks
+├── lib/          # Utilities and configurations
+├── providers/    # React providers
+└── types/        # TypeScript types
+```
+
+## Architecture
+
+### Frontend
+
+- Next.js 15 with App Router
+- Material UI v7
+- React Query for state management
+- Modular component system
+
+### Backend
+
+- Next.js API Routes
+- Prisma ORM
+- PostgreSQL
+- JWT Authentication
+
+## Database
+
+### Core Models
+
+- Users
+- Articles (News and reviews)
+- Games
+- Categories
+- Companies
+- Platforms
+- Announcements
+
+## Core Commands
+
+### Development
 
 ```bash
-docker-compose up -d
+npm run dev          # Development server
+npm run lint         # Code checking
+npm run format       # Code formatting
 ```
 
-The application will be available at
-[http://localhost:3000](http://localhost:3000)
+### Database
 
-## 📁 Project Structure
-
-```
-nexus-gaming/
-├── prisma/                 # Prisma schema and migrations
-├── public/                 # Static files
-└── src/
-    ├── app/               # Next.js routes and pages
-    │   ├── admin/        # Admin interface
-    │   ├── api/          # API routes
-    │   └── [...]/        # Other routes
-    ├── components/        # React components
-    │   ├── admin/        # Admin components
-    │   ├── common/       # Reusable components
-    │   └── [...]/        # Other components
-    ├── hooks/            # Custom hooks
-    ├── lib/              # Utilities and configurations
-    ├── providers/        # React providers
-    └── types/            # TypeScript types
+```bash
+npm run db:migrate   # Apply migrations
+npm run db:seed     # Seed database
+npm run db:clean    # Reset database
 ```
 
-## 📊 Data Models
+### Production
 
-### Main Entities
-
-- **User**: User management and authentication
-- **Game**: Game information
-- **Article**: Articles and reviews
-- **Company**: Developers and publishers
-- **Platform**: Gaming platforms
-- **Category**: Content categorization
-- **AdminAnnouncement**: System announcements
-
-[View complete Prisma schema](prisma/schema.prisma)
-
-## 📝 Available Scripts
-
-- `npm run dev`: Development mode
-- `npm run build`: Production build
-- `npm run start`: Start production server
-- `npm run lint`: Check code
-- `npm run format`: Format code
-- `npm run db:clean`: Reset database
-- `npm run type-check`: Check types
-
-## 👥 Contributing
-
-1. Fork the project
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-### Commit Conventions
-
-We use [Conventional Commits](https://www.conventionalcommits.org/):
-
-```
-feat: new feature
-fix: bug fix
-docs: documentation
-style: formatting
-refactor: code refactoring
-test: adding/updating tests
-chore: maintenance
+```bash
+npm run build       # Build
+npm start          # Production start
 ```
 
-## 📜 License
+## Code Standards
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file
-for details.
+- Strict TypeScript
+- Custom ESLint config
+- Prettier formatting
+- Conventional commits
 
-## 🤝 Support
+## Testing
 
-For questions or issues:
+```bash
+npm run test        # Run tests
+npm run test:watch  # Watch mode
+npm run test:e2e    # End-to-end tests
+```
 
-1. Check the [documentation](docs/)
-2. Open an [issue](issues/)
-3. Contact the development team
+## Key Considerations
 
----
+- Required environment variables setup
+- Up-to-date database migrations
+- Cache and upload folder permissions
+- Cloudinary configuration for media
 
-Made with ❤️ by the Nexus Gaming Team
+## Resources
+
+- [Technical Documentation](docs/technical.md)
+- [Contributing Guide](CONTRIBUTING.md)
+- [Changelog](CHANGELOG.md)
+
+## Contact
+
+- **Team**: Nexus Gaming Team
+- **Email**: team@nexus-gaming.com
+
+## License
+
+This project is licensed under the MIT License. See [LICENSE](LICENSE) file for
+details.

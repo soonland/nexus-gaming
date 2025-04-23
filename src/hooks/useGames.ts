@@ -74,7 +74,7 @@ export function useCreateGame() {
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['games'] });
+      queryClient.refetchQueries({ queryKey: ['games'] });
     },
   });
 }
@@ -88,8 +88,8 @@ export function useUpdateGame() {
       return response.data;
     },
     onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: ['games'] });
-      queryClient.invalidateQueries({ queryKey: ['game', id] });
+      queryClient.refetchQueries({ queryKey: ['games'] });
+      queryClient.refetchQueries({ queryKey: ['game', id] });
     },
   });
 }
@@ -100,7 +100,7 @@ export function useDeleteGame() {
   return useMutation({
     mutationFn: gamesApi.delete,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['games'] });
+      queryClient.refetchQueries({ queryKey: ['games'] });
     },
   });
 }

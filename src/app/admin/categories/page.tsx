@@ -40,9 +40,7 @@ const AdminCategoriesPage = () => {
 
   const handleSort = (field: CategorySortField) => {
     setSortField(field);
-    setSortOrder(
-      field === sortField ? (sortOrder === 'asc' ? 'desc' : 'asc') : 'asc'
-    );
+    setSortOrder(field === sortField && sortOrder === 'asc' ? 'desc' : 'asc');
   };
 
   const sortedCategories = [...(categories || [])].sort((a, b) => {

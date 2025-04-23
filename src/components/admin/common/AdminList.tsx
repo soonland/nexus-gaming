@@ -1,6 +1,5 @@
 'use client';
 
-import ReportProblemIcon from '@mui/icons-material/ReportProblem';
 import {
   Alert,
   Box,
@@ -9,6 +8,7 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
+import { FiAlertTriangle } from 'react-icons/fi';
 
 interface IAdminListProps {
   children: React.ReactNode;
@@ -29,7 +29,7 @@ export const AdminList = ({
 }: IAdminListProps) => {
   if (error) {
     return (
-      <Alert icon={<ReportProblemIcon />} severity='error' variant='outlined'>
+      <Alert icon={<FiAlertTriangle />} severity='error' variant='outlined'>
         Une erreur est survenue lors du chargement des données
       </Alert>
     );

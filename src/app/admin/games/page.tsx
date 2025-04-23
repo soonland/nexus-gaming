@@ -13,7 +13,7 @@ import {
   Pagination,
   defaultActions,
 } from '@/components/admin';
-import { SideColorBadge } from '@/components/common';
+import { ColorDot } from '@/components/common';
 import { useNotifier } from '@/components/common/Notifier';
 import { useGames, useDeleteGame } from '@/hooks/useGames';
 import dayjs from '@/lib/dayjs';
@@ -54,9 +54,7 @@ const AdminGamesPage = () => {
 
   const handleSort = (field: GameSortField) => {
     setSortField(field);
-    setSortOrder(
-      field === sortField ? (sortOrder === 'asc' ? 'desc' : 'asc') : 'asc'
-    );
+    setSortOrder(field === sortField && sortOrder === 'asc' ? 'desc' : 'asc');
   };
 
   const sortedGames = (games || []).sort((a: IGameData, b: IGameData) => {
@@ -98,9 +96,8 @@ const AdminGamesPage = () => {
     return (
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
         {game.platforms.map(platform => (
-          <SideColorBadge
+          <ColorDot
             key={platform.id}
-            backgroundColor='rgb(237, 247, 237)'
             color='rgb(30, 70, 32)'
             label={platform.name}
           />

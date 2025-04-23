@@ -13,7 +13,9 @@ import Link from 'next/link';
 import { FiArrowRight } from 'react-icons/fi';
 
 import { ArticleCard } from '@/components/articles/ArticleCard';
+import { ArticleCardSkeleton } from '@/components/articles/ArticleCardSkeleton';
 import { GameCard } from '@/components/games/GameCard';
+import { GameCardSkeleton } from '@/components/games/GameCardSkeleton';
 import { useArticles } from '@/hooks/useArticles';
 import { useGames } from '@/hooks/useGames';
 
@@ -53,8 +55,13 @@ const ViewAllButton = ({ href }: { href: string }) => (
 );
 
 const Home = () => {
-  const { articles } = useArticles({ limit: 3 });
-  const { games } = useGames({ limit: 3, admin: false });
+  const { articles, isLoading: articlesLoading } = useArticles({ limit: 3 });
+  const { games, isLoading: gamesLoading } = useGames({
+    limit: 3,
+    admin: false,
+  });
+
+  const skeletonArray = Array.from({ length: 3 }, (_, index) => index);
 
   return (
     <Box sx={{ pb: 8 }}>
@@ -114,11 +121,17 @@ const Home = () => {
         <Box mb={8}>
           <SectionTitle>Articles Récents</SectionTitle>
           <Grid container spacing={4}>
-            {articles.map(article => (
-              <Grid key={article.id} size={4}>
-                <ArticleCard article={article} />
-              </Grid>
-            ))}
+            {articlesLoading
+              ? skeletonArray.map(index => (
+                  <Grid key={`skeleton-${index}`} size={4}>
+                    <ArticleCardSkeleton />
+                  </Grid>
+                ))
+              : articles.map(article => (
+                  <Grid key={article.id} size={4}>
+                    <ArticleCard article={article} />
+                  </Grid>
+                ))}
           </Grid>
           <Box textAlign='center'>
             <ViewAllButton href='/articles' />
@@ -129,11 +142,17 @@ const Home = () => {
         <Box>
           <SectionTitle>Jeux en Vedette</SectionTitle>
           <Grid container spacing={4}>
-            {games.map(game => (
-              <Grid key={game.id} size={4}>
-                <GameCard game={game} />
-              </Grid>
-            ))}
+            {gamesLoading
+              ? skeletonArray.map(index => (
+                  <Grid key={`skeleton-${index}`} size={4}>
+                    <GameCardSkeleton />
+                  </Grid>
+                ))
+              : games.map(game => (
+                  <Grid key={game.id} size={4}>
+                    <GameCard game={game} />
+                  </Grid>
+                ))}
           </Grid>
           <Box textAlign='center'>
             <ViewAllButton href='/games' />

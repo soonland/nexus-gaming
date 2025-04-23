@@ -1,8 +1,8 @@
 'use client';
 
-import { Add as AddIcon } from '@mui/icons-material';
 import { Box, Button } from '@mui/material';
 import Link from 'next/link';
+import { FiPlus as AddIcon } from 'react-icons/fi';
 
 interface IAdminActionsProps {
   createHref?: string;

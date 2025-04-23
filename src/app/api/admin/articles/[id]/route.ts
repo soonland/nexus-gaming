@@ -2,6 +2,7 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { getCurrentUser } from '@/lib/jwt';
+import { canSelectArticleAuthor } from '@/lib/permissions';
 import prisma from '@/lib/prisma';
 import type { ArticleForm } from '@/types';
 
@@ -40,12 +41,42 @@ export async function GET(
           select: {
             id: true,
             username: true,
+            avatarUrl: true,
+            role: true,
+          },
+        },
+        currentReviewer: {
+          select: {
+            id: true,
+            username: true,
+            avatarUrl: true,
+            role: true,
           },
         },
         games: {
           select: {
             id: true,
             title: true,
+          },
+        },
+        approvalHistory: {
+          orderBy: {
+            createdAt: 'desc',
+          },
+          select: {
+            id: true,
+            fromStatus: true,
+            toStatus: true,
+            action: true,
+            comment: true,
+            createdAt: true,
+            actionBy: {
+              select: {
+                id: true,
+                username: true,
+                role: true,
+              },
+            },
           },
         },
       },
@@ -75,6 +106,7 @@ export async function PATCH(
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
     const { id } = await params;
     const data = (await request.json()) as ArticleForm & { id: string };
     const {
@@ -85,6 +117,7 @@ export async function PATCH(
       publishedAt,
       gameIds = [],
       heroImage,
+      userId,
     } = data;
 
     if (!title || !content || !categoryId) {
@@ -92,6 +125,24 @@ export async function PATCH(
         { error: 'Title, content and category are required' },
         { status: 400 }
       );
+    }
+
+    // Check if user has permission to change article author
+    if (userId !== user.id && !canSelectArticleAuthor(user.role)) {
+      return NextResponse.json(
+        { error: 'Permission denied to change article author' },
+        { status: 403 }
+      );
+    }
+
+    // Get current article to validate permissions
+    const currentArticle = await prisma.article.findUnique({
+      where: { id },
+      select: { userId: true },
+    });
+
+    if (!currentArticle) {
+      return NextResponse.json({ error: 'Article not found' }, { status: 404 });
     }
 
     const article = await prisma.article.update({
@@ -103,6 +154,7 @@ export async function PATCH(
         publishedAt: publishedAt ? new Date(publishedAt) : null,
         categoryId,
         heroImage,
+        ...(userId && { userId }), // Only include userId if it's provided
         games: {
           set: gameIds.map(id => ({ id })),
         },
@@ -120,18 +172,53 @@ export async function PATCH(
           select: {
             id: true,
             name: true,
+            createdAt: true,
+            updatedAt: true,
           },
         },
         user: {
           select: {
             id: true,
             username: true,
+            avatarUrl: true,
+            role: true,
+          },
+        },
+        currentReviewer: {
+          select: {
+            id: true,
+            username: true,
+            avatarUrl: true,
+            role: true,
           },
         },
         games: {
           select: {
             id: true,
             title: true,
+            coverImage: true,
+            genre: true,
+          },
+        },
+        approvalHistory: {
+          orderBy: {
+            createdAt: 'desc',
+          },
+          take: 5,
+          select: {
+            id: true,
+            fromStatus: true,
+            toStatus: true,
+            action: true,
+            comment: true,
+            createdAt: true,
+            actionBy: {
+              select: {
+                id: true,
+                username: true,
+                role: true,
+              },
+            },
           },
         },
       },

@@ -26,7 +26,7 @@ export function useCategories() {
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['categories'] });
+      queryClient.refetchQueries({ queryKey: ['categories'] });
     },
   });
 
@@ -35,8 +35,9 @@ export function useCategories() {
       const response = await axios.patch(`/api/categories/${id}`, data);
       return response.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['categories'] });
+    onSuccess: (_, variables) => {
+      queryClient.refetchQueries({ queryKey: ['categories'] });
+      queryClient.refetchQueries({ queryKey: ['category', variables.id] });
     },
   });
 
@@ -45,7 +46,7 @@ export function useCategories() {
       await axios.delete(`/api/categories/${id}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['categories'] });
+      queryClient.refetchQueries({ queryKey: ['categories'] });
     },
   });
 

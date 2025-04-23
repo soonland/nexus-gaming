@@ -40,7 +40,7 @@ export const Hero = ({
 
   return (
     <Box mb={2} sx={sx}>
-      <Container maxWidth='xl'>
+      <Container maxWidth='lg'>
         <Box
           sx={{
             position: 'relative',

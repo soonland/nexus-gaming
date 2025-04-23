@@ -10,7 +10,7 @@ import {
 } from '@mui/material';
 import Link from 'next/link';
 import { useState } from 'react';
-import { FiEdit2, FiMoreVertical, FiTrash } from 'react-icons/fi';
+import { FiEdit2, FiMoreVertical, FiTrash, FiEye } from 'react-icons/fi';
 import type { IconType } from 'react-icons/lib';
 
 interface IAction {
@@ -141,11 +141,18 @@ export const AdminActionButtons = ({
 
 // Actions prédéfinies
 export const defaultActions = {
-  edit: (href: string): IAction => ({
+  view: (href: string): IAction => ({
+    label: 'Voir',
+    icon: FiEye,
+    href,
+    color: 'info.main',
+  }),
+  edit: (href: string, disabled?: boolean): IAction => ({
     label: 'Modifier',
     icon: FiEdit2,
     href,
     color: 'primary.main',
+    disabled,
   }),
   delete: (onClick: () => void, disabled?: boolean): IAction => ({
     label: 'Supprimer',

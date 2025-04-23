@@ -1,7 +1,7 @@
 'use client';
 
-import { CalendarMonth } from '@mui/icons-material';
 import { Typography, Tooltip, Stack } from '@mui/material';
+import { FiCalendar } from 'react-icons/fi';
 
 import { formatters } from '@/lib/dayjs';
 
@@ -38,7 +38,7 @@ export const DateDisplay = ({
 
   const content = (
     <Stack alignItems='center' direction='row' spacing={1}>
-      <CalendarMonth />
+      <FiCalendar />
       <Typography
         color={color}
         component='time'

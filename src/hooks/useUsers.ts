@@ -158,7 +158,7 @@ export function useCreateUser() {
   return useMutation({
     mutationFn: createUser,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.refetchQueries({ queryKey: ['users'] });
     },
   });
 }
@@ -169,8 +169,8 @@ export function useUpdateUser(id: string) {
   return useMutation({
     mutationFn: (data: IUpdateUserData) => updateUser(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
-      queryClient.invalidateQueries({ queryKey: ['user', id] });
+      queryClient.refetchQueries({ queryKey: ['users'] });
+      queryClient.refetchQueries({ queryKey: ['user', id] });
     },
   });
 }
@@ -181,7 +181,7 @@ export function useDeleteUser() {
   return useMutation({
     mutationFn: deleteUser,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.refetchQueries({ queryKey: ['users'] });
     },
   });
 }
@@ -193,8 +193,8 @@ export function useToggleUserStatus() {
     mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
       toggleUserStatus(id, isActive),
     onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
-      queryClient.invalidateQueries({ queryKey: ['user', id] });
+      queryClient.refetchQueries({ queryKey: ['users'] });
+      queryClient.refetchQueries({ queryKey: ['user', id] });
     },
   });
 }

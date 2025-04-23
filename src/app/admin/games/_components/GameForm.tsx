@@ -1,13 +1,13 @@
 'use client';
 
-import {
-  ChevronLeft as ChevronLeftIcon,
-  ChevronRight as ChevronRightIcon,
-} from '@mui/icons-material';
 import { Backdrop, Box, Stack, Typography } from '@mui/material';
 import type { Dayjs } from 'dayjs';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import {
+  FiChevronsLeft as ChevronLeftIcon,
+  FiChevronsRight as ChevronRightIcon,
+} from 'react-icons/fi';
 
 import { AdminForm } from '@/components/admin/common';
 import { useNotifier } from '@/components/common/Notifier';
@@ -263,14 +263,14 @@ export const GameForm = ({ initialData, mode }: IGameFormProps) => {
               </Typography>
               {isMetadataOpen ? (
                 <ChevronRightIcon
-                  sx={{
+                  style={{
                     transform: 'rotate(90deg)',
                     transition: 'transform 0.3s ease-in-out',
                   }}
                 />
               ) : (
                 <ChevronLeftIcon
-                  sx={{
+                  style={{
                     transform: 'rotate(90deg)',
                     transition: 'transform 0.3s ease-in-out',
                   }}

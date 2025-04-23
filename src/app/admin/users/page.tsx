@@ -14,7 +14,7 @@ import {
   Pagination,
   defaultActions,
 } from '@/components/admin';
-import { SideColorBadge } from '@/components/common';
+import { ColorDot } from '@/components/common';
 import { useNotifier } from '@/components/common/Notifier';
 import { useAuth } from '@/hooks/useAuth';
 import { useUsers, useDeleteUser, useToggleUserStatus } from '@/hooks/useUsers';
@@ -60,9 +60,7 @@ const AdminUsersPage = () => {
 
   const handleSort = (field: UserSortField) => {
     setSortField(field);
-    setSortOrder(
-      field === sortField ? (sortOrder === 'asc' ? 'desc' : 'asc') : 'asc'
-    );
+    setSortOrder(field === sortField && sortOrder === 'asc' ? 'desc' : 'asc');
   };
 
   const handleDelete = async () => {
@@ -95,7 +93,7 @@ const AdminUsersPage = () => {
 
   const canManageUser = (user: IUserData) => {
     if (!currentUser) return false;
-    return isRoleManageable(currentUser.role, user.role, 'edit');
+    return isRoleManageable(currentUser.role, user.role);
   };
 
   const sortedUsers = [...(response?.users || [])].sort((a, b) => {
@@ -159,14 +157,7 @@ const AdminUsersPage = () => {
               headerName: 'Rôle',
               render: row => {
                 const style = getRoleStyle(row.role);
-                return (
-                  <SideColorBadge
-                    backgroundColor={style.backgroundColor}
-                    borderWidth={style.borderWidth}
-                    color={style.color}
-                    label={style.label}
-                  />
-                );
+                return <ColorDot color={style.color} label={style.label} />;
               },
               sortable: true,
               width: '150px',
@@ -176,13 +167,7 @@ const AdminUsersPage = () => {
               headerName: 'État',
               render: row => {
                 const style = getStatusStyle(row.isActive);
-                return (
-                  <SideColorBadge
-                    backgroundColor={style.backgroundColor}
-                    color={style.color}
-                    label={style.label}
-                  />
-                );
+                return <ColorDot color={style.color} label={style.label} />;
               },
               width: '120px',
             },

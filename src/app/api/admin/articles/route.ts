@@ -1,9 +1,17 @@
+import { Role } from '@prisma/client';
 import type { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
 import { getCurrentUser } from '@/lib/jwt';
 import prisma from '@/lib/prisma';
 import type { ArticleForm } from '@/types';
+
+const ADMIN_ROLES = [Role.SENIOR_EDITOR, Role.ADMIN, Role.SYSADMIN] as const;
+type AdminRole = (typeof ADMIN_ROLES)[number];
+
+const isAdminRole = (role?: Role): role is AdminRole => {
+  return !!role && ADMIN_ROLES.includes(role as AdminRole);
+};
 
 export async function GET(request: Request) {
   try {
@@ -22,16 +30,35 @@ export async function GET(request: Request) {
     // Calculate pagination
     const skip = (page - 1) * limit;
 
-    // Build where clause
-    const where: Prisma.ArticleWhereInput = {
-      // ...(status && { status }),
-      ...(search && {
-        OR: [
-          { title: { contains: search, mode: 'insensitive' } },
-          { content: { contains: search, mode: 'insensitive' } },
+    // Build base where clause with search
+    const baseWhere: Prisma.ArticleWhereInput = search
+      ? {
+          OR: [
+            { title: { contains: search, mode: 'insensitive' } },
+            { content: { contains: search, mode: 'insensitive' } },
+          ],
+        }
+      : {};
+
+    // Build role-based visibility restrictions
+    let where: Prisma.ArticleWhereInput = baseWhere;
+
+    // If user is not a senior editor or admin, apply visibility restrictions
+    if (!isAdminRole(user.role)) {
+      where = {
+        AND: [
+          baseWhere,
+          {
+            OR: [
+              // User's own articles (any status)
+              { userId: user.id },
+              // Published articles from any author
+              { status: 'PUBLISHED' },
+            ],
+          },
         ],
-      }),
-    };
+      };
+    }
 
     // Get articles with pagination
     const [articles, totalResults] = await Promise.all([
@@ -53,6 +80,8 @@ export async function GET(request: Request) {
             select: {
               id: true,
               name: true,
+              createdAt: true,
+              updatedAt: true,
             },
           },
           user: {
@@ -60,6 +89,15 @@ export async function GET(request: Request) {
               id: true,
               username: true,
               avatarUrl: true,
+              role: true,
+            },
+          },
+          currentReviewer: {
+            select: {
+              id: true,
+              username: true,
+              avatarUrl: true,
+              role: true,
             },
           },
           games: {
@@ -67,6 +105,28 @@ export async function GET(request: Request) {
               id: true,
               title: true,
               coverImage: true,
+              genre: true,
+            },
+          },
+          approvalHistory: {
+            orderBy: {
+              createdAt: 'desc',
+            },
+            take: 5,
+            select: {
+              id: true,
+              fromStatus: true,
+              toStatus: true,
+              action: true,
+              comment: true,
+              createdAt: true,
+              actionBy: {
+                select: {
+                  id: true,
+                  username: true,
+                  role: true,
+                },
+              },
             },
           },
         },
@@ -144,18 +204,53 @@ export async function POST(request: Request) {
           select: {
             id: true,
             name: true,
+            createdAt: true,
+            updatedAt: true,
           },
         },
         user: {
           select: {
             id: true,
             username: true,
+            avatarUrl: true,
+            role: true,
+          },
+        },
+        currentReviewer: {
+          select: {
+            id: true,
+            username: true,
+            avatarUrl: true,
+            role: true,
           },
         },
         games: {
           select: {
             id: true,
             title: true,
+            coverImage: true,
+            genre: true,
+          },
+        },
+        approvalHistory: {
+          orderBy: {
+            createdAt: 'desc',
+          },
+          take: 5,
+          select: {
+            id: true,
+            fromStatus: true,
+            toStatus: true,
+            action: true,
+            comment: true,
+            createdAt: true,
+            actionBy: {
+              select: {
+                id: true,
+                username: true,
+                role: true,
+              },
+            },
           },
         },
       },

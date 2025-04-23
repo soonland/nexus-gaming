@@ -44,6 +44,11 @@ export const STATUS_STYLES: Record<
     color: 'rgb(30, 73, 118)',
     backgroundColor: 'rgb(229, 246, 253)',
   },
+  NEEDS_CHANGES: {
+    label: 'Modifications requises',
+    color: 'rgb(122, 12, 46)',
+    backgroundColor: 'rgb(255, 231, 237)',
+  },
   PENDING_APPROVAL: {
     label: "En attente d'approbation",
     color: 'rgb(102, 60, 0)',
@@ -58,6 +63,11 @@ export const STATUS_STYLES: Record<
     label: 'Archivé',
     color: 'rgb(156, 163, 175)',
     backgroundColor: 'rgb(241, 245, 249)',
+  },
+  DELETED: {
+    label: 'Supprimé',
+    color: 'rgb(185, 28, 28)', // Red color
+    backgroundColor: 'rgb(254, 226, 226)', // Light red background
   },
 };
 

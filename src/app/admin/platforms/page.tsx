@@ -58,9 +58,7 @@ const AdminPlatformsPage = () => {
 
   const handleSort = (field: PlatformSortField) => {
     setSortField(field);
-    setSortOrder(
-      field === sortField ? (sortOrder === 'asc' ? 'desc' : 'asc') : 'asc'
-    );
+    setSortOrder(field === sortField && sortOrder === 'asc' ? 'desc' : 'asc');
   };
 
   const sortedPlatforms = [...platforms].sort((a, b) => {

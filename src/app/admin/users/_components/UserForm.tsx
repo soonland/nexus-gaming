@@ -52,7 +52,7 @@ export const UserForm = ({ initialData, mode }: IUserFormProps) => {
   const { showSuccess, showError } = useNotifier();
 
   const availableRoles = AVAILABLE_ROLES.filter(
-    role => currentUser && isRoleManageable(currentUser.role, role, mode)
+    role => currentUser && isRoleManageable(currentUser.role, role)
   );
 
   const validateForm = () => {

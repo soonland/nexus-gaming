@@ -36,7 +36,9 @@ interface IUpdateAnnouncementData {
 export function useAdminAnnouncement(id?: string) {
   const queryClient = useQueryClient();
 
-  const { data: announcements = [] } = useQuery<IAdminAnnouncement[]>({
+  const { data: announcements = [], isLoading } = useQuery<
+    IAdminAnnouncement[]
+  >({
     queryKey: ['adminAnnouncements'],
     queryFn: async () => {
       const { data } = await axios.get('/api/admin/announcements');
@@ -64,7 +66,7 @@ export function useAdminAnnouncement(id?: string) {
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['adminAnnouncements'] });
+      queryClient.refetchQueries({ queryKey: ['adminAnnouncements'] });
     },
   });
 
@@ -79,10 +81,8 @@ export function useAdminAnnouncement(id?: string) {
       return response.data;
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['adminAnnouncements'] });
-      queryClient.invalidateQueries({
-        queryKey: ['announcement', variables.id],
-      });
+      queryClient.refetchQueries({ queryKey: ['adminAnnouncements'] });
+      queryClient.refetchQueries({ queryKey: ['announcement', variables.id] });
     },
   });
 
@@ -92,7 +92,7 @@ export function useAdminAnnouncement(id?: string) {
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['adminAnnouncements'] });
+      queryClient.refetchQueries({ queryKey: ['adminAnnouncements'] });
     },
   });
 
@@ -113,19 +113,35 @@ export function useAdminAnnouncement(id?: string) {
       return response.data;
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['adminAnnouncements'] });
-      queryClient.invalidateQueries({
-        queryKey: ['announcement', variables.id],
-      });
+      queryClient.refetchQueries({ queryKey: ['adminAnnouncements'] });
+      queryClient.refetchQueries({ queryKey: ['announcement', variables.id] });
+    },
+  });
+
+  const extendAnnouncement = useMutation({
+    mutationFn: async ({ id, days }: { id: string; days: number }) => {
+      const response = await axios.post(
+        `/api/admin/announcements/${id}/extend`,
+        {
+          days,
+        }
+      );
+      return response.data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.refetchQueries({ queryKey: ['adminAnnouncements'] });
+      queryClient.refetchQueries({ queryKey: ['announcement', variables.id] });
     },
   });
 
   return {
     announcements,
+    isLoading,
     announcement,
     createAnnouncement,
     updateAnnouncement,
     deleteAnnouncement,
     toggleAnnouncementStatus,
+    extendAnnouncement,
   };
 }

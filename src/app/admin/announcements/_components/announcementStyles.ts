@@ -14,19 +14,19 @@ export const TYPE_STYLES: Record<
   INFO: {
     label: 'Information',
     color: 'rgb(30, 73, 118)',
-    backgroundColor: 'rgb(229, 246, 253)',
+    backgroundColor: 'rgba(229, 246, 253, 0.75)',
     borderWidth: 4,
   },
   ATTENTION: {
     label: 'Attention',
     color: 'rgb(102, 60, 0)',
-    backgroundColor: 'rgb(255, 244, 229)',
+    backgroundColor: 'rgba(255, 244, 229, 0.75)',
     borderWidth: 4,
   },
   URGENT: {
     label: 'Urgent',
     color: 'rgb(122, 12, 46)',
-    backgroundColor: 'rgb(255, 231, 237)',
+    backgroundColor: 'rgba(255, 231, 237, 0.75)',
     borderWidth: 6,
   },
 };

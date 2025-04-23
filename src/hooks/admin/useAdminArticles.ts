@@ -2,14 +2,16 @@ import type { ArticleStatus } from '@prisma/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 
-import type { ArticleWithRelations } from '@/app/admin/articles/_components/form/types';
-import type { IArticleData, ArticleForm } from '@/types';
+import type { IArticleWithRelations } from '@/app/admin/articles/_components/form/types';
+import type { IArticleData, ArticleForm, ArticleStatusUpdate } from '@/types';
 
 interface IAdminArticleParams {
   page?: number;
   limit?: number;
   search?: string;
   status?: ArticleStatus;
+  sortField?: string;
+  sortOrder?: 'asc' | 'desc';
 }
 
 interface IPaginatedArticlesResponse {
@@ -25,7 +27,7 @@ interface IPaginatedArticlesResponse {
 const adminArticlesApi = {
   getOne: async (id: string) => {
     const { data } = await axios.get(`/api/admin/articles/${id}`);
-    return data as ArticleWithRelations;
+    return data as IArticleWithRelations;
   },
 
   getAll: async (params: IAdminArticleParams = {}) => {
@@ -54,10 +56,11 @@ const adminArticlesApi = {
     await axios.delete(`/api/admin/articles/${id}`);
   },
 
-  updateStatus: async (id: string, status: ArticleStatus) => {
+  updateStatus: async (id: string, status: ArticleStatus, comment?: string) => {
     const response = await axios.patch(`/api/admin/articles/${id}/status`, {
       status,
-    });
+      comment,
+    } as ArticleStatusUpdate);
     return response.data as IArticleData;
   },
 };
@@ -74,7 +77,7 @@ export function useAdminArticle(id: string) {
     data: article,
     isLoading,
     error,
-  } = useQuery<ArticleWithRelations>({
+  } = useQuery<IArticleWithRelations>({
     queryKey: queryKeys.details(id),
     queryFn: () => adminArticlesApi.getOne(id),
     enabled: !!id,
@@ -90,6 +93,9 @@ export function useAdminArticle(id: string) {
 export function useAdminArticles(params: IAdminArticleParams = {}) {
   const queryClient = useQueryClient();
 
+  // Store current params to use in mutation callbacks
+  const currentQueryKey = queryKeys.lists(params);
+
   const { data, isLoading, error } = useQuery({
     queryKey: queryKeys.lists(params),
     queryFn: () => adminArticlesApi.getAll(params),
@@ -98,7 +104,10 @@ export function useAdminArticles(params: IAdminArticleParams = {}) {
   const createArticle = useMutation({
     mutationFn: (data: ArticleForm) => adminArticlesApi.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.all });
+      queryClient.refetchQueries({
+        queryKey: currentQueryKey,
+        exact: true,
+      });
     },
   });
 
@@ -106,24 +115,50 @@ export function useAdminArticles(params: IAdminArticleParams = {}) {
     mutationFn: ({ id, data }: { id: string; data: ArticleForm }) =>
       adminArticlesApi.update(id, data),
     onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.details(id) });
+      // Only refetch the current query
+      queryClient.refetchQueries({
+        queryKey: currentQueryKey,
+        exact: true,
+      });
+      // Still refetch details if needed
+      queryClient.refetchQueries({
+        queryKey: queryKeys.details(id),
+        exact: true,
+      });
     },
   });
 
   const deleteArticle = useMutation({
     mutationFn: (id: string) => adminArticlesApi.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.all });
+      queryClient.refetchQueries({
+        queryKey: currentQueryKey,
+        exact: true,
+      });
     },
   });
 
   const updateArticleStatus = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: ArticleStatus }) =>
-      adminArticlesApi.updateStatus(id, status),
+    mutationFn: ({
+      id,
+      status,
+      comment,
+    }: {
+      id: string;
+      status: ArticleStatus;
+      comment?: string;
+    }) => adminArticlesApi.updateStatus(id, status, comment),
     onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.details(id) });
+      // Only refetch the current query
+      queryClient.refetchQueries({
+        queryKey: currentQueryKey,
+        exact: true,
+      });
+      // Still refetch details if needed
+      queryClient.refetchQueries({
+        queryKey: queryKeys.details(id),
+        exact: true,
+      });
     },
   });
 

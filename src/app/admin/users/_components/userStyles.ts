@@ -1,5 +1,7 @@
 import type { Role } from '@prisma/client';
 
+import { hasSufficientRole } from '@/lib/permissions';
+
 export const ROLE_STYLES: Record<
   Role,
   {
@@ -15,16 +17,22 @@ export const ROLE_STYLES: Record<
     backgroundColor: 'rgb(231, 246, 255)',
     borderWidth: 4,
   },
+  MODERATOR: {
+    label: 'Modérateur',
+    color: 'rgb(102, 60, 0)',
+    backgroundColor: 'rgb(255, 244, 229)',
+    borderWidth: 4,
+  },
   EDITOR: {
     label: 'Éditeur',
     color: 'rgb(0, 105, 92)',
     backgroundColor: 'rgb(232, 245, 233)',
     borderWidth: 4,
   },
-  MODERATOR: {
-    label: 'Modérateur',
-    color: 'rgb(102, 60, 0)',
-    backgroundColor: 'rgb(255, 244, 229)',
+  SENIOR_EDITOR: {
+    label: 'Éditeur senior',
+    color: 'rgb(0, 105, 92)',
+    backgroundColor: 'rgb(232, 245, 233)',
     borderWidth: 4,
   },
   ADMIN: {
@@ -66,32 +74,12 @@ export const getRoleStyle = (role: Role) => ROLE_STYLES[role];
 export const getStatusStyle = (isActive: boolean) =>
   STATUS_STYLES[isActive ? 'active' : 'inactive'];
 
-export const isRoleManageable = (
-  userRole: Role,
-  targetRole: Role,
-  mode: 'create' | 'edit'
-): boolean => {
-  const roleHierarchy: Record<Role, number> = {
-    USER: 1,
-    MODERATOR: 2,
-    EDITOR: 2,
-    ADMIN: 3,
-    SYSADMIN: 4,
-  };
-
-  const userLevel = roleHierarchy[userRole];
-  const targetLevel = roleHierarchy[targetRole];
-
+export const isRoleManageable = (userRole: Role, targetRole: Role): boolean => {
   // SYSADMIN peut tout faire
   if (userRole === 'SYSADMIN') return true;
 
-  // En création, on ne peut pas créer un rôle supérieur ou égal
-  if (mode === 'create') {
-    return userLevel > targetLevel;
-  }
-
-  // En édition, on ne peut pas modifier un rôle supérieur ou égal
-  return userLevel > targetLevel;
+  // En création ou édition, on ne peut pas gérer un rôle supérieur ou égal
+  return hasSufficientRole(userRole, targetRole, '>');
 };
 
 export const AVAILABLE_ROLES = Object.keys(ROLE_STYLES) as Role[];

@@ -34,7 +34,7 @@ export function usePlatforms({ page, limit }: { page: number; limit: number }) {
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['platforms'] });
+      queryClient.refetchQueries({ queryKey: ['platforms'] });
     },
   });
 
@@ -43,8 +43,9 @@ export function usePlatforms({ page, limit }: { page: number; limit: number }) {
       const response = await axios.patch(`/api/platforms/${id}`, data);
       return response.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['platforms'] });
+    onSuccess: (_, variables) => {
+      queryClient.refetchQueries({ queryKey: ['platforms'] });
+      queryClient.refetchQueries({ queryKey: ['platform', variables.id] });
     },
   });
 
@@ -53,7 +54,7 @@ export function usePlatforms({ page, limit }: { page: number; limit: number }) {
       await axios.delete(`/api/platforms/${id}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['platforms'] });
+      queryClient.refetchQueries({ queryKey: ['platforms'] });
     },
   });
 
