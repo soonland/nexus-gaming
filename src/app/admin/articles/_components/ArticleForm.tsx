@@ -217,7 +217,7 @@ export const ArticleForm = ({ initialData, mode }: IArticleFormProps) => {
     router.refresh();
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent, stayOnPage = false) => {
     e.preventDefault();
 
     if (!validateForm()) {
@@ -250,8 +250,12 @@ export const ArticleForm = ({ initialData, mode }: IArticleFormProps) => {
         showSuccess('Article modifié avec succès');
       }
 
-      router.push('/admin/articles');
-      router.refresh();
+      if (!stayOnPage) {
+        router.push('/admin/articles');
+        router.refresh();
+      } else {
+        showSuccess('Article sauvegardé avec succès');
+      }
     } catch (error) {
       console.error('Error saving article:', error);
       showError("Une erreur est survenue lors de l'enregistrement");
@@ -263,6 +267,13 @@ export const ArticleForm = ({ initialData, mode }: IArticleFormProps) => {
   return (
     <AdminForm
       cancelHref='/admin/articles'
+      errors={[
+        ...(titleError ? [{ field: 'Titre', message: titleError }] : []),
+        ...(contentError ? [{ field: 'Contenu', message: contentError }] : []),
+        ...(categoryError
+          ? [{ field: 'Catégorie', message: categoryError }]
+          : []),
+      ]}
       hideSaveButton={isEditor}
       isLoading={isLoading}
       isSubmitting={isSubmitting}
@@ -277,7 +288,19 @@ export const ArticleForm = ({ initialData, mode }: IArticleFormProps) => {
           </Stack>
         ) : undefined
       }
-      onSubmit={handleSubmit}
+      submitButtonSecondary={
+        <DraftButton
+          disabled={isSubmitting}
+          label='Sauvegarder et continuer'
+          type='submit'
+          value='save-continue'
+        />
+      }
+      onSubmit={e => {
+        const submitButton = (e.nativeEvent as SubmitEvent)
+          .submitter as HTMLButtonElement;
+        handleSubmit(e, submitButton?.value === 'save-continue');
+      }}
     >
       <Box sx={{ display: 'flex', position: 'relative', minHeight: '70vh' }}>
         {/* Main Content */}

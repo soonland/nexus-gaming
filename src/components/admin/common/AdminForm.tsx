@@ -4,13 +4,17 @@ import { Box, Button, Paper, Stack, Skeleton } from '@mui/material';
 import Link from 'next/link';
 import { FiSave } from 'react-icons/fi';
 
+import { FormErrorSummary } from './FormErrorSummary';
+
 interface IAdminFormProps {
   children: React.ReactNode;
   onSubmit: (e: React.FormEvent) => void;
+  errors?: Array<{ field: string; message: string }>;
   isSubmitting?: boolean;
   isLoading?: boolean;
   cancelHref?: string;
   submitButton?: React.ReactNode;
+  submitButtonSecondary?: React.ReactNode;
   submitLabel?: string;
   cancelLabel?: string;
   hideSaveButton?: boolean;
@@ -19,6 +23,7 @@ interface IAdminFormProps {
 export const AdminForm = ({
   children,
   onSubmit,
+  errors = [],
   isSubmitting,
   isLoading,
   cancelHref,
@@ -26,11 +31,13 @@ export const AdminForm = ({
   submitLabel = 'Enregistrer',
   cancelLabel = 'Annuler',
   hideSaveButton = false,
+  submitButtonSecondary,
 }: IAdminFormProps) => {
   return (
     <Paper sx={{ p: 4 }}>
       <form onSubmit={onSubmit}>
         <Stack spacing={4}>
+          <FormErrorSummary errors={errors} />
           {children}
           <Box
             sx={{
@@ -83,6 +90,7 @@ export const AdminForm = ({
                     {isSubmitting ? 'Enregistrement...' : 'Sauvegarder'}
                   </Button>
                 )}
+                {submitButtonSecondary}
                 {submitButton ? (
                   submitButton
                 ) : (
