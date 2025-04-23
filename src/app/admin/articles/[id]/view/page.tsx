@@ -1,33 +1,48 @@
 'use client';
 
 import { Button, Stack } from '@mui/material';
-import { notFound } from 'next/navigation';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import { FiArrowLeft, FiEdit2 } from 'react-icons/fi';
 
+import { AccessDenied } from '@/components/admin/common/AccessDenied';
 import { AdminPageLayout } from '@/components/admin/layout/AdminPageLayout';
+import { LoadingOverlay } from '@/components/common';
 import { useAdminArticle } from '@/hooks/admin/useAdminArticles';
 import { useAuth } from '@/hooks/useAuth';
 import { canEditArticle, canViewArticle } from '@/lib/permissions';
 
 import { ArticleView } from '../../_components/ArticleView';
 
-const ArticleViewPage = ({ params }: { params: { id: string } }) => {
-  const router = useRouter();
-  const { user } = useAuth();
-  const { article, isLoading } = useAdminArticle(params.id);
+const ArticleViewPage = () => {
+  const params = useParams();
+  const { user, isLoading } = useAuth();
+  const { article, isLoading: isLoadingArticle } = useAdminArticle(
+    params.id as string
+  );
 
-  if (!canViewArticle(user?.role)) {
-    router.push('/admin/articles');
-    return null;
+  if (isLoading || isLoadingArticle) {
+    return <LoadingOverlay isLoading={isLoading} />;
   }
 
-  if (isLoading) {
-    return null; // ou un composant de chargement
+  if (!canViewArticle(user?.role)) {
+    return (
+      <AccessDenied
+        message="Vous n'avez pas les permissions nécessaires pour voir cet article"
+        returnLabel='Retour à la liste des articles'
+        returnPath='/admin/articles'
+      />
+    );
   }
 
   if (!article) {
-    notFound();
+    return (
+      <AccessDenied
+        message="L'article que vous essayez de voir n'existe pas"
+        returnLabel='Retour à la liste des articles'
+        returnPath='/admin/articles'
+      />
+    );
   }
 
   return (
@@ -44,17 +59,19 @@ const ArticleViewPage = ({ params }: { params: { id: string } }) => {
           ) && (
             <Button
               color='primary'
+              component={Link}
+              href={`/admin/articles/${article.id}/edit`}
               startIcon={<FiEdit2 />}
               variant='contained'
-              onClick={() => router.push(`/admin/articles/${article.id}/edit`)}
             >
               Modifier
             </Button>
           )}
           <Button
+            component={Link}
+            href='/admin/articles'
             startIcon={<FiArrowLeft />}
             variant='outlined'
-            onClick={() => router.push('/admin/articles')}
           >
             Retour
           </Button>

@@ -37,6 +37,24 @@ export const canViewArticle = (role?: Role): boolean => {
   return hasSufficientRole(role, Role.EDITOR);
 };
 
+export const canViewApprovalHistory = (
+  role?: Role,
+  article?: { userId: string },
+  userId?: string
+): boolean => {
+  // SENIOR_EDITOR+ peuvent voir l'historique de tous les articles
+  if (hasSufficientRole(role, Role.SENIOR_EDITOR)) {
+    return true;
+  }
+
+  // L'auteur peut voir l'historique de ses propres articles
+  if (article && userId) {
+    return article.userId === userId;
+  }
+
+  return false;
+};
+
 export const canSelectArticleAuthor = (role?: Role): boolean => {
   return hasSufficientRole(role, Role.SENIOR_EDITOR);
 };

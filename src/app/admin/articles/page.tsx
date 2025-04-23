@@ -2,6 +2,7 @@
 
 import { Button, Stack } from '@mui/material';
 import { ArticleStatus } from '@prisma/client';
+import Link from 'next/link';
 import { useState } from 'react';
 import { FiCheck, FiEyeOff, FiTrash2 } from 'react-icons/fi';
 
@@ -170,7 +171,6 @@ const AdminArticlesPage = () => {
     }
 
     actions.push(
-      defaultActions.view(`/admin/articles/${row.id}/view`),
       defaultActions.edit(
         `/admin/articles/${row.id}/edit`,
         !canEditArticle(
@@ -324,6 +324,18 @@ const AdminArticlesPage = () => {
               headerName: 'Titre',
               sortable: true,
               width: '150px',
+              render: row => (
+                <Link
+                  className='hover:underline'
+                  href={`/admin/articles/${row.id}/view`}
+                  style={{
+                    color: 'var(--mui-palette-primary-main)',
+                    textDecoration: 'none',
+                  }}
+                >
+                  {row.title}
+                </Link>
+              ),
             },
             {
               field: 'status',

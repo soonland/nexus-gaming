@@ -50,7 +50,7 @@ export const ArticleForm = ({ initialData, mode }: IArticleFormProps) => {
   const [heroImage, setHeroImage] = useState<string | null>(
     initialData?.heroImage || null
   );
-  const [userId, setUserId] = useState(initialData?.userId || '');
+  const [userId, setUserId] = useState(initialData?.user.id || '');
 
   useEffect(() => {
     if (mode === 'create' && !userId) {
@@ -178,7 +178,7 @@ export const ArticleForm = ({ initialData, mode }: IArticleFormProps) => {
         user?.role,
         {
           status: initialData.status,
-          userId: initialData.userId,
+          userId: initialData.user.id,
         },
         user?.id
       )

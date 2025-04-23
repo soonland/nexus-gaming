@@ -4,7 +4,9 @@ import { Box, Stack, Typography } from '@mui/material';
 import { FiTag, FiCalendar, FiUser } from 'react-icons/fi';
 
 import { ColorDot } from '@/components/common';
+import { useAuth } from '@/hooks/useAuth';
 import dayjs from '@/lib/dayjs';
+import { canViewApprovalHistory } from '@/lib/permissions';
 
 import { getStatusStyle } from './articleStyles';
 import type { IArticleWithRelations } from './form';
@@ -14,6 +16,8 @@ interface IArticleViewProps {
 }
 
 export const ArticleView = ({ article }: IArticleViewProps) => {
+  const { user } = useAuth();
+
   return (
     <Stack spacing={4} sx={{ maxWidth: '800px', mx: 'auto', py: 4 }}>
       {/* Métadonnées */}
@@ -98,59 +102,77 @@ export const ArticleView = ({ article }: IArticleViewProps) => {
       )}
 
       {/* Historique d'approbation */}
-      {article.approvalHistory && article.approvalHistory.length > 0 && (
+      {canViewApprovalHistory(
+        user?.role,
+        { userId: article.user.id },
+        user?.id
+      ) && (
         <Box>
           <Typography gutterBottom variant='h6'>
             Historique d'approbation
           </Typography>
-          <Stack spacing={2}>
-            {article.approvalHistory.map(history => (
-              <Box
-                key={history.id}
-                sx={{
-                  p: 2,
-                  borderRadius: 1,
-                  bgcolor: 'background.paper',
-                  border: 1,
-                  borderColor: 'divider',
-                }}
-              >
-                <Stack
-                  alignItems='center'
-                  direction='row'
-                  justifyContent='space-between'
-                  mb={1}
+          {article.approvalHistory?.length ? (
+            <Stack spacing={2}>
+              {article.approvalHistory.map(history => (
+                <Box
+                  key={history.id}
+                  sx={{
+                    p: 2,
+                    borderRadius: 1,
+                    bgcolor: 'background.paper',
+                    border: 1,
+                    borderColor: 'divider',
+                  }}
                 >
-                  <Typography variant='subtitle2'>
-                    {history.actionBy.username}
-                  </Typography>
-                  <Typography color='text.secondary' variant='caption'>
-                    {dayjs(history.createdAt).format('LLL')}
-                  </Typography>
-                </Stack>
-                <Stack alignItems='center' direction='row' spacing={1}>
-                  <ColorDot
-                    color={getStatusStyle(history.fromStatus).color}
-                    label={getStatusStyle(history.fromStatus).label}
-                  />
-                  <Typography>→</Typography>
-                  <ColorDot
-                    color={getStatusStyle(history.toStatus).color}
-                    label={getStatusStyle(history.toStatus).label}
-                  />
-                </Stack>
-                {history.comment && (
-                  <Typography
-                    color='text.secondary'
-                    sx={{ mt: 1 }}
-                    variant='body2'
+                  <Stack
+                    alignItems='center'
+                    direction='row'
+                    justifyContent='space-between'
+                    mb={1}
                   >
-                    {history.comment}
-                  </Typography>
-                )}
-              </Box>
-            ))}
-          </Stack>
+                    <Typography variant='subtitle2'>
+                      {history.actionBy.username}
+                    </Typography>
+                    <Typography color='text.secondary' variant='caption'>
+                      {dayjs(history.createdAt).format('LLL')}
+                    </Typography>
+                  </Stack>
+                  <Stack alignItems='center' direction='row' spacing={1}>
+                    <ColorDot
+                      color={getStatusStyle(history.fromStatus).color}
+                      label={getStatusStyle(history.fromStatus).label}
+                    />
+                    <Typography>→</Typography>
+                    <ColorDot
+                      color={getStatusStyle(history.toStatus).color}
+                      label={getStatusStyle(history.toStatus).label}
+                    />
+                  </Stack>
+                  {history.comment && (
+                    <Typography
+                      color='text.secondary'
+                      sx={{ mt: 1 }}
+                      variant='body2'
+                    >
+                      {history.comment}
+                    </Typography>
+                  )}
+                </Box>
+              ))}
+            </Stack>
+          ) : (
+            <Box
+              sx={{
+                p: 2,
+                borderRadius: 1,
+                bgcolor: 'action.hover',
+                color: 'text.secondary',
+                fontStyle: 'italic',
+              }}
+            >
+              Aucun historique d'approbation pour cet article
+            </Box>
+          )}
         </Box>
       )}
     </Stack>
