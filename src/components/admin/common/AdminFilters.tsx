@@ -1,8 +1,8 @@
 'use client';
 
-import { Search as SearchIcon } from '@mui/icons-material';
 import { Box, InputAdornment, Stack, TextField, debounce } from '@mui/material';
 import { useCallback } from 'react';
+import { FiSearch as SearchIcon } from 'react-icons/fi';
 
 const createDebouncedSearch = (callback?: (value: string) => void) =>
   debounce((value: string) => {

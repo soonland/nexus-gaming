@@ -13,7 +13,7 @@ import {
   Pagination,
   defaultActions,
 } from '@/components/admin';
-import { SideColorBadge } from '@/components/common';
+import { ColorDot } from '@/components/common';
 import { useNotifier } from '@/components/common/Notifier';
 import { useCompanies } from '@/hooks/useCompanies';
 import type { ICompanyData } from '@/types/api';
@@ -52,6 +52,7 @@ const AdminCompaniesPage = () => {
   const {
     companies = [],
     pagination,
+    isLoading,
     deleteCompany,
   } = useCompanies({
     page,
@@ -66,9 +67,7 @@ const AdminCompaniesPage = () => {
 
   const handleSort = (field: CompanySortField) => {
     setSortField(field);
-    setSortOrder(
-      field === sortField ? (sortOrder === 'asc' ? 'desc' : 'asc') : 'asc'
-    );
+    setSortOrder(field === sortField && sortOrder === 'asc' ? 'desc' : 'asc');
   };
 
   const sortedCompanies = [...(companies || [])].sort((a, b) => {
@@ -107,24 +106,14 @@ const AdminCompaniesPage = () => {
     if (company.isDeveloper) {
       const style = ROLE_STYLES.developer;
       badges.push(
-        <SideColorBadge
-          key='dev'
-          backgroundColor={style.backgroundColor}
-          color={style.color}
-          label={style.label}
-        />
+        <ColorDot key='dev' color={style.color} label={style.label} />
       );
     }
 
     if (company.isPublisher) {
       const style = ROLE_STYLES.publisher;
       badges.push(
-        <SideColorBadge
-          key='pub'
-          backgroundColor={style.backgroundColor}
-          color={style.color}
-          label={style.label}
-        />
+        <ColorDot key='pub' color={style.color} label={style.label} />
       );
     }
 
@@ -159,7 +148,11 @@ const AdminCompaniesPage = () => {
           onPageSizeChange={handlePageSizeChange}
         />
       )}
-      <AdminList emptyMessage='Aucune société trouvée' isEmpty={isEmpty}>
+      <AdminList
+        emptyMessage='Aucune société trouvée'
+        isEmpty={isEmpty}
+        isLoading={isLoading}
+      >
         <AdminDataTable<ICompanyData, CompanySortField>
           columns={[
             {
@@ -192,6 +185,7 @@ const AdminCompaniesPage = () => {
               width: '120px',
             },
           ]}
+          isLoading={isLoading}
           rows={filteredCompanies}
           sortField={sortField}
           sortOrder={sortOrder}

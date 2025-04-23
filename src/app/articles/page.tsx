@@ -1,6 +1,5 @@
 'use client';
 
-import ReportProblemIcon from '@mui/icons-material/ReportProblem';
 import {
   Container,
   Skeleton,
@@ -9,6 +8,7 @@ import {
   Grid,
   Box,
 } from '@mui/material';
+import { FiAlertTriangle } from 'react-icons/fi';
 
 import { ArticleCard } from '@/components/articles/ArticleCard';
 import { useArticles } from '@/hooks/useArticles';
@@ -19,7 +19,7 @@ const ArticlesPage = () => {
   if (error) {
     return (
       <Container maxWidth='lg'>
-        <Alert icon={<ReportProblemIcon />} severity='error' variant='outlined'>
+        <Alert icon={<FiAlertTriangle />} severity='error' variant='outlined'>
           Error loading articles
         </Alert>
       </Container>

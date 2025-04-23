@@ -18,7 +18,7 @@ export const seedAdmin = async () => {
       await prisma.user.create({
         data: {
           username: 'sysadmin',
-          email: 'sysadmin@nexus-gaming.com',
+          email: 'sysadmin@nx-gaming.com',
           password: hashedPassword, // This should be changed after first login
           role: Role.SYSADMIN,
           isActive: true,

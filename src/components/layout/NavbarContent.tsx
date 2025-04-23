@@ -12,13 +12,12 @@ import {
 import { Role } from '@prisma/client';
 import Link from 'next/link';
 import { useState } from 'react';
-import { BiPowerOff, BiUser } from 'react-icons/bi';
-import { FiMenu } from 'react-icons/fi';
+import { FiMenu, FiPower, FiUser } from 'react-icons/fi';
 import { MdDashboard } from 'react-icons/md';
 
 import { NotificationBell } from '@/components/common/NotificationBell';
 import { useAuth } from '@/hooks/useAuth';
-import { canManageAnnouncements } from '@/lib/permissions';
+import { hasSufficientRole } from '@/lib/permissions';
 
 export const NavbarContent = () => {
   const { user, logout } = useAuth();
@@ -28,9 +27,6 @@ export const NavbarContent = () => {
   const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(
     null
   );
-
-  const isAdmin = user && user.role !== Role.USER;
-  const hasAnnouncementAccess = canManageAnnouncements(user?.role);
 
   return (
     <Stack
@@ -60,7 +56,7 @@ export const NavbarContent = () => {
       {/* Menu de droite */}
       <Stack alignItems='center' direction='row' spacing={2}>
         {/* Menu admin */}
-        {isAdmin && (
+        {hasSufficientRole(user?.role, Role.EDITOR) && (
           <>
             <Button
               component={Link}
@@ -81,7 +77,7 @@ export const NavbarContent = () => {
               open={Boolean(adminMenuAnchor)}
               onClose={() => setAdminMenuAnchor(null)}
             >
-              {hasAnnouncementAccess && (
+              {hasSufficientRole(user?.role, Role.SENIOR_EDITOR) && (
                 <MenuItem
                   component={Link}
                   href='/admin/announcements'
@@ -90,27 +86,42 @@ export const NavbarContent = () => {
                   Annonces
                 </MenuItem>
               )}
-              <MenuItem
-                component={Link}
-                href='/admin/users'
-                onClick={() => setAdminMenuAnchor(null)}
-              >
-                Utilisateurs
-              </MenuItem>
-              <MenuItem
-                component={Link}
-                href='/admin/articles'
-                onClick={() => setAdminMenuAnchor(null)}
-              >
-                Articles
-              </MenuItem>
-              <MenuItem
-                component={Link}
-                href='/admin/categories'
-                onClick={() => setAdminMenuAnchor(null)}
-              >
-                Catégories
-              </MenuItem>
+              {hasSufficientRole(user?.role, Role.EDITOR) && (
+                <MenuItem
+                  component={Link}
+                  href='/admin/users'
+                  onClick={() => setAdminMenuAnchor(null)}
+                >
+                  Utilisateurs
+                </MenuItem>
+              )}
+              {hasSufficientRole(user?.role, Role.SENIOR_EDITOR) && (
+                <MenuItem
+                  component={Link}
+                  href='/admin/approvals'
+                  onClick={() => setAdminMenuAnchor(null)}
+                >
+                  Approbations
+                </MenuItem>
+              )}
+              {hasSufficientRole(user?.role, Role.EDITOR) && (
+                <MenuItem
+                  component={Link}
+                  href='/admin/articles'
+                  onClick={() => setAdminMenuAnchor(null)}
+                >
+                  Articles
+                </MenuItem>
+              )}
+              {hasSufficientRole(user?.role, Role.SENIOR_EDITOR) && (
+                <MenuItem
+                  component={Link}
+                  href='/admin/categories'
+                  onClick={() => setAdminMenuAnchor(null)}
+                >
+                  Catégories
+                </MenuItem>
+              )}
               <MenuItem
                 component={Link}
                 href='/admin/games'
@@ -165,7 +176,7 @@ export const NavbarContent = () => {
                 href='/profile'
                 onClick={() => setUserMenuAnchor(null)}
               >
-                <Box component={BiUser} sx={{ mr: 1 }} />
+                <Box component={FiUser} sx={{ mr: 1 }} />
                 Mon profil
               </MenuItem>
               <MenuItem
@@ -175,7 +186,7 @@ export const NavbarContent = () => {
                   logout();
                 }}
               >
-                <Box component={BiPowerOff} sx={{ mr: 1 }} />
+                <Box component={FiPower} sx={{ mr: 1 }} />
                 Déconnexion
               </MenuItem>
             </Menu>

@@ -1,63 +1,33 @@
-'use client';
-
-import { Box, Tooltip, Typography, type Theme } from '@mui/material';
+import { Box } from '@mui/material';
+import type { ReactNode } from 'react';
 
 interface ISideColorBadgeProps {
-  label: string;
-  color: string;
-  backgroundColor: string;
-  borderWidth?: number;
-  tooltip?: string;
+  children: ReactNode;
+  color?: string;
 }
 
 export const SideColorBadge = ({
-  label,
-  color,
-  backgroundColor,
-  borderWidth = 4,
-  tooltip,
+  children,
+  color = '#e0e0e0',
 }: ISideColorBadgeProps) => {
-  const badge = (
+  return (
     <Box
       sx={{
-        'display': 'inline-flex',
-        'alignItems': 'center',
-        'py': 0.75,
-        'px': 1.5,
-        'borderLeftWidth': borderWidth,
-        'borderLeftStyle': 'solid',
-        'borderColor': color,
-        'bgcolor': backgroundColor,
-        'borderRadius': '0 4px 4px 0',
-        'transition': (theme: Theme) =>
-          theme.transitions.create(['background-color', 'border-color'], {
-            duration: theme.transitions.duration.shortest,
-          }),
-        '&:hover': {
-          bgcolor: backgroundColor,
-          borderColor: color,
+        'display': 'flex',
+        'position': 'relative',
+        '&::before': {
+          bgcolor: color,
+          borderRadius: '4px 0 0 4px',
+          bottom: 0,
+          content: '""',
+          left: 0,
+          position: 'absolute',
+          top: 0,
+          width: 4,
         },
       }}
     >
-      <Typography
-        sx={{
-          color: color,
-          fontWeight: 500,
-        }}
-        variant='body2'
-      >
-        {label}
-      </Typography>
+      {children}
     </Box>
   );
-
-  if (tooltip) {
-    return (
-      <Tooltip placement='left' title={tooltip}>
-        {badge}
-      </Tooltip>
-    );
-  }
-
-  return badge;
 };

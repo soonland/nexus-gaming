@@ -1,11 +1,11 @@
 'use client';
 
-import {
-  NavigateBefore as PreviousIcon,
-  NavigateNext as NextIcon,
-} from '@mui/icons-material';
 import type { SelectChangeEvent } from '@mui/material';
 import { IconButton, MenuItem, Select, Stack, Typography } from '@mui/material';
+import {
+  FiChevronsLeft as PreviousIcon,
+  FiChevronsRight as NextIcon,
+} from 'react-icons/fi';
 
 interface IPaginationProps {
   currentPage: number;
@@ -13,7 +13,7 @@ interface IPaginationProps {
   total: number;
   totalPages: number;
   onPageChange: (page: number) => void;
-  onPageSizeChange: (pageSize: number) => void;
+  onPageSizeChange?: (pageSize: number) => void;
 }
 
 export const Pagination = ({
@@ -46,7 +46,7 @@ export const Pagination = ({
           }}
           value={pageSize.toString()}
           onChange={(e: SelectChangeEvent) => {
-            onPageSizeChange(Number(e.target.value));
+            onPageSizeChange?.(Number(e.target.value));
           }}
         >
           <MenuItem value='5'>5</MenuItem>

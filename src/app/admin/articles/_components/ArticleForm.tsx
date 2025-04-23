@@ -1,14 +1,11 @@
 'use client';
 
-import {
-  ChevronLeft as ChevronLeftIcon,
-  ChevronRight as ChevronRightIcon,
-} from '@mui/icons-material';
-import { Backdrop, Box, Stack, Typography } from '@mui/material';
-import { ArticleStatus } from '@prisma/client';
+import { Box, Backdrop, Stack, Typography } from '@mui/material';
+import { ArticleStatus, Role } from '@prisma/client';
 import type { Dayjs } from 'dayjs';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { FiChevronsLeft as ChevronLeftIcon } from 'react-icons/fi';
 
 import { AdminForm } from '@/components/admin/common';
 import { useNotifier } from '@/components/common/Notifier';
@@ -18,24 +15,25 @@ import { useCategories } from '@/hooks/useCategories';
 import { useGames } from '@/hooks/useGames';
 import { useUsers } from '@/hooks/useUsers';
 import dayjs from '@/lib/dayjs';
-import { canSelectArticleAuthor } from '@/lib/permissions';
-import { uploadImage } from '@/lib/upload/client';
+import { canSelectArticleAuthor, canEditArticle } from '@/lib/permissions';
 
+import { DraftButton } from './DraftButton';
 import {
   ArticleMainContent,
   ArticleMetadataPanel,
-  type ArticleWithRelations,
+  type IArticleWithRelations,
   type IArticleFormData,
 } from './form';
+import { SubmitButton } from './SubmitButton';
 
 interface IArticleFormProps {
-  initialData?: ArticleWithRelations;
+  initialData?: IArticleWithRelations;
   mode: 'create' | 'edit';
 }
 
 export const ArticleForm = ({ initialData, mode }: IArticleFormProps) => {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   const [title, setTitle] = useState(initialData?.title || '');
   const [content, setContent] = useState(initialData?.content || '');
   const [categoryId, setCategoryId] = useState(initialData?.categoryId || '');
@@ -59,16 +57,18 @@ export const ArticleForm = ({ initialData, mode }: IArticleFormProps) => {
       setUserId(user?.id || '');
     }
   }, [mode, userId, user]);
-  const [isMetadataOpen, setIsMetadataOpen] = useState(false);
 
+  const [isMetadataOpen, setIsMetadataOpen] = useState(false);
   const [titleError, setTitleError] = useState('');
   const [contentError, setContentError] = useState('');
   const [categoryError, setCategoryError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
-  const { createArticle, updateArticle } = useAdminArticles();
+  const { createArticle, updateArticle, updateArticleStatus } =
+    useAdminArticles();
   const { categories } = useCategories();
+  const isEditor = user?.role === Role.EDITOR;
   const { games } = useGames();
   const { data: usersData } = useUsers();
   const { showSuccess, showError } = useNotifier();
@@ -103,22 +103,118 @@ export const ArticleForm = ({ initialData, mode }: IArticleFormProps) => {
     return isValid;
   };
 
-  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handleStatusChange = async (
+    newStatus: ArticleStatus,
+    comment?: string
+  ) => {
+    if (!initialData?.id) return;
 
-    setIsUploading(true);
     try {
-      const result = await uploadImage(file, 'articles');
-      const imageUrl = result.secure_url;
-      setHeroImage(imageUrl);
-      showSuccess('Image mise à jour avec succès');
+      await updateArticleStatus.mutateAsync({
+        id: initialData.id,
+        status: newStatus,
+        comment,
+      });
+      setStatus(newStatus);
+      showSuccess('Statut mis à jour avec succès');
     } catch (error) {
-      console.error('Error uploading image:', error);
-      showError("Erreur lors du téléchargement de l'image");
-    } finally {
-      setIsUploading(false);
+      console.error('Error updating status:', error);
+      showError('Erreur lors de la mise à jour du statut');
     }
+  };
+
+  const handleEditorSubmit = async (comment: string) => {
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const data: IArticleFormData = {
+        title: title.trim(),
+        content: content.trim(),
+        categoryId,
+        gameIds,
+        status: 'PENDING_APPROVAL',
+        publishedAt: null,
+        updatedAt: null,
+        heroImage,
+        userId,
+      };
+
+      if (mode === 'create') {
+        await createArticle.mutateAsync(data);
+        showSuccess('Article soumis pour approbation');
+      } else if (initialData?.id) {
+        await updateArticle.mutateAsync({
+          id: initialData.id,
+          data,
+        });
+        if (comment) {
+          await updateArticleStatus.mutateAsync({
+            id: initialData.id,
+            status: 'PENDING_APPROVAL',
+            comment,
+          });
+        }
+        showSuccess('Article soumis pour approbation');
+      }
+
+      router.push('/admin/articles');
+      router.refresh();
+    } catch (error) {
+      console.error('Error submitting article:', error);
+      showError('Une erreur est survenue lors de la soumission');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  useEffect(() => {
+    if (
+      initialData &&
+      !canEditArticle(
+        user?.role,
+        {
+          status: initialData.status,
+          userId: initialData.userId,
+        },
+        user?.id
+      )
+    ) {
+      router.push('/admin/articles');
+    }
+  }, [initialData, user, router]);
+
+  const handleSaveAsDraft = async () => {
+    if (!validateForm()) return;
+
+    const data: IArticleFormData = {
+      title: title.trim(),
+      content: content.trim(),
+      categoryId,
+      gameIds,
+      status: ArticleStatus.DRAFT,
+      publishedAt: null,
+      updatedAt: null,
+      heroImage,
+      userId,
+    };
+
+    if (mode === 'create') {
+      await createArticle.mutateAsync(data);
+      showSuccess('Brouillon sauvegardé avec succès');
+    } else if (initialData?.id) {
+      await updateArticle.mutateAsync({
+        id: initialData.id,
+        data,
+      });
+      showSuccess('Brouillon mis à jour avec succès');
+    }
+
+    router.push('/admin/articles');
+    router.refresh();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -167,7 +263,20 @@ export const ArticleForm = ({ initialData, mode }: IArticleFormProps) => {
   return (
     <AdminForm
       cancelHref='/admin/articles'
+      hideSaveButton={isEditor}
+      isLoading={isLoading}
       isSubmitting={isSubmitting}
+      submitButton={
+        isEditor ? (
+          <Stack direction='row' spacing={2}>
+            <DraftButton disabled={isSubmitting} onSubmit={handleSaveAsDraft} />
+            <SubmitButton
+              disabled={isSubmitting}
+              onSubmit={handleEditorSubmit}
+            />
+          </Stack>
+        ) : undefined
+      }
       onSubmit={handleSubmit}
     >
       <Box sx={{ display: 'flex', position: 'relative', minHeight: '70vh' }}>
@@ -224,54 +333,68 @@ export const ArticleForm = ({ initialData, mode }: IArticleFormProps) => {
               direction='row'
               spacing={1}
               sx={{
-                'transform': 'rotate(-180deg)',
-                '& svg': {
-                  fontSize: '1.2rem',
-                },
+                transform: 'rotate(-180deg)',
               }}
             >
               <Typography sx={{ fontWeight: 500, fontSize: '0.95rem' }}>
                 Métadonnées
               </Typography>
-              {isMetadataOpen ? (
-                <ChevronRightIcon
-                  sx={{
-                    transform: 'rotate(90deg)',
-                    transition: 'transform 0.3s ease-in-out',
-                  }}
-                />
-              ) : (
-                <ChevronLeftIcon
-                  sx={{
-                    transform: 'rotate(90deg)',
-                    transition: 'transform 0.3s ease-in-out',
-                  }}
-                />
-              )}
+              <ChevronLeftIcon
+                style={{
+                  transform: isMetadataOpen
+                    ? 'rotate(-90deg)'
+                    : 'rotate(90deg)',
+                  transition: 'transform 0.2s ease-in-out',
+                }}
+              />
             </Stack>
           </Box>
 
           <ArticleMetadataPanel
+            approvalHistory={initialData?.approvalHistory}
             canSelectArticleAuthor={canSelectArticleAuthor(user?.role)}
-            categories={categories}
+            categories={categories || []}
             categoryError={categoryError}
             categoryId={categoryId}
             gameIds={gameIds}
             games={games}
             heroImage={heroImage}
+            isLoading={isLoading}
             isOpen={isMetadataOpen}
             isUploading={isUploading}
             publishedAt={publishedAt}
             status={status}
             updatedAt={updatedAt}
             userId={userId}
+            userRole={user?.role}
             users={usersData?.users}
             onCategoryChange={setCategoryId}
             onClose={() => setIsMetadataOpen(false)}
             onGamesChange={setGameIds}
-            onImageChange={handleImageChange}
+            onImageChange={async e => {
+              setIsUploading(true);
+              try {
+                const file = e.target.files?.[0];
+                if (file) {
+                  const formData = new FormData();
+                  formData.append('file', file);
+                  const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData,
+                  });
+                  const data = await response.json();
+                  setHeroImage(data.url);
+                  showSuccess('Image mise à jour avec succès');
+                }
+              } catch (error) {
+                console.error('Error uploading image:', error);
+                showError("Erreur lors du téléchargement de l'image");
+              } finally {
+                setIsUploading(false);
+              }
+            }}
             onPublishedAtChange={setPublishedAt}
-            onStatusChange={setStatus}
+            onStatusChange={handleStatusChange}
             onUpdatedAtChange={setUpdatedAt}
             onUserChange={setUserId}
           />

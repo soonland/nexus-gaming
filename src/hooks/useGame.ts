@@ -1,4 +1,4 @@
-import type { Game, Platform, Company } from '@prisma/client';
+import type { Game, Platform, Company, Role } from '@prisma/client';
 import { useQuery } from '@tanstack/react-query';
 
 import type { ICategoryData } from '@/types';
@@ -31,6 +31,7 @@ export type RelatedArticle = {
   user: {
     id: string;
     username: string;
+    role: Role;
   };
 };
 

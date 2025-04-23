@@ -29,6 +29,19 @@ export async function PATCH(
     const announcement = await prisma.adminAnnouncement.update({
       where: { id },
       data: { isActive },
+      select: {
+        id: true,
+        message: true,
+        type: true,
+        isActive: true,
+        expiresAt: true,
+        createdAt: true,
+        createdBy: {
+          select: {
+            username: true,
+          },
+        },
+      },
     });
 
     return NextResponse.json(announcement);

@@ -2,10 +2,16 @@
 CREATE TYPE "SocialPlatform" AS ENUM ('PSN', 'XBOX', 'STEAM', 'NINTENDO', 'EPIC', 'BATTLENET', 'TWITCH', 'TWITTER', 'INSTAGRAM', 'TIKTOK', 'YOUTUBE');
 
 -- CreateEnum
-CREATE TYPE "Role" AS ENUM ('USER', 'ADMIN', 'MODERATOR', 'EDITOR', 'SYSADMIN');
+CREATE TYPE "GameGenre" AS ENUM ('RPG', 'ACTION', 'ADVENTURE', 'SPORTS', 'RACING', 'STRATEGY', 'SHOOTER', 'PUZZLE', 'SIMULATION', 'FIGHTING');
 
 -- CreateEnum
-CREATE TYPE "ArticleStatus" AS ENUM ('DRAFT', 'PENDING_APPROVAL', 'PUBLISHED', 'ARCHIVED');
+CREATE TYPE "Role" AS ENUM ('USER', 'ADMIN', 'MODERATOR', 'EDITOR', 'SENIOR_EDITOR', 'SYSADMIN');
+
+-- CreateEnum
+CREATE TYPE "ArticleStatus" AS ENUM ('DRAFT', 'PENDING_APPROVAL', 'NEEDS_CHANGES', 'PUBLISHED', 'ARCHIVED');
+
+-- CreateEnum
+CREATE TYPE "ApprovalAction" AS ENUM ('SUBMITTED', 'APPROVED', 'CHANGES_NEEDED', 'PUBLISHED', 'ARCHIVED');
 
 -- CreateEnum
 CREATE TYPE "AnnouncementType" AS ENUM ('INFO', 'ATTENTION', 'URGENT');
@@ -27,6 +33,7 @@ CREATE TABLE "User" (
     "username" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "password" TEXT NOT NULL,
+    "avatarUrl" TEXT,
     "role" "Role" NOT NULL DEFAULT 'USER',
     "isActive" BOOLEAN NOT NULL DEFAULT true,
     "lastPasswordChange" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -66,6 +73,7 @@ CREATE TABLE "Game" (
     "description" TEXT,
     "coverImage" TEXT,
     "releaseDate" TIMESTAMP(3),
+    "genre" "GameGenre",
     "developerId" TEXT NOT NULL,
     "publisherId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -91,14 +99,30 @@ CREATE TABLE "Article" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "content" TEXT NOT NULL,
+    "heroImage" TEXT,
     "status" "ArticleStatus" NOT NULL DEFAULT 'DRAFT',
     "publishedAt" TIMESTAMP(3),
     "categoryId" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "currentReviewerId" TEXT,
 
     CONSTRAINT "Article_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ArticleApprovalHistory" (
+    "id" TEXT NOT NULL,
+    "articleId" TEXT NOT NULL,
+    "fromStatus" "ArticleStatus" NOT NULL,
+    "toStatus" "ArticleStatus" NOT NULL,
+    "action" "ApprovalAction" NOT NULL,
+    "comment" TEXT,
+    "actionById" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "ArticleApprovalHistory_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -145,7 +169,16 @@ CREATE UNIQUE INDEX "Company_name_key" ON "Company"("name");
 CREATE UNIQUE INDEX "Category_name_key" ON "Category"("name");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Game_title_key" ON "Game"("title");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Platform_name_key" ON "Platform"("name");
+
+-- CreateIndex
+CREATE INDEX "ArticleApprovalHistory_articleId_idx" ON "ArticleApprovalHistory"("articleId");
+
+-- CreateIndex
+CREATE INDEX "ArticleApprovalHistory_actionById_idx" ON "ArticleApprovalHistory"("actionById");
 
 -- CreateIndex
 CREATE INDEX "AdminAnnouncement_createdById_idx" ON "AdminAnnouncement"("createdById");
@@ -176,6 +209,15 @@ ALTER TABLE "Article" ADD CONSTRAINT "Article_categoryId_fkey" FOREIGN KEY ("cat
 
 -- AddForeignKey
 ALTER TABLE "Article" ADD CONSTRAINT "Article_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Article" ADD CONSTRAINT "Article_currentReviewerId_fkey" FOREIGN KEY ("currentReviewerId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ArticleApprovalHistory" ADD CONSTRAINT "ArticleApprovalHistory_articleId_fkey" FOREIGN KEY ("articleId") REFERENCES "Article"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ArticleApprovalHistory" ADD CONSTRAINT "ArticleApprovalHistory_actionById_fkey" FOREIGN KEY ("actionById") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "AdminAnnouncement" ADD CONSTRAINT "AdminAnnouncement_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

@@ -1,6 +1,5 @@
 'use client';
 
-import { ArrowBack, Person, SportsEsports } from '@mui/icons-material';
 import {
   Alert,
   AlertTitle,
@@ -14,6 +13,8 @@ import {
   useTheme,
 } from '@mui/material';
 import { useParams, useRouter } from 'next/navigation';
+import { FaGamepad } from 'react-icons/fa';
+import { FiArrowLeft, FiUser } from 'react-icons/fi';
 
 import { DateDisplay } from '@/components/common/DateDisplay';
 import { Hero } from '@/components/common/Hero';
@@ -30,7 +31,7 @@ const ArticlePage = () => {
 
   if (error) {
     return (
-      <Container maxWidth='xl' sx={{ py: 4 }}>
+      <Container maxWidth='lg' sx={{ py: 4 }}>
         <Alert severity='error'>
           <AlertTitle>Erreur</AlertTitle>
           Impossible de charger l&apos;article
@@ -41,7 +42,7 @@ const ArticlePage = () => {
 
   if (isLoading) {
     return (
-      <Container maxWidth='xl' sx={{ py: 4 }}>
+      <Container maxWidth='lg' sx={{ py: 4 }}>
         <Stack spacing={3}>
           <Skeleton height={400} variant='rectangular' />
           <Skeleton height={40} variant='text' />
@@ -75,7 +76,7 @@ const ArticlePage = () => {
         metadata={
           <Stack alignItems='center' direction='row' spacing={3}>
             <Stack alignItems='center' direction='row' spacing={1}>
-              <Person />
+              <FiUser />
               <Typography variant='body2'>{article.user.username}</Typography>
             </Stack>
             <DateDisplay
@@ -89,10 +90,10 @@ const ArticlePage = () => {
       />
 
       {/* Content Section */}
-      <Container maxWidth='xl'>
+      <Container maxWidth='lg'>
         <Stack spacing={2}>
           <Button
-            startIcon={<ArrowBack />}
+            startIcon={<FiArrowLeft />}
             sx={{ alignSelf: 'flex-start' }}
             onClick={() => router.back()}
           >
@@ -127,7 +128,7 @@ const ArticlePage = () => {
                 spacing={1}
                 sx={{ mb: 2 }}
               >
-                <SportsEsports />
+                <FaGamepad />
                 <Typography variant='h5'>Jeux mentionnés</Typography>
               </Stack>
               <Grid container spacing={3}>

@@ -36,20 +36,22 @@ model UserSocialProfile {
 }
 
 model User {
-  id                String    @id @default(uuid())
-  username          String    @unique
-  email            String    @unique
-  password         String
-  avatarUrl       String?
-  role             Role      @default(USER)
-  isActive         Boolean   @default(true)
-  articles         Article[]
-  socialProfiles   UserSocialProfile[]
-  lastPasswordChange DateTime  @default(now())
-  lastLogin        DateTime?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-  announcements    AdminAnnouncement[]
+  id                String                    @id @default(uuid())
+  username          String                    @unique
+  email             String                    @unique
+  password          String
+  avatarUrl         String?
+  role              Role                      @default(USER)
+  isActive          Boolean                   @default(true)
+  articles          Article[]
+  socialProfiles    UserSocialProfile[]
+  lastPasswordChange DateTime                 @default(now())
+  lastLogin         DateTime?
+  createdAt         DateTime                  @default(now())
+  updatedAt         DateTime                  @updatedAt
+  announcements     AdminAnnouncement[]
+  articlesReviewing Article[]                @relation("articleReviewer")
+  historyActions    ArticleApprovalHistory[] @relation("historyActions")
 }
 
 model Company {
@@ -86,7 +88,7 @@ enum GameGenre {
 
 model Game {
   id          String    @id @default(uuid())
-  title       String
+  title       String    @unique
   description String?
   coverImage  String?
   releaseDate DateTime?
@@ -112,19 +114,22 @@ model Platform {
 }
 
 model Article {
-  id          String        @id @default(uuid())
-  title       String
-  content     String
-  heroImage   String?
-  status      ArticleStatus @default(DRAFT)
-  publishedAt DateTime?
-  category    Category      @relation(fields: [categoryId], references: [id])
-  categoryId  String
-  user        User         @relation(fields: [userId], references: [id])
-  userId      String
-  games       Game[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  id                String                    @id @default(uuid())
+  title             String
+  content           String
+  heroImage         String?
+  status            ArticleStatus             @default(DRAFT)
+  publishedAt       DateTime?
+  category          Category                  @relation(fields: [categoryId], references: [id])
+  categoryId        String
+  user              User                      @relation(fields: [userId], references: [id])
+  userId            String
+  games             Game[]
+  createdAt         DateTime                  @default(now())
+  updatedAt         DateTime                  @updatedAt
+  currentReviewer   User?                     @relation("articleReviewer", fields: [currentReviewerId], references: [id])
+  currentReviewerId String?
+  approvalHistory   ArticleApprovalHistory[]
 }
 
 enum Role {
@@ -132,14 +137,42 @@ enum Role {
   ADMIN
   MODERATOR
   EDITOR
+  SENIOR_EDITOR
   SYSADMIN
 }
 
 enum ArticleStatus {
   DRAFT
   PENDING_APPROVAL
+  NEEDS_CHANGES
   PUBLISHED
   ARCHIVED
+  DELETED
+}
+
+enum ApprovalAction {
+  SUBMITTED      // Soumis pour approbation
+  APPROVED       // Approuvé
+  CHANGES_NEEDED // Demande de modifications
+  PUBLISHED      // Publié
+  ARCHIVED       // Archivé
+  DELETED        // Supprimé
+}
+
+model ArticleApprovalHistory {
+  id            String         @id @default(uuid())
+  article       Article        @relation(fields: [articleId], references: [id])
+  articleId     String
+  fromStatus    ArticleStatus
+  toStatus      ArticleStatus
+  action        ApprovalAction
+  comment       String?        // Commentaire de révision
+  actionBy      User          @relation("historyActions", fields: [actionById], references: [id])
+  actionById    String
+  createdAt     DateTime      @default(now())
+
+  @@index([articleId])
+  @@index([actionById])
 }
 
 enum AnnouncementType {

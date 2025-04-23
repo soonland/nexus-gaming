@@ -1,8 +1,12 @@
+import type { Role, ApprovalAction } from '@prisma/client';
+
 export type ArticleStatus =
   | 'DRAFT'
   | 'PENDING_APPROVAL'
+  | 'NEEDS_CHANGES'
   | 'PUBLISHED'
-  | 'ARCHIVED';
+  | 'ARCHIVED'
+  | 'DELETED';
 
 export interface ICategoryData {
   id: string;
@@ -70,17 +74,39 @@ export interface IArticleData {
   title: string;
   content: string;
   heroImage?: string;
-  status: 'DRAFT' | 'PENDING_APPROVAL' | 'PUBLISHED' | 'ARCHIVED';
+  status: ArticleStatus;
   publishedAt?: string;
   category: ICategoryData;
   user: {
     id: string;
     username: string;
     avatarUrl?: string;
+    role: Role;
   };
+  currentReviewer?: {
+    id: string;
+    username: string;
+    avatarUrl?: string;
+    role: Role;
+  };
+  approvalHistory?: IApprovalHistoryData[];
   games: IGameData[];
   createdAt: string;
   updatedAt: string;
+}
+
+export interface IApprovalHistoryData {
+  id: string;
+  fromStatus: ArticleStatus;
+  toStatus: ArticleStatus;
+  action: ApprovalAction;
+  comment?: string;
+  actionBy: {
+    id: string;
+    username: string;
+    role: Role;
+  };
+  createdAt: string;
 }
 
 export type ArticleForm = {
@@ -93,6 +119,12 @@ export type ArticleForm = {
   updatedAt?: string | null;
   heroImage?: string | null;
   userId?: string;
+};
+
+export type ArticleStatusUpdate = {
+  status: ArticleStatus;
+  comment?: string;
+  reviewerId?: string;
 };
 
 export type GameForm = {

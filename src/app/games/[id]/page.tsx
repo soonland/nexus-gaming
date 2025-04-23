@@ -1,6 +1,5 @@
 'use client';
 
-import { ArrowBack, Article, Group } from '@mui/icons-material';
 import {
   Alert,
   AlertTitle,
@@ -15,6 +14,11 @@ import {
   useTheme,
 } from '@mui/material';
 import { useParams, useRouter } from 'next/navigation';
+import {
+  FiArrowLeft as ArrowBack,
+  FiUsers as Group,
+  FiAlignJustify as Article,
+} from 'react-icons/fi';
 
 import { ArticleCard } from '@/components/articles/ArticleCard';
 import { DateDisplay } from '@/components/common/DateDisplay';
@@ -31,7 +35,7 @@ const GamePage = () => {
 
   if (error) {
     return (
-      <Container maxWidth='xl' sx={{ py: 4 }}>
+      <Container maxWidth='lg' sx={{ py: 4 }}>
         <Alert severity='error'>
           <AlertTitle>Erreur</AlertTitle>
           Impossible de charger le jeu
@@ -42,7 +46,7 @@ const GamePage = () => {
 
   if (isLoading) {
     return (
-      <Container maxWidth='xl' sx={{ py: 4 }}>
+      <Container maxWidth='lg' sx={{ py: 4 }}>
         <Stack spacing={3}>
           <Skeleton height={400} variant='rectangular' />
           <Skeleton height={40} variant='text' />
@@ -86,7 +90,7 @@ const GamePage = () => {
       />
 
       {/* Content Section */}
-      <Container maxWidth='xl' sx={{ py: 4 }}>
+      <Container maxWidth='lg' sx={{ py: 4 }}>
         <Stack spacing={4}>
           <Button
             startIcon={<ArrowBack />}
@@ -168,6 +172,7 @@ const GamePage = () => {
                         id: article.user.id,
                         username: article.user.username,
                         avatarUrl: undefined,
+                        role: article.user.role,
                       },
                       status: 'PUBLISHED' as const,
                       publishedAt: article.publishedAt

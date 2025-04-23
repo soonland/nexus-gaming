@@ -1,20 +1,15 @@
 'use client';
 
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
   Box,
   Card,
   CardContent,
   Container,
   Grid,
-  IconButton,
   Stack,
   Typography,
-  Collapse,
 } from '@mui/material';
-import type { AnnouncementType } from '@prisma/client';
 import Link from 'next/link';
-import { useState } from 'react';
 import {
   FiUsers,
   FiFileText,
@@ -23,22 +18,16 @@ import {
   FiMonitor,
   FiBriefcase,
   FiBell,
-  FiAlertCircle,
-  FiAlertTriangle,
-  FiInfo,
 } from 'react-icons/fi';
 
-import { getAnnouncementTypeStyle } from '@/app/admin/announcements/_components/announcementStyles';
-import { SideColorBadge } from '@/components/common';
+import { AnnouncementPanel } from '@/app/admin/announcements/_components/AnnouncementPanel';
+import { AnimatedCounter, IconAnimation } from '@/components/common';
+import { usePendingArticlesCount } from '@/hooks/admin/usePendingArticlesCount';
 import { useAdminAnnouncement } from '@/hooks/useAdminAnnouncement';
 import { useArticles } from '@/hooks/useArticles';
+import { useAuth } from '@/hooks/useAuth';
 import { useGames } from '@/hooks/useGames';
-
-const typeIcons: Record<AnnouncementType, React.ElementType> = {
-  INFO: FiInfo,
-  ATTENTION: FiAlertCircle,
-  URGENT: FiAlertTriangle,
-};
+import { canReviewArticles } from '@/lib/permissions';
 
 const AdminCard = ({
   title,
@@ -73,7 +62,9 @@ const AdminCard = ({
             color: 'primary.main',
           }}
         >
-          <Icon size={24} />
+          <IconAnimation>
+            <Icon size={24} />
+          </IconAnimation>
         </Box>
         <Typography color='text.primary' variant='h6'>
           {title}
@@ -87,160 +78,52 @@ const AdminPage = () => {
   const { announcements = [] } = useAdminAnnouncement();
   const { articles: articlesData } = useArticles();
   const { games: gamesData } = useGames();
-  const [expandedId, setExpandedId] = useState<string | null>(null);
-
-  const toggleExpand = (id: string) => {
-    setExpandedId(expandedId === id ? null : id);
-  };
-
-  const filteredAnnouncements = announcements.filter(
-    announcement =>
-      announcement.isActive === 'active' &&
-      (announcement.expiresAt
-        ? new Date(announcement.expiresAt) > new Date()
-        : true)
-  );
+  const { user } = useAuth();
+  const { count: pendingCount } = usePendingArticlesCount();
   return (
     <Container maxWidth='lg' sx={{ py: 4 }}>
-      {/* Annonces */}
       <Box mb={6}>
-        <Typography gutterBottom variant='h5'>
-          Annonces
-        </Typography>
-        <Stack spacing={2}>
-          {filteredAnnouncements.map(announcement => {
-            const type = announcement.type as AnnouncementType;
-            const style = getAnnouncementTypeStyle(type);
-            const Icon = typeIcons[type];
-
-            return (
-              <Card
-                key={announcement.id}
-                sx={{
-                  'transition': 'box-shadow 0.2s',
-                  '&:hover': {
-                    boxShadow: 4,
-                  },
-                }}
-              >
-                <CardContent>
-                  <Stack spacing={2}>
-                    <Box
-                      alignItems='flex-start'
-                      display='flex'
-                      justifyContent='space-between'
-                    >
-                      <Stack spacing={2} width='100%'>
-                        <Box alignItems='center' display='flex' gap={2}>
-                          <Box alignItems='center' display='flex' gap={1}>
-                            <Icon size={20} style={{ color: style.color }} />
-                            <SideColorBadge
-                              backgroundColor={style.backgroundColor}
-                              borderWidth={style.borderWidth}
-                              color={style.color}
-                              label={style.label}
-                            />
-                          </Box>
-                          {announcement.expiresAt && (
-                            <Typography color='text.secondary' variant='body2'>
-                              Expire le{' '}
-                              {new Date(
-                                announcement.expiresAt
-                              ).toLocaleDateString()}
-                            </Typography>
-                          )}
-                        </Box>
-                        <Collapse
-                          collapsedSize={48}
-                          in={expandedId === announcement.id}
-                          timeout={200}
-                        >
-                          <Box
-                            sx={{
-                              'position': 'relative',
-                              '&::after':
-                                expandedId !== announcement.id
-                                  ? {
-                                      content: '""',
-                                      position: 'absolute',
-                                      bottom: 0,
-                                      left: 0,
-                                      right: 0,
-                                      height: '24px',
-                                      background:
-                                        'linear-gradient(to bottom, transparent, white)',
-                                    }
-                                  : {},
-                            }}
-                          >
-                            <Typography
-                              sx={{
-                                whiteSpace: 'pre-wrap',
-                              }}
-                            >
-                              {announcement.message}
-                            </Typography>
-                          </Box>
-                        </Collapse>
-                      </Stack>
-                      <IconButton
-                        sx={{
-                          'transform':
-                            expandedId === announcement.id
-                              ? 'rotate(180deg)'
-                              : 'none',
-                          'transition': 'transform 0.2s',
-                          'ml': 1,
-                          '&:hover': {
-                            bgcolor: 'action.hover',
-                          },
-                        }}
-                        onClick={() => toggleExpand(announcement.id)}
-                      >
-                        <ExpandMoreIcon />
-                      </IconButton>
-                    </Box>
-                  </Stack>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </Stack>
+        <AnnouncementPanel announcements={announcements} />
       </Box>
 
-      {/* Statistiques */}
-      <Box mb={6}>
-        <Typography gutterBottom variant='h5'>
-          Statistiques
-        </Typography>
-        <Grid container spacing={3}>
-          <Grid size={6}>
-            <Card>
-              <CardContent>
-                <Typography gutterBottom variant='h6'>
-                  Articles
-                </Typography>
-                <Typography variant='h3'>
-                  {articlesData?.length || 0}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid size={6}>
-            <Card>
-              <CardContent>
-                <Typography gutterBottom variant='h6'>
-                  Jeux
-                </Typography>
-                <Typography variant='h3'>{gamesData?.length || 0}</Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
-      </Box>
+      {/* Articles en attente */}
+      {canReviewArticles(user?.role) && (
+        <Box mb={6}>
+          <Card sx={{ bgcolor: 'primary.light' }}>
+            <CardContent>
+              <Stack alignItems='center' direction='row' spacing={2}>
+                <Box
+                  sx={{
+                    p: 2,
+                    borderRadius: '50%',
+                    bgcolor: 'primary.main',
+                    color: 'primary.contrastText',
+                  }}
+                >
+                  <IconAnimation>
+                    <FiFileText size={24} />
+                  </IconAnimation>
+                </Box>
+                <Box>
+                  <Typography
+                    gutterBottom
+                    color='primary.contrastText'
+                    variant='h6'
+                  >
+                    Articles en attente d'approbation
+                  </Typography>
+                  <Typography color='primary.contrastText' variant='h3'>
+                    <AnimatedCounter end={pendingCount} />
+                  </Typography>
+                </Box>
+              </Stack>
+            </CardContent>
+          </Card>
+        </Box>
+      )}
 
       {/* Navigation Administrative */}
-      <Box>
+      <Box mb={6}>
         <Typography gutterBottom variant='h5'>
           Navigation
         </Typography>
@@ -289,6 +172,39 @@ const AdminPage = () => {
               icon={FiBriefcase}
               title='Entreprises'
             />
+          </Grid>
+        </Grid>
+      </Box>
+
+      {/* Statistiques */}
+      <Box mb={6}>
+        <Typography gutterBottom variant='h5'>
+          Statistiques
+        </Typography>
+        <Grid container spacing={3}>
+          <Grid size={4}>
+            <Card>
+              <CardContent>
+                <Typography gutterBottom variant='h6'>
+                  Articles
+                </Typography>
+                <Typography variant='h3'>
+                  <AnimatedCounter end={articlesData?.length || 0} />
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid size={4}>
+            <Card>
+              <CardContent>
+                <Typography gutterBottom variant='h6'>
+                  Jeux
+                </Typography>
+                <Typography variant='h3'>
+                  <AnimatedCounter end={gamesData?.length || 0} />
+                </Typography>
+              </CardContent>
+            </Card>
           </Grid>
         </Grid>
       </Box>

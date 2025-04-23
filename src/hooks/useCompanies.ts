@@ -117,14 +117,14 @@ export function useCompanies(params: ICompaniesParams = {}) {
     mutationFn: ({ id, data }: { id: string; data: ICompanyFormData }) =>
       companiesApi.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.all });
+      queryClient.refetchQueries({ queryKey: queryKeys.all });
     },
   });
 
   const deleteCompany = useMutation({
     mutationFn: (id: string) => companiesApi.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.all });
+      queryClient.refetchQueries({ queryKey: queryKeys.all });
     },
   });
 
