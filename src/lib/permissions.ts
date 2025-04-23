@@ -115,7 +115,12 @@ export const canTransitionToStatus = (
   toStatus: ArticleStatus,
   role?: Role
 ): boolean => {
-  // Only editors and up can change status
+  // For editors to submit their articles
+  if (fromStatus === 'DRAFT' && toStatus === 'PENDING_APPROVAL') {
+    return hasSufficientRole(role, Role.EDITOR);
+  }
+
+  // Other transitions require review permissions
   if (!canReviewArticles(role)) return false;
 
   const transitions: Record<ArticleStatus, ArticleStatus[]> = {

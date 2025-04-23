@@ -129,7 +129,8 @@ describe('PATCH /api/articles/[id]/status', () => {
 
   const createRequest = (
     status: ArticleStatus,
-    comment?: string
+    comment?: string,
+    reviewerId?: string
   ): NextRequest => {
     return new Request('http://localhost/api/articles/1/status', {
       method: 'PATCH',
@@ -139,6 +140,7 @@ describe('PATCH /api/articles/[id]/status', () => {
       body: JSON.stringify({
         status,
         comment,
+        reviewerId,
       }),
     }) as NextRequest;
   };
@@ -163,7 +165,9 @@ describe('PATCH /api/articles/[id]/status', () => {
     (prisma.article.update as any).mockImplementation(updateMock);
 
     const request = createRequest('PUBLISHED', 'Direct publish from draft');
-    const response = await PATCH(request, { params: { id: '1' } });
+    const response = await PATCH(request, {
+      params: Promise.resolve({ id: '1' }),
+    });
     const data = await response.json();
 
     expect(response.status).toBe(200);
@@ -195,7 +199,9 @@ describe('PATCH /api/articles/[id]/status', () => {
       'NEEDS_CHANGES',
       'Please revise the introduction'
     );
-    const response = await PATCH(request, { params: { id: '1' } });
+    const response = await PATCH(request, {
+      params: Promise.resolve({ id: '1' }),
+    });
     const data = await response.json();
 
     expect(response.status).toBe(200);
@@ -217,7 +223,9 @@ describe('PATCH /api/articles/[id]/status', () => {
     (prisma.article.findUnique as any).mockImplementation(findUniqueMock);
 
     const request = createRequest('NEEDS_CHANGES'); // No comment provided
-    const response = await PATCH(request, { params: { id: '1' } });
+    const response = await PATCH(request, {
+      params: Promise.resolve({ id: '1' }),
+    });
     const data = await response.json();
 
     expect(response.status).toBe(400);
@@ -241,7 +249,9 @@ describe('PATCH /api/articles/[id]/status', () => {
     (prisma.article.update as any).mockImplementation(updateMock);
 
     const request = createRequest('PENDING_APPROVAL', 'Ready for review');
-    const response = await PATCH(request, { params: { id: '1' } });
+    const response = await PATCH(request, {
+      params: Promise.resolve({ id: '1' }),
+    });
     const data = await response.json();
 
     expect(response.status).toBe(200);
@@ -258,7 +268,9 @@ describe('PATCH /api/articles/[id]/status', () => {
     (prisma.article.findUnique as any).mockImplementation(findUniqueMock);
 
     const request = createRequest('PUBLISHED', 'Try to publish');
-    const response = await PATCH(request, { params: { id: '1' } });
+    const response = await PATCH(request, {
+      params: Promise.resolve({ id: '1' }),
+    });
     const data = await response.json();
 
     expect(response.status).toBe(403);
@@ -267,5 +279,130 @@ describe('PATCH /api/articles/[id]/status', () => {
     );
     expect(getCurrentUserMock).toHaveBeenCalledTimes(1);
     expect(findUniqueMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('should allow senior editor to assign reviewer', async () => {
+    const reviewerId = 'reviewer-1';
+    const updatedArticle = {
+      ...baseArticle,
+      currentReviewerId: reviewerId,
+    } satisfies ArticleMock;
+
+    const getCurrentUserMock = vi.fn().mockResolvedValue(mockSeniorEditor);
+    const findUniqueMock = vi.fn().mockResolvedValue(baseArticle);
+    const updateMock = vi.fn().mockResolvedValue(updatedArticle);
+
+    (getCurrentUser as any).mockImplementation(getCurrentUserMock);
+    (prisma.article.findUnique as any).mockImplementation(findUniqueMock);
+    (prisma.article.update as any).mockImplementation(updateMock);
+
+    const request = createRequest(
+      'PENDING_APPROVAL',
+      'Assigned reviewer',
+      reviewerId
+    );
+    const response = await PATCH(request, {
+      params: Promise.resolve({ id: '1' }),
+    });
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.currentReviewerId).toBe(reviewerId);
+  });
+
+  it('should not allow editor to assign reviewer', async () => {
+    const reviewerId = 'reviewer-1';
+    const getCurrentUserMock = vi.fn().mockResolvedValue(mockEditor);
+    const findUniqueMock = vi.fn().mockResolvedValue(baseArticle);
+
+    (getCurrentUser as any).mockImplementation(getCurrentUserMock);
+    (prisma.article.findUnique as any).mockImplementation(findUniqueMock);
+
+    const request = createRequest(
+      'PENDING_APPROVAL',
+      'Try to assign reviewer',
+      reviewerId
+    );
+    const response = await PATCH(request, {
+      params: Promise.resolve({ id: '1' }),
+    });
+    const data = await response.json();
+
+    expect(response.status).toBe(403);
+    expect(data.error).toBe('Not authorized to assign reviewer');
+  });
+
+  it('should set publishedAt when publishing article', async () => {
+    const publishedArticle = {
+      ...baseArticle,
+      status: 'PUBLISHED' as ArticleStatus,
+      publishedAt: new Date(),
+    } satisfies ArticleMock;
+
+    const getCurrentUserMock = vi.fn().mockResolvedValue(mockSeniorEditor);
+    const findUniqueMock = vi.fn().mockResolvedValue(baseArticle);
+    const updateMock = vi.fn().mockResolvedValue(publishedArticle);
+
+    (getCurrentUser as any).mockImplementation(getCurrentUserMock);
+    (prisma.article.findUnique as any).mockImplementation(findUniqueMock);
+    (prisma.article.update as any).mockImplementation(updateMock);
+
+    const request = createRequest('PUBLISHED', 'Publishing article');
+    const response = await PATCH(request, {
+      params: Promise.resolve({ id: '1' }),
+    });
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.publishedAt).toBeDefined();
+    expect(new Date(data.publishedAt)).toBeInstanceOf(Date);
+  });
+
+  it('should create approval history entry with correct action', async () => {
+    const historyCreateMock = vi.fn().mockResolvedValue({});
+    const articleUpdateMock = vi.fn().mockResolvedValue({
+      ...baseArticle,
+      status: 'PUBLISHED',
+    });
+
+    const mockTransaction = vi.fn().mockImplementation((fn: any) => {
+      const tx = {
+        article: {
+          update: articleUpdateMock,
+          findUnique: vi.fn(),
+          findUniqueOrThrow: vi.fn(),
+          findFirst: vi.fn(),
+          findFirstOrThrow: vi.fn(),
+        },
+        articleApprovalHistory: {
+          create: historyCreateMock,
+          findUnique: vi.fn(),
+          findUniqueOrThrow: vi.fn(),
+          findFirst: vi.fn(),
+          findFirstOrThrow: vi.fn(),
+        },
+      };
+      return Promise.resolve(fn(tx));
+    });
+
+    vi.spyOn(prisma, '$transaction').mockImplementation(mockTransaction);
+
+    (getCurrentUser as any).mockResolvedValue(mockSeniorEditor);
+    (prisma.article.findUnique as any).mockResolvedValue(baseArticle);
+
+    const request = createRequest('PUBLISHED', 'Publishing article');
+    await PATCH(request, {
+      params: Promise.resolve({ id: '1' }),
+    });
+
+    expect(historyCreateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          action: ApprovalAction.APPROVED,
+          fromStatus: 'DRAFT',
+          toStatus: 'PUBLISHED',
+        }),
+      })
+    );
   });
 });

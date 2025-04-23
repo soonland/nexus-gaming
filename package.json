@@ -13,7 +13,12 @@
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "db:clean": "ts-node prisma/clean.ts",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest run --coverage",
+    "test:coverage:report": "vitest run --coverage --reporter=html",
+    "test:coverage:check": "vitest run --coverage --reporter=html && open coverage/index.html"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
@@ -41,14 +46,13 @@
     "dayjs": "^1.11.13",
     "framer-motion": "^11.18.2",
     "jose": "^6.0.10",
-    "next": "^15.2.4",
+    "next": "^15.3.1",
     "next-cloudinary": "^6.16.0",
     "react": "^18.2.0",
     "react-datepicker": "^8.3.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.50.1",
     "react-icons": "^5.5.0",
-    "vitest": "^3.1.2",
     "zod": "^3.22.4"
   },
   "devDependencies": {
@@ -63,6 +67,7 @@
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "@vitejs/plugin-react": "^4.4.1",
+    "@vitest/coverage-v8": "^3.1.2",
     "eslint": "^8.57.1",
     "eslint-config-next": "^14.1.0",
     "eslint-config-prettier": "^10.1.2",
@@ -70,11 +75,13 @@
     "eslint-plugin-prettier": "^5.2.6",
     "eslint-plugin-react": "^7.37.5",
     "husky": "^9.1.7",
+    "jsdom": "^26.1.0",
     "lint-staged": "^15.5.1",
     "prettier": "^3.5.3",
     "prisma": "^5.10.0",
     "ts-node": "^10.9.2",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "vitest": "^3.1.2"
   },
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
