@@ -8,6 +8,10 @@ export const canManageAnnouncements = (role: Role): boolean => {
   return hasSufficientRole(role, Role.SENIOR_EDITOR);
 };
 
+export const canBroadcastNotifications = (role?: Role): boolean => {
+  return hasSufficientRole(role, Role.ADMIN);
+};
+
 const roleHierarchy: Record<Role, number> = {
   USER: 1,
   MODERATOR: 2,

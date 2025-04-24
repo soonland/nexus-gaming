@@ -2,7 +2,6 @@ import { NotificationType, Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
 import { getCurrentUser } from '@/lib/jwt';
-import { isValidNotificationLevel } from '@/lib/notifications';
 import prisma from '@/lib/prisma';
 
 export async function GET(request: Request) {
@@ -23,10 +22,29 @@ export async function GET(request: Request) {
       );
     }
 
+    // Get user's notification preferences
+    const preferences = await prisma.notificationPreference.findMany({
+      where: { userId: user.id },
+    });
+
+    // Get enabled notification types
+    const enabledTypes = preferences.filter(p => p.inApp).map(p => p.type);
+
+    // If no types are enabled and no specific type is requested, return empty
+    if (enabledTypes.length === 0 && !type) {
+      return NextResponse.json({ data: [] });
+    }
+
     const notifications = await prisma.systemNotification.findMany({
       where: {
         userId: user.id,
         ...(type && { type }),
+        // If no specific type is requested, filter by enabled types
+        ...(!type && {
+          type: {
+            in: enabledTypes,
+          },
+        }),
         AND: [
           {
             OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
@@ -70,7 +88,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { type, level, title, message, data, expiresAt } = body;
 
-    // Validate notification type and level
+    // Validate notification type
     if (!type || !Object.values(NotificationType).includes(type)) {
       return NextResponse.json(
         { error: 'Valid notification type is required' },
@@ -78,11 +96,21 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!isValidNotificationLevel(level)) {
-      return NextResponse.json(
-        { error: 'Valid notification level is required' },
-        { status: 400 }
-      );
+    // Check if the user has enabled this notification type
+    const preference = await prisma.notificationPreference.findUnique({
+      where: {
+        userId_type: {
+          userId: user.id,
+          type,
+        },
+      },
+    });
+
+    // Only create notification if inApp preference is enabled or no preference exists
+    if (preference?.inApp === false) {
+      return NextResponse.json({
+        error: 'Notification type is disabled by user preferences',
+      });
     }
 
     const notification = await prisma.systemNotification.create({
