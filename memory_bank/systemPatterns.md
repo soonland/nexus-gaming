@@ -1,222 +1,155 @@
-# System Patterns: Nexus Gaming News
+# System Patterns
 
-## Interface Patterns
+## UI Components
 
-### Navigation
+### Loading States
 
-```mermaid
-graph TD
-    A[App Layout] --> B[Navigation]
-    A --> C[Content Area]
+- Individual loading states for actions (e.g., notification mark as read)
+- Loading spinners inside buttons to maintain layout
+- Disabled states during loading
+- Loading state resets after action completion
+- Global loading overlay for page transitions
+- Skeleton loaders for content
 
-    B --> D[Auth Components]
-    B --> E[User Menu]
+### Form Patterns
 
-    C --> F[Article Management]
-    C --> G[Game Management]
-    C --> H[User Management]
-    C --> I[Platform Management]
+- Field-level validation
+- Submission handling
+- Error messages
+- Loading states
+- Success feedback
+- Auto-save handling
+
+### Notifications
+
+- Severity levels with corresponding colors: info, warning, urgent, error
+- Visual indicators for unread status
+- Read/unread state changes with visual feedback
+- Batch actions with individual spinners
+- Tooltips for action buttons
+- Event propagation control for nested clickables
+
+### Layout
+
+- Responsive design patterns
+- Container management
+- Grid system usage
+- Spacing consistency
+- Breakpoint handling
+- Navigation patterns
+
+## Data Management
+
+### React Query Integration
+
+- Optimistic updates for better UX
+- Cache invalidation after mutations
+- Loading states tracking with isPending
+- Response typing with Prisma types
+- Error state handling
+- Prefetching strategies
+- Infinite loading
+
+### API Response Format
+
+```typescript
+interface ApiResponse<T> {
+  data: T;
+  error?: string;
+}
 ```
-
-### Article Management
-
-```mermaid
-graph TD
-    A[Article Management] --> B[List View]
-    A --> C[Edit Form]
-    A --> D[Status Management]
-
-    B --> E[Filter/Search]
-    B --> F[Batch Actions]
-    B --> G[Sorting]
-
-    C --> H[Content Editor]
-    C --> I[Metadata Panel]
-    C --> J[Media Upload]
-
-    D --> K[Status Transitions]
-    D --> L[Review Process]
-    D --> M[History]
-```
-
-### Data Table Patterns
-
-```mermaid
-graph TD
-    A[AdminDataTable] --> B[Header Controls]
-    A --> C[Table Content]
-
-    B --> D[Left Section]
-    B --> E[Right Section]
-
-    D --> F[Selection Management]
-    D --> G[Batch Actions]
-
-    E --> H[Page Info]
-    E --> I[Navigation]
-    E --> J[Page Size]
-```
-
-### Batch Operations
-
-```mermaid
-graph TD
-    A[Batch Actions] --> B[Selection Management]
-    B --> C[Individual Select]
-    B --> D[Select All]
-    B --> E[Clear Selection]
-
-    A --> F[Status Updates]
-    F --> G[Publish Selected]
-    F --> H[Unpublish Selected]
-    F --> I[Delete Selected]
-```
-
-## Authorization Patterns
-
-### Role Hierarchy
-
-```mermaid
-graph TD
-    A[SYSADMIN] --> B[ADMIN]
-    B --> C[SENIOR_EDITOR]
-    C --> D[EDITOR]
-    D --> E[MODERATOR]
-    E --> F[USER]
-```
-
-### Article Permissions
-
-```mermaid
-graph TD
-    A[Article Access] --> B[View]
-    A --> C[Create]
-    A --> D[Edit]
-    A --> E[Delete]
-
-    D --> F{Owner Check}
-    F --> G[Own Content]
-    F --> H[Others Content]
-
-    E --> I{Delete Rules}
-    I --> J[SENIOR_EDITOR: Any]
-    I --> K[USER: Own Drafts]
-```
-
-### Status Transitions
-
-```mermaid
-graph TD
-    A[DRAFT] --> B[PENDING_APPROVAL]
-    B --> C[PUBLISHED]
-    B --> D[NEEDS_CHANGES]
-    D --> B
-    C --> E[ARCHIVED]
-
-    subgraph Permissions
-        F[SENIOR_EDITOR+] --> G[All Transitions]
-        H[EDITOR] --> I[Draft to Pending]
-        J[Own Draft] --> K[Delete]
-    end
-```
-
-## Implementation Patterns
-
-### Generic Components
-
-#### Data Table
-
-- Type-safe props et events
-- Configuration flexible des colonnes
-- Fonctions de rendu personnalisables
-- Gestion intégrée de la sélection
-- Actions par lot
-- Organisation de l'en-tête :
-  - Gauche : Info sélection et actions
-  - Droite : Pagination et contrôles
-
-#### Selection Management
-
-- Sélection individuelle
-- Contrôles de sélection en masse
-- Persistance de l'état de sélection
-- Gestion des ID typée
-- Affichage du nombre de sélections
-- Mise en page optimisée :
-  - Hauteur d'en-tête constante
-  - Transitions fluides
-  - Hiérarchie visuelle claire
-  - Affichage contextuel des actions
 
 ### State Management
 
-#### Article States
+- Context usage guidelines
+- Local vs global state
+- Form state handling
+- UI state persistence
+- Route state management
 
-- Statut de l'article
-- État de la sélection
-- État des actions en cours
-- État des permissions
+### Mutation Patterns
 
-#### Batch Operations
+- Reset mutation state after completion
+- Handle success/error states
+- Proper typing for request/response
+- Load masks during operation
+- Optimistic updates
+- Rollback handling
 
-- Interface de sélection multiple
-- Contrôles d'actions en lot
-- Retour de progression
-- Gestion des erreurs
-- Synchronisation d'état
+## Security Patterns
 
-### Validation
+### API Routes
 
-#### Permission Checks
+- User authentication check
+- Resource ownership validation
+- Input validation
+- Error handling with appropriate status codes
+- Rate limiting
+- Request sanitization
 
-- Vérification du rôle
-- Vérification de propriété
-- Règles de transition d'état
-- Validation des actions en lot
+### Authorization
 
-#### Data Validation
+- Role-based access
+- Resource permissions
+- Route protection
+- API endpoint security
+- Token management
 
-- Champs requis
-- Validation de format
-- Validation métier
-- Gestion des erreurs
+## Database Patterns
 
-### User Feedback
+### Prisma Queries
 
-#### Visual Feedback
+- Sorting by multiple fields
+- Filtering with dynamic conditions
+- Data selection optimization
+- Proper type safety
+- Relation handling
+- Pagination strategies
+- Transaction management
 
-- États de chargement
-- Transitions d'état
-- Indicateurs de progression
-- Messages d'erreur
+### Data Integrity
 
-#### Theme Integration
+- Validation rules
+- Constraint handling
+- Cascade operations
+- Soft deletes
+- Audit trails
+- Backup strategies
 
-- Dark/Light Mode Adaptation:
+## Error Handling
 
-  - Opacity ajustée selon le thème:
-    - Dark mode: 0.3 pour meilleure visibilité
-    - Light mode: 0.03 pour subtilité
-  - Élévation dynamique:
-    - Dark mode: boxShadow niveau 4
-    - Light mode: boxShadow niveau 1
+### Client-Side
 
-- Animation et Transitions:
+- API error handling
+- Form validation errors
+- Network error recovery
+- Mutation error handling
+- Toast notifications
+- Error boundaries
 
-  - Animations fluides avec timing uniforme
-  - Effets de hover avec transform
-  - Indicateurs pulsés pour nouveautés
-  - États de collapse par défaut
+### Server-Side
 
-- Hiérarchie Visuelle:
-  - Contraste optimisé par thème
-  - Élévation adaptative
-  - Espacement cohérent
-  - Organisation claire du contenu
+- HTTP status codes
+- Error messages
+- Validation errors
+- Database errors
+- Authentication errors
+- Rate limit errors
 
-#### Action Feedback
+## Testing Patterns
 
-- Messages de succès/erreur
-- Confirmations d'action
-- Notifications de changement d'état
-- Retour d'action par lot
+### Unit Testing
+
+- Component testing
+- Hook testing
+- Utility testing
+- Mock patterns
+- Test organization
+
+### Integration Testing
+
+- API route testing
+- Database testing
+- Authentication flow
+- End-to-end flows
+- Error scenarios
