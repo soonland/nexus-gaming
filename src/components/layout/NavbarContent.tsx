@@ -33,9 +33,6 @@ export const NavbarContent = () => {
       direction='row'
       justifyContent='space-between'
       sx={{
-        bgcolor: 'background.paper',
-        borderBottom: 1,
-        borderColor: 'divider',
         px: 2,
         py: 1,
       }}
@@ -75,6 +72,12 @@ export const NavbarContent = () => {
             <Menu
               anchorEl={adminMenuAnchor}
               open={Boolean(adminMenuAnchor)}
+              sx={{
+                '& .MuiPaper-root': {
+                  bgcolor: 'background.paper',
+                  transition: 'background-color 0.3s',
+                },
+              }}
               onClose={() => setAdminMenuAnchor(null)}
             >
               {hasSufficientRole(user?.role, Role.SENIOR_EDITOR) && (
@@ -169,6 +172,12 @@ export const NavbarContent = () => {
             <Menu
               anchorEl={userMenuAnchor}
               open={Boolean(userMenuAnchor)}
+              sx={{
+                '& .MuiPaper-root': {
+                  bgcolor: 'background.paper',
+                  transition: 'background-color 0.3s',
+                },
+              }}
               onClose={() => setUserMenuAnchor(null)}
             >
               <MenuItem

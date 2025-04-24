@@ -190,6 +190,30 @@ graph TD
 - Indicateurs de progression
 - Messages d'erreur
 
+#### Theme Integration
+
+- Dark/Light Mode Adaptation:
+
+  - Opacity ajustée selon le thème:
+    - Dark mode: 0.3 pour meilleure visibilité
+    - Light mode: 0.03 pour subtilité
+  - Élévation dynamique:
+    - Dark mode: boxShadow niveau 4
+    - Light mode: boxShadow niveau 1
+
+- Animation et Transitions:
+
+  - Animations fluides avec timing uniforme
+  - Effets de hover avec transform
+  - Indicateurs pulsés pour nouveautés
+  - États de collapse par défaut
+
+- Hiérarchie Visuelle:
+  - Contraste optimisé par thème
+  - Élévation adaptative
+  - Espacement cohérent
+  - Organisation claire du contenu
+
 #### Action Feedback
 
 - Messages de succès/erreur

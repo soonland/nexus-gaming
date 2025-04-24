@@ -1,7 +1,7 @@
 'use client';
 
 import { Alert, Snackbar } from '@mui/material';
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 
 interface INotifierContextValue {
   showSuccess: (message: string) => void;
@@ -15,32 +15,63 @@ interface INotifierProviderProps {
 }
 
 export const NotifierProvider = ({ children }: INotifierProviderProps) => {
-  const [open, setOpen] = useState(false);
-  const [message, setMessage] = useState('');
-  const [severity, setSeverity] = useState<'success' | 'error'>('success');
+  const [notifications, setNotifications] = useState<
+    Array<{
+      message: string;
+      severity: 'success' | 'error';
+      id: number;
+    }>
+  >([]);
+  const [currentNotification, setCurrentNotification] = useState<{
+    message: string;
+    severity: 'success' | 'error';
+    id: number;
+  } | null>(null);
 
   const showNotification = (message: string, severity: 'success' | 'error') => {
-    setMessage(message);
-    setSeverity(severity);
-    setOpen(true);
+    const newNotification = {
+      message,
+      severity,
+      id: Date.now(),
+    };
+    setNotifications(prev => [...prev, newNotification]);
   };
 
   const showSuccess = (message: string) => showNotification(message, 'success');
   const showError = (message: string) => showNotification(message, 'error');
 
-  const handleClose = () => setOpen(false);
+  // Process notifications queue
+  useEffect(() => {
+    if (notifications.length > 0 && !currentNotification) {
+      const [next, ...rest] = notifications;
+      setCurrentNotification(next);
+      setNotifications(rest);
+    }
+  }, [notifications, currentNotification]);
+
+  const handleClose = () => {
+    setCurrentNotification(null);
+  };
 
   return (
     <NotifierContext.Provider value={{ showSuccess, showError }}>
       {children}
       <Snackbar
+        key={currentNotification?.id}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-        autoHideDuration={6000}
-        open={open}
+        autoHideDuration={3000}
+        open={!!currentNotification}
         onClose={handleClose}
       >
-        <Alert severity={severity} onClose={handleClose}>
-          {message}
+        <Alert
+          severity={currentNotification?.severity || 'success'}
+          sx={{
+            bgcolor: 'background.paper',
+            transition: 'background-color 0.3s',
+          }}
+          onClose={handleClose}
+        >
+          {currentNotification?.message}
         </Alert>
       </Snackbar>
     </NotifierContext.Provider>

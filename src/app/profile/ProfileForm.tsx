@@ -9,6 +9,7 @@ import {
   SOCIAL_PLATFORMS,
 } from './_components/social/constants';
 import { SocialProfilesSection } from './_components/social/SocialProfilesSection';
+import { ThemeSection } from './_components/ThemeSection';
 
 export const ProfileForm = () => {
   return (
@@ -16,6 +17,7 @@ export const ProfileForm = () => {
       <PasswordExpiration />
       <AvatarSection />
       <BasicInfoForm />
+      <ThemeSection />
       <SocialProfilesSection
         platforms={[...GAMING_PLATFORMS, ...SOCIAL_PLATFORMS]}
         section='all'

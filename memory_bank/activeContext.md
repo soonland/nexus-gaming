@@ -14,15 +14,25 @@
 2. **UI Improvements**
 
    - Enhanced announcement display:
-     - Semi-transparent color headers (defined in announcementStyles.ts using
-       rgba)
-     - Clean content separation with consistent spacing
-     - Improved typography:
-       - Heading: letterSpacing -0.01em, fontWeight 500
-       - Body text: lineHeight 1.6, letterSpacing 0.01em
-     - Badge system for new items
-     - Smoother animations using cubic-bezier transitions
-     - Consistent use of MUI theme colors
+     - Semi-transparent color backgrounds with theme-aware opacity:
+       - Dark theme: 0.3 opacity for better visibility
+       - Light theme: 0.03 opacity for subtlety
+     - Responsive elevation using box shadows:
+       - Dark theme: level 4 for depth
+       - Light theme: level 1 for subtle lift
+     - Default collapsed state for cleaner initial view
+     - Interaction enhancements:
+       - Smooth hover effects with transform
+       - Pulsing animation for new content indicator
+       - Consistent animation timing
+     - Typography refinements:
+       - Enhanced contrast in dark mode
+       - Clear visual hierarchy
+       - Proper spacing and alignment
+     - Theme integration:
+       - Automatic dark mode adaptation
+       - Color system compliance
+       - Consistent with MUI patterns
    - Animated counters in dashboard ✓
    - Icon hover animations ✓
 

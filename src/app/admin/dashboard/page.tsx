@@ -127,7 +127,7 @@ const DashboardPage = () => {
       {/* Navigation Administrative */}
       {canManage && (
         <Box mb={6}>
-          <Typography gutterBottom variant='h5'>
+          <Typography gutterBottom color='text.primary' variant='h5'>
             Navigation
           </Typography>
           <Grid container spacing={3}>
@@ -183,17 +183,17 @@ const DashboardPage = () => {
       {/* Statistiques */}
       {canManage && (
         <Box mb={6}>
-          <Typography gutterBottom variant='h5'>
+          <Typography gutterBottom color='text.primary' variant='h5'>
             Statistiques
           </Typography>
           <Grid container spacing={3}>
             <Grid size={4}>
               <Card>
                 <CardContent>
-                  <Typography gutterBottom variant='h6'>
+                  <Typography gutterBottom color='text.primary' variant='h6'>
                     Articles
                   </Typography>
-                  <Typography variant='h3'>
+                  <Typography color='text.primary' variant='h3'>
                     <AnimatedCounter end={articlesData?.length || 0} />
                   </Typography>
                 </CardContent>
@@ -202,10 +202,10 @@ const DashboardPage = () => {
             <Grid size={4}>
               <Card>
                 <CardContent>
-                  <Typography gutterBottom variant='h6'>
+                  <Typography gutterBottom color='text.primary' variant='h6'>
                     Jeux
                   </Typography>
-                  <Typography variant='h3'>
+                  <Typography color='text.primary' variant='h3'>
                     <AnimatedCounter end={gamesData?.length || 0} />
                   </Typography>
                 </CardContent>

@@ -118,6 +118,20 @@
 
 ### Week of April 22-28, 2025
 
+- Enhanced announcement panel UI/UX:
+
+  - Improved visibility in dark theme with higher opacity backgrounds (0.3)
+  - Added responsive elevation with theme-aware box shadows (4 in dark mode)
+  - Changed default state to collapsed for cleaner initial view
+  - Enhanced animations and transitions:
+    - Smooth hover effects with transform
+    - Consistent animation durations
+    - Pulsing indicator for new announcements
+  - Better theme integration:
+    - Increased contrast in dark mode
+    - Proper color hierarchy
+    - Consistent with MUI patterns
+
 - Corrigé le filtrage des articles dans l'API admin:
 
   - Séparé la logique de recherche et de filtrage par statut
