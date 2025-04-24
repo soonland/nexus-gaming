@@ -1,5 +1,3 @@
-'use client';
-
 import {
   Box,
   Card,
@@ -22,8 +20,12 @@ import {
 
 import { ColorDot } from '@/components/common';
 import type { IAdminAnnouncement } from '@/hooks/useAdminAnnouncement';
+import type { IAnnouncement } from '@/hooks/useAnnouncements';
 
 import { getAnnouncementTypeStyle } from './announcementStyles';
+
+// Type alias pour éviter les conflits d'imports
+type AnnouncementItem = IAnnouncement | IAdminAnnouncement;
 
 const typeIcons: Record<AnnouncementType, React.ElementType> = {
   INFO: FiInfo,
@@ -31,14 +33,14 @@ const typeIcons: Record<AnnouncementType, React.ElementType> = {
   URGENT: FiAlertTriangle,
 };
 
-const PRIORITY_ORDER = {
+const PRIORITY_ORDER: Record<AnnouncementType, number> = {
   URGENT: 1,
   ATTENTION: 2,
   INFO: 3,
 };
 
 interface IAnnouncementPanelProps {
-  announcements: IAdminAnnouncement[];
+  announcements: AnnouncementItem[];
 }
 
 export const AnnouncementPanel = ({
@@ -47,13 +49,21 @@ export const AnnouncementPanel = ({
   const [isExpanded, setIsExpanded] = useState(true);
 
   const sortedAnnouncements = [...announcements]
-    .filter(
-      announcement =>
-        announcement.isActive === 'active' &&
-        (announcement.expiresAt
-          ? new Date(announcement.expiresAt) > new Date()
-          : true)
-    )
+    .filter(announcement => {
+      // Pour les annonces admin, vérifie isActive
+      if ('isActive' in announcement) {
+        return (
+          announcement.isActive === 'active' &&
+          (announcement.expiresAt
+            ? new Date(announcement.expiresAt) > new Date()
+            : true)
+        );
+      }
+      // Pour les annonces publiques, vérifie seulement la date d'expiration
+      return announcement.expiresAt
+        ? new Date(announcement.expiresAt) > new Date()
+        : true;
+    })
     .sort((a, b) => PRIORITY_ORDER[a.type] - PRIORITY_ORDER[b.type]);
 
   const isNew = (date: Date) => {

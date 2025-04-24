@@ -118,16 +118,42 @@
 
 ### Week of April 22-28, 2025
 
+- Corrigé le filtrage des articles dans l'API admin:
+
+  - Séparé la logique de recherche et de filtrage par statut
+  - Corrigé la clause WHERE pour filtrer correctement par statut
+  - Amélioré la requête pour usePendingArticlesCount
+
+- Optimisé le dashboard:
+
+  - Unifié le dashboard pour EDITOR et SENIOR_EDITOR+
+  - Converti AdminPage en DashboardPage
+  - Implémenté l'affichage conditionnel basé sur les rôles
+  - Supprimé le composant EditorDashboard redondant
+
+- Updated article approval workflow:
+
+  - Fixed permission checks for article submissions
+  - Allowed editors to submit articles for review (DRAFT → PENDING_APPROVAL)
+  - Maintained stricter controls for other transitions (SENIOR_EDITOR required)
+  - Enhanced error handling for unauthorized transitions
+  - Added clear distinction between editorial levels
+  - Improved test coverage for permission scenarios
+
 - Added pending articles counter in dashboard:
+
   - New statistic visible to SENIOR_EDITOR and above
   - Real-time count of articles awaiting approval
   - Uses AnimatedCounter for dynamic display
   - Protected by role-based permissions
+
 - Enhanced article permissions:
+
   - Added ability for users to delete their own draft articles
   - Updated permission checks to handle article ownership
   - Improved batch delete permissions to respect ownership
   - Modified status transitions to include self-management
+
 - Refined article deletion flow:
   - Enhanced canDeleteArticles to check article ownership
   - Added support for draft deletion by authors
@@ -137,6 +163,7 @@
 ### Week of April 15-21, 2025
 
 - Enhanced AdminDataTable component:
+
   - Integrated page size selection in table header
   - Improved batch actions organization:
     - Selection count and batch actions on the left
@@ -144,26 +171,34 @@
   - Optimized header layout to prevent content jumps
   - Added smooth transitions between states
   - Improved visual hierarchy of controls
+
 - Added article status management:
+
   - Created dedicated status update API endpoint
   - Implemented validation of status transitions
   - Added timestamp handling for publish dates
   - Enhanced error handling and feedback
+
 - Implemented article approval workflow:
+
   - Added editorial roles (EDITOR, SENIOR_EDITOR)
   - Created approval history tracking
   - Implemented status transitions (DRAFT → PENDING_APPROVAL → PUBLISHED)
   - Added review comments and change requests
   - Set up role-based permissions for article management
+
 - Added animated statistics counters
 - Implemented icon hover animations
 - Added game genre support
 - Implemented article hero images
+
 - Enhanced data management:
+
   - Implemented refetchQueries across all hooks
   - Improved data synchronization
   - Better cache management
   - Faster UI updates
+
 - Enhanced announcement displays with modern design:
   - Color-coded headers with transparency
   - Improved content organization

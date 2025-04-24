@@ -60,7 +60,7 @@ export const NavbarContent = () => {
           <>
             <Button
               component={Link}
-              href='/admin'
+              href='/admin/dashboard'
               startIcon={<MdDashboard />}
               variant='text'
             >
