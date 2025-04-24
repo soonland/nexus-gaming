@@ -26,7 +26,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Get user with password
-    const user = await prisma.user.findUnique({
+    const existingUser = await prisma.user.findUnique({
       where: { id: tokenUser.id },
       select: {
         id: true,
@@ -34,12 +34,15 @@ export async function PUT(request: NextRequest) {
       },
     });
 
-    if (!user) {
+    if (!existingUser) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     // Verify current password
-    const passwordValid = await bcrypt.compare(currentPassword, user.password);
+    const passwordValid = await bcrypt.compare(
+      currentPassword,
+      existingUser.password
+    );
     if (!passwordValid) {
       return NextResponse.json(
         { error: 'Current password is incorrect' },
@@ -47,23 +50,36 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // Update password and expiration dates
-    const updatedUser = await prisma.user.update({
-      where: { id: tokenUser.id },
-      data: {
-        password: await hashPassword(newPassword),
-        lastPasswordChange: new Date(),
-      },
-      select: {
-        id: true,
-        lastPasswordChange: true,
-      },
+    // Update password and delete notifications in a transaction
+    const result = await prisma.$transaction(async tx => {
+      // Update password
+      const updatedUser = await tx.user.update({
+        where: { id: tokenUser.id },
+        data: {
+          password: await hashPassword(newPassword),
+          lastPasswordChange: new Date(),
+        },
+        select: {
+          id: true,
+          lastPasswordChange: true,
+        },
+      });
+
+      // Delete password expiration notifications
+      await tx.systemNotification.deleteMany({
+        where: {
+          userId: tokenUser.id,
+          type: 'PASSWORD_EXPIRATION',
+        },
+      });
+
+      return updatedUser;
     });
 
     return NextResponse.json({
       user: {
-        ...updatedUser,
-        lastPasswordChange: updatedUser.lastPasswordChange.toISOString(),
+        ...result,
+        lastPasswordChange: result.lastPasswordChange.toISOString(),
       },
     });
   } catch (error) {
