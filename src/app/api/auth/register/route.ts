@@ -55,6 +55,17 @@ export async function POST(request: Request) {
         },
       });
 
+      // Create welcome notification
+      await tx.systemNotification.create({
+        data: {
+          userId: newUser.id,
+          type: 'SYSTEM_ALERT',
+          level: 'info',
+          title: 'Bienvenue sur Nexus Gaming',
+          message: 'Nous sommes ravis de vous compter parmi nous !',
+        },
+      });
+
       return newUser;
     });
 
