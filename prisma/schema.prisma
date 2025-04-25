@@ -52,6 +52,8 @@ model User {
   announcements     AdminAnnouncement[]
   articlesReviewing Article[]                @relation("articleReviewer")
   historyActions    ArticleApprovalHistory[] @relation("historyActions")
+  notifications     SystemNotification[]
+  notificationPrefs NotificationPreference[]
 }
 
 model Company {
@@ -192,4 +194,40 @@ model AdminAnnouncement {
   createdById String
 
   @@index([createdById])
+}
+
+enum NotificationType {
+  ARTICLE_REVIEW
+  STATUS_CHANGE
+  MENTION
+  SYSTEM_ALERT
+  PASSWORD_EXPIRATION
+}
+
+model SystemNotification {
+  id          String           @id @default(uuid())
+  type        NotificationType
+  level       String           // info, warning, urgent, error
+  title       String
+  message     String
+  isRead      Boolean          @default(false)
+  data        Json?            // Additional context data
+  expiresAt   DateTime?
+  createdAt   DateTime         @default(now())
+  user        User             @relation(fields: [userId], references: [id])
+  userId      String
+
+  @@index([userId])
+}
+
+model NotificationPreference {
+  id          String           @id @default(uuid())
+  type        NotificationType
+  email       Boolean          @default(true)
+  inApp       Boolean          @default(true)
+  user        User             @relation(fields: [userId], references: [id])
+  userId      String
+
+  @@unique([userId, type])
+  @@index([userId])
 }

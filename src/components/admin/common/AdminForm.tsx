@@ -83,10 +83,10 @@ export const AdminForm = ({
                 {!hideSaveButton && (
                   <Button
                     disabled={isSubmitting}
+                    startIcon={<FiSave />}
                     type='submit'
                     variant='outlined'
                   >
-                    <FiSave style={{ marginRight: '0.5rem' }} />
                     {isSubmitting ? 'Enregistrement...' : 'Sauvegarder'}
                   </Button>
                 )}

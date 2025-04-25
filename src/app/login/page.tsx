@@ -10,6 +10,7 @@ import {
   Typography,
   Alert,
   Snackbar,
+  Divider,
 } from '@mui/material';
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { Suspense, useEffect } from 'react';
@@ -131,6 +132,19 @@ const LoginContent = () => {
                 </Button>
               </Stack>
             </form>
+
+            <Box sx={{ textAlign: 'center', mt: 2 }}>
+              <Divider sx={{ my: 2 }}>ou</Divider>
+              <Typography color='text.secondary' sx={{ mb: 2 }} variant='body2'>
+                Pas encore de compte ?
+              </Typography>
+              <Button
+                variant='outlined'
+                onClick={() => router.push('/register')}
+              >
+                Créer un compte
+              </Button>
+            </Box>
           </Stack>
         </Box>
       </Container>

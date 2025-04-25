@@ -1,129 +1,133 @@
-'use client';
+import { useRouter } from 'next/navigation';
+import { useMemo } from 'react';
 
-import {
-  Box,
-  IconButton,
-  Popover,
-  Typography,
-  Button,
-  Stack,
-  useTheme,
-} from '@mui/material';
-import Link from 'next/link';
-import { useRef, useState } from 'react';
-import { FiBell } from 'react-icons/fi';
-
+import { useNotifications } from '@/hooks/useNotifications';
 import { usePasswordExpiration } from '@/hooks/usePasswordExpiration';
+import type { INotification, NotificationLevel } from '@/types/notifications';
+
+import { BaseNotificationBell } from './BaseNotificationBell';
+
+interface IWarningConfig {
+  level: NotificationLevel;
+  title: string;
+  type: 'PASSWORD_EXPIRATION';
+  message: (days: number) => string;
+}
+
+const warningConfigs: Record<string, IWarningConfig | undefined> = {
+  expired: {
+    level: 'error',
+    title: 'Votre mot de passe a expiré',
+    type: 'PASSWORD_EXPIRATION',
+    message: () =>
+      'Pour votre sécurité, veuillez mettre à jour votre mot de passe immédiatement.',
+  },
+  urgent: {
+    level: 'error',
+    title: 'Expiration imminente',
+    type: 'PASSWORD_EXPIRATION',
+    message: days =>
+      `Il vous reste ${days} jours pour changer votre mot de passe.`,
+  },
+  warning: {
+    level: 'warning',
+    title: 'Expiration approche',
+    type: 'PASSWORD_EXPIRATION',
+    message: days =>
+      `Il vous reste ${days} jours pour changer votre mot de passe.`,
+  },
+  info: {
+    level: 'info',
+    title: 'Pensez à changer votre mot de passe',
+    type: 'PASSWORD_EXPIRATION',
+    message: days =>
+      `Il vous reste ${days} jours pour changer votre mot de passe.`,
+  },
+  none: undefined,
+};
 
 export const NotificationBell = () => {
+  const router = useRouter();
   const passwordExpiration = usePasswordExpiration();
-  const theme = useTheme();
-  const anchorRef = useRef<HTMLDivElement>(null);
-  const [open, setOpen] = useState(false);
+  const {
+    notifications: systemNotifications,
+    updateNotification,
+    markAllAsRead,
+  } = useNotifications();
 
-  const warningLevelConfig = {
-    expired: {
-      color: theme.palette.error.main,
-      text: 'Votre mot de passe a expiré',
-    },
-    urgent: { color: theme.palette.error.main, text: 'Expiration imminente' },
-    warning: { color: theme.palette.warning.main, text: 'Expiration approche' },
-    info: {
-      color: theme.palette.info.main,
-      text: 'Pensez à changer votre mot de passe',
-    },
-    none: { color: undefined, text: undefined },
+  const passwordNotifications = useMemo<INotification[]>(() => {
+    if (!passwordExpiration || passwordExpiration.warningLevel === 'none') {
+      return [];
+    }
+
+    const warningConfig = warningConfigs[passwordExpiration.warningLevel];
+    if (!warningConfig) return [];
+
+    return [
+      {
+        id: 'password-expiration',
+        userId: '',
+        type: warningConfig.type,
+        level: warningConfig.level,
+        title: warningConfig.title,
+        message: warningConfig.message(passwordExpiration.daysUntilExpiration),
+        isRead: false,
+        data: {
+          daysUntilExpiration: passwordExpiration.daysUntilExpiration,
+          warningLevel: passwordExpiration.warningLevel,
+        },
+        createdAt: new Date(),
+        expiresAt: null, // No expiration - will be deleted on password change
+      },
+    ];
+  }, [passwordExpiration]);
+
+  // Combine system and password notifications
+  const allNotifications = [...systemNotifications, ...passwordNotifications];
+
+  const handleAction = (notification: INotification) => {
+    if (notification.type !== 'PASSWORD_EXPIRATION') {
+      updateNotification.mutate(
+        {
+          id: notification.id,
+          isRead: true,
+        },
+        {
+          onSettled: () => {
+            // This will trigger a re-render and remove the loading state
+            updateNotification.reset();
+          },
+        }
+      );
+    }
   };
 
-  if (!passwordExpiration) {
-    return null;
-  }
+  const handleNotificationClick = (notification: INotification) => {
+    if (notification.type === 'PASSWORD_EXPIRATION') {
+      router.push('/profile#password-form');
+    }
+  };
 
-  const hasNotifications = passwordExpiration.warningLevel !== 'none';
+  const handleMarkAllAsRead = (ids: string[]) => {
+    markAllAsRead.mutate(
+      { ids },
+      {
+        onSettled: () => {
+          // This will trigger a re-render and remove the loading state
+          markAllAsRead.reset();
+        },
+      }
+    );
+  };
 
   return (
-    <>
-      <Box
-        ref={anchorRef}
-        sx={{ position: 'relative' }}
-        onClick={e => {
-          e.preventDefault();
-          setOpen(true);
-        }}
-      >
-        <IconButton aria-label='Notifications' sx={{ position: 'relative' }}>
-          <FiBell size={20} />
-        </IconButton>
-        {hasNotifications && (
-          <Box
-            sx={{
-              position: 'absolute',
-              right: -1,
-              top: -1,
-              width: 8,
-              height: 8,
-              borderRadius: '50%',
-              bgcolor:
-                warningLevelConfig[passwordExpiration.warningLevel].color,
-              border: `2px solid ${theme.palette.background.paper}`,
-            }}
-          />
-        )}
-      </Box>
-      <Popover
-        PaperProps={{
-          sx: {
-            width: 300,
-            p: 2,
-          },
-        }}
-        anchorEl={anchorRef.current}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        open={open}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-        onClose={() => setOpen(false)}
-      >
-        {hasNotifications ? (
-          <Stack spacing={2}>
-            <Box>
-              <Typography variant='subtitle2'>
-                {warningLevelConfig[passwordExpiration.warningLevel].text}
-              </Typography>
-              <Typography color='text.secondary' variant='body2'>
-                {passwordExpiration.daysUntilExpiration > 0
-                  ? `Il vous reste ${passwordExpiration.daysUntilExpiration} jours pour changer votre mot de passe.`
-                  : 'Pour votre sécurité, veuillez mettre à jour votre mot de passe immédiatement.'}
-              </Typography>
-            </Box>
-            <Button
-              color={
-                passwordExpiration.warningLevel === 'expired' ||
-                passwordExpiration.warningLevel === 'urgent'
-                  ? 'error'
-                  : passwordExpiration.warningLevel === 'warning'
-                    ? 'warning'
-                    : 'info'
-              }
-              component={Link}
-              href='/profile#password-form'
-              size='small'
-              variant='contained'
-            >
-              Changer le mot de passe
-            </Button>
-          </Stack>
-        ) : (
-          <Typography color='text.secondary' variant='body2'>
-            Aucune notification
-          </Typography>
-        )}
-      </Popover>
-    </>
+    <BaseNotificationBell
+      isMarkingAllAsRead={markAllAsRead.isPending}
+      isMarkingAsRead={updateNotification.isPending}
+      notifications={allNotifications}
+      onAction={handleAction}
+      onMarkAllAsRead={handleMarkAllAsRead}
+      onNotificationClick={handleNotificationClick}
+    />
   );
 };

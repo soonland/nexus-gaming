@@ -1,5 +1,5 @@
 import { Role } from '@prisma/client';
-import type { Prisma } from '@prisma/client';
+import type { Prisma, ArticleStatus } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
 import { getCurrentUser } from '@/lib/jwt';
@@ -26,19 +26,27 @@ export async function GET(request: Request) {
     const page = parseInt(searchParams.get('page') ?? '1');
     const limit = parseInt(searchParams.get('limit') ?? '10');
     const search = searchParams.get('search') ?? '';
+    const status = searchParams.get('status') ?? '';
 
     // Calculate pagination
     const skip = (page - 1) * limit;
 
-    // Build base where clause with search
-    const baseWhere: Prisma.ArticleWhereInput = search
-      ? {
-          OR: [
-            { title: { contains: search, mode: 'insensitive' } },
-            { content: { contains: search, mode: 'insensitive' } },
-          ],
-        }
-      : {};
+    // Build base where clause with search and status independently
+    const baseWhere: Prisma.ArticleWhereInput = {
+      ...(search
+        ? {
+            OR: [
+              { title: { contains: search, mode: 'insensitive' } },
+              { content: { contains: search, mode: 'insensitive' } },
+            ],
+          }
+        : {}),
+      ...(status
+        ? {
+            status: status as ArticleStatus,
+          }
+        : {}),
+    };
 
     // Build role-based visibility restrictions
     let where: Prisma.ArticleWhereInput = baseWhere;

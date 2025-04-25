@@ -209,25 +209,50 @@ export async function POST(request: Request) {
       );
     }
 
-    // Hash password and create user
+    // Hash password and create user with welcome notification
     const hashedPassword = await hashPassword(password);
-    const user = await prisma.user.create({
-      data: {
-        username,
-        email,
-        password: hashedPassword,
-        role,
-        isActive,
-      },
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        role: true,
-        isActive: true,
-        createdAt: true,
-        updatedAt: true,
-      },
+    const user = await prisma.$transaction(async tx => {
+      const newUser = await tx.user.create({
+        data: {
+          username,
+          email,
+          password: hashedPassword,
+          role,
+          isActive,
+        },
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          role: true,
+          isActive: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+
+      // Create default system alert preferences
+      await tx.notificationPreference.create({
+        data: {
+          userId: newUser.id,
+          type: 'SYSTEM_ALERT',
+          email: false,
+          inApp: true,
+        },
+      });
+
+      // Create welcome notification
+      await tx.systemNotification.create({
+        data: {
+          userId: newUser.id,
+          type: 'SYSTEM_ALERT',
+          level: 'info',
+          title: 'Bienvenue sur Nexus Gaming',
+          message: 'Nous sommes ravis de vous compter parmi nous !',
+        },
+      });
+
+      return newUser;
     });
 
     return NextResponse.json({ user }, { status: 201 });

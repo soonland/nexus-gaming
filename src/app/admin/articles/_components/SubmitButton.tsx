@@ -39,6 +39,7 @@ export const SubmitButton: React.FC<ISubmitButtonProps> = ({
       <Button
         color='primary'
         disabled={disabled}
+        size='small'
         startIcon={<FiSend />}
         variant='contained'
         onClick={() => setDialogOpen(true)}

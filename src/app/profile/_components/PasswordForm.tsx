@@ -11,6 +11,8 @@ import { useState } from 'react';
 
 import { useNotifier } from '@/components/common/Notifier';
 
+import { PasswordStrengthIndicator } from './PasswordStrengthIndicator';
+
 interface IPasswordFormData {
   currentPassword: string;
   newPassword: string;
@@ -101,6 +103,7 @@ export const PasswordForm = () => {
               }))
             }
           />
+          <PasswordStrengthIndicator password={formData.newPassword} />
           <TextField
             fullWidth
             error={
