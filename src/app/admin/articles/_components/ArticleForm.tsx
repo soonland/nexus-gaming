@@ -1,11 +1,19 @@
 'use client';
 
-import { Box, Backdrop, Stack, Typography } from '@mui/material';
+import {
+  Backdrop,
+  Box,
+  Button,
+  ButtonGroup,
+  Stack,
+  Typography,
+} from '@mui/material';
 import { ArticleStatus, Role } from '@prisma/client';
 import type { Dayjs } from 'dayjs';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { FiChevronsLeft as ChevronLeftIcon } from 'react-icons/fi';
+import { FiChevronsLeft as ChevronLeftIcon, FiSave } from 'react-icons/fi';
 
 import { AdminForm } from '@/components/admin/common';
 import { useNotifier } from '@/components/common/Notifier';
@@ -17,7 +25,6 @@ import { useUsers } from '@/hooks/useUsers';
 import dayjs from '@/lib/dayjs';
 import { canSelectArticleAuthor, canEditArticle } from '@/lib/permissions';
 
-import { DraftButton } from './DraftButton';
 import {
   ArticleMainContent,
   ArticleMetadataPanel,
@@ -124,9 +131,7 @@ export const ArticleForm = ({ initialData, mode }: IArticleFormProps) => {
   };
 
   const handleEditorSubmit = async (comment: string) => {
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     setIsSubmitting(true);
 
@@ -171,58 +176,10 @@ export const ArticleForm = ({ initialData, mode }: IArticleFormProps) => {
     }
   };
 
-  useEffect(() => {
-    if (
-      initialData &&
-      !canEditArticle(
-        user?.role,
-        {
-          status: initialData.status,
-          userId: initialData.user.id,
-        },
-        user?.id
-      )
-    ) {
-      router.push('/admin/articles');
-    }
-  }, [initialData, user, router]);
-
-  const handleSaveAsDraft = async () => {
-    if (!validateForm()) return;
-
-    const data: IArticleFormData = {
-      title: title.trim(),
-      content: content.trim(),
-      categoryId,
-      gameIds,
-      status: ArticleStatus.DRAFT,
-      publishedAt: null,
-      updatedAt: null,
-      heroImage,
-      userId,
-    };
-
-    if (mode === 'create') {
-      await createArticle.mutateAsync(data);
-      showSuccess('Brouillon sauvegardé avec succès');
-    } else if (initialData?.id) {
-      await updateArticle.mutateAsync({
-        id: initialData.id,
-        data,
-      });
-      showSuccess('Brouillon mis à jour avec succès');
-    }
-
-    router.push('/admin/articles');
-    router.refresh();
-  };
-
   const handleSubmit = async (e: React.FormEvent, stayOnPage = false) => {
     e.preventDefault();
 
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     setIsSubmitting(true);
 
@@ -232,8 +189,8 @@ export const ArticleForm = ({ initialData, mode }: IArticleFormProps) => {
         content: content.trim(),
         categoryId,
         gameIds,
-        status,
-        publishedAt: publishedAt?.toISOString() || null,
+        status: isEditor ? ArticleStatus.DRAFT : status,
+        publishedAt: isEditor ? null : publishedAt?.toISOString() || null,
         updatedAt: updatedAt?.toISOString() || null,
         heroImage,
         userId,
@@ -241,13 +198,21 @@ export const ArticleForm = ({ initialData, mode }: IArticleFormProps) => {
 
       if (mode === 'create') {
         await createArticle.mutateAsync(data);
-        showSuccess('Article créé avec succès');
+        showSuccess(
+          isEditor
+            ? 'Brouillon sauvegardé avec succès'
+            : 'Article créé avec succès'
+        );
       } else if (initialData?.id) {
         await updateArticle.mutateAsync({
           id: initialData.id,
           data,
         });
-        showSuccess('Article modifié avec succès');
+        showSuccess(
+          isEditor
+            ? 'Brouillon mis à jour avec succès'
+            : 'Article modifié avec succès'
+        );
       }
 
       if (!stayOnPage) {
@@ -264,9 +229,71 @@ export const ArticleForm = ({ initialData, mode }: IArticleFormProps) => {
     }
   };
 
+  useEffect(() => {
+    if (
+      initialData &&
+      !canEditArticle(
+        user?.role,
+        {
+          status: initialData.status,
+          userId: initialData.user.id,
+        },
+        user?.id
+      )
+    ) {
+      router.push('/admin/articles');
+    }
+  }, [initialData, user, router]);
+
+  const renderFormActions = () => {
+    if (isEditor) {
+      return (
+        <Stack direction='row' spacing={2}>
+          <ButtonGroup variant='outlined'>
+            <Button color='inherit' component={Link} href='/admin/articles'>
+              Annuler
+            </Button>
+            <Button disabled={isSubmitting} type='submit' value='save-continue'>
+              Sauvegarder et continuer
+            </Button>
+            <Button
+              color='primary'
+              disabled={isSubmitting}
+              startIcon={<FiSave />}
+              type='submit'
+              variant='contained'
+            >
+              Sauvegarder
+            </Button>
+          </ButtonGroup>
+          <SubmitButton disabled={isSubmitting} onSubmit={handleEditorSubmit} />
+        </Stack>
+      );
+    }
+
+    return (
+      <ButtonGroup variant='outlined'>
+        <Button color='inherit' component={Link} href='/admin/articles'>
+          Annuler
+        </Button>
+        <Button disabled={isSubmitting} type='submit' value='save-continue'>
+          Sauvegarder et continuer
+        </Button>
+        <Button
+          color='primary'
+          disabled={isSubmitting}
+          startIcon={<FiSave />}
+          type='submit'
+          variant='contained'
+        >
+          Sauvegarder
+        </Button>
+      </ButtonGroup>
+    );
+  };
+
   return (
     <AdminForm
-      cancelHref='/admin/articles'
       errors={[
         ...(titleError ? [{ field: 'Titre', message: titleError }] : []),
         ...(contentError ? [{ field: 'Contenu', message: contentError }] : []),
@@ -274,28 +301,10 @@ export const ArticleForm = ({ initialData, mode }: IArticleFormProps) => {
           ? [{ field: 'Catégorie', message: categoryError }]
           : []),
       ]}
-      hideSaveButton={isEditor}
+      hideSaveButton={true}
       isLoading={isLoading}
       isSubmitting={isSubmitting}
-      submitButton={
-        isEditor ? (
-          <Stack direction='row' spacing={2}>
-            <DraftButton disabled={isSubmitting} onSubmit={handleSaveAsDraft} />
-            <SubmitButton
-              disabled={isSubmitting}
-              onSubmit={handleEditorSubmit}
-            />
-          </Stack>
-        ) : undefined
-      }
-      submitButtonSecondary={
-        <DraftButton
-          disabled={isSubmitting}
-          label='Sauvegarder et continuer'
-          type='submit'
-          value='save-continue'
-        />
-      }
+      submitButton={renderFormActions()}
       onSubmit={e => {
         const submitButton = (e.nativeEvent as SubmitEvent)
           .submitter as HTMLButtonElement;
@@ -303,7 +312,6 @@ export const ArticleForm = ({ initialData, mode }: IArticleFormProps) => {
       }}
     >
       <Box sx={{ display: 'flex', position: 'relative', minHeight: '70vh' }}>
-        {/* Main Content */}
         <ArticleMainContent
           content={content}
           contentError={contentError}
@@ -313,7 +321,6 @@ export const ArticleForm = ({ initialData, mode }: IArticleFormProps) => {
           onTitleChange={setTitle}
         />
 
-        {/* Metadata Panel */}
         <Backdrop
           open={isMetadataOpen}
           sx={{
@@ -323,27 +330,32 @@ export const ArticleForm = ({ initialData, mode }: IArticleFormProps) => {
           onClick={() => setIsMetadataOpen(false)}
         />
         <Box
-          sx={{ position: 'fixed', right: 0, top: 0, bottom: 0, zIndex: 10 }}
+          sx={{
+            bottom: 0,
+            position: 'fixed',
+            right: 0,
+            top: 0,
+            zIndex: 10,
+          }}
         >
-          {/* Vertical Tab */}
           <Box
             sx={{
+              'alignItems': 'center',
+              'bgcolor': isMetadataOpen ? 'primary.main' : 'primary.light',
+              'borderRadius': '0 0 8px 8px',
+              'boxShadow': 2,
+              'color': 'white',
+              'cursor': 'pointer',
+              'display': 'flex',
+              'height': '40px',
+              'justifyContent': 'center',
               'position': 'absolute',
               'right': isMetadataOpen ? '350px' : 0,
               'top': '50%',
-              'width': '160px',
-              'height': '40px',
               'transform': 'translateY(-50%) translateX(140px) rotate(90deg)',
               'transformOrigin': 'left center',
-              'display': 'flex',
-              'alignItems': 'center',
-              'justifyContent': 'center',
-              'bgcolor': isMetadataOpen ? 'primary.main' : 'primary.light',
-              'color': 'white',
-              'borderRadius': '0 0 8px 8px',
-              'cursor': 'pointer',
               'transition': 'all 0.2s ease-in-out',
-              'boxShadow': 2,
+              'width': '160px',
               'zIndex': 2,
               '&:hover': {
                 bgcolor: 'primary.dark',
@@ -355,9 +367,7 @@ export const ArticleForm = ({ initialData, mode }: IArticleFormProps) => {
               alignItems='center'
               direction='row'
               spacing={1}
-              sx={{
-                transform: 'rotate(-180deg)',
-              }}
+              sx={{ transform: 'rotate(-180deg)' }}
             >
               <Typography sx={{ fontWeight: 500, fontSize: '0.95rem' }}>
                 Métadonnées
