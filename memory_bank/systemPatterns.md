@@ -106,6 +106,8 @@ interface ApiResponse<T> {
 - Relation handling
 - Pagination strategies
 - Transaction management
+- Preference-based filtering
+- Complex AND/OR conditions
 
 ### Data Integrity
 
@@ -138,13 +140,27 @@ interface ApiResponse<T> {
 
 ## Testing Patterns
 
-### Unit Testing
+### API Route Testing
 
-- Component testing
-- Hook testing
-- Utility testing
-- Mock patterns
-- Test organization
+- Mocks avec arrow functions pour éviter les problèmes de binding
+- Organisation des mocks au niveau test avec `let`
+- Tests des requêtes Prisma complexes :
+  ```typescript
+  expect(findMany).toHaveBeenCalledWith({
+    where: {
+      type: { in: enabledTypes },
+      AND: [{ OR: [conditions] }],
+    },
+    orderBy: [{ field: 'asc' }],
+  });
+  ```
+- Validation des filtres utilisateur (préférences, permissions)
+- Test des cas limites (filtres vides, désactivés)
+- Vérification des résultats exacts de l'API
+- Mock data réutilisable et typée
+- Assertions précises sur les réponses
+- Tests d'authentification et permissions
+- Gestion des erreurs et validations
 
 ### Integration Testing
 
@@ -153,3 +169,11 @@ interface ApiResponse<T> {
 - Authentication flow
 - End-to-end flows
 - Error scenarios
+
+### Unit Testing
+
+- Component testing
+- Hook testing
+- Utility testing
+- Mock patterns
+- Test organization
