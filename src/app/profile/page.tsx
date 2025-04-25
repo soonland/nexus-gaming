@@ -1,7 +1,6 @@
 'use client';
 
 import { Container, Paper } from '@mui/material';
-import { redirect } from 'next/navigation';
 
 import { useAuth } from '@/hooks/useAuth';
 
@@ -12,7 +11,7 @@ const ProfilePage = () => {
   const { user } = useAuth();
 
   if (!user) {
-    redirect('/login');
+    return null;
   }
 
   return (

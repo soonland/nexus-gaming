@@ -51,9 +51,10 @@ function validateUpdate(update: Partial<IUpdateNotificationDto>) {
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const user = await getCurrentUser();
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -72,7 +73,7 @@ export async function PATCH(
     // Update notification
     const notification = await prisma.systemNotification.findFirst({
       where: {
-        id: params.id,
+        id,
         userId: user.id, // Ensure user owns the notification
       },
     });
@@ -99,7 +100,7 @@ export async function PATCH(
     };
 
     const updatedNotification = await prisma.systemNotification.update({
-      where: { id: params.id },
+      where: { id },
       data: updateData,
       select: {
         id: true,
@@ -126,9 +127,10 @@ export async function PATCH(
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const user = await getCurrentUser();
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -136,7 +138,7 @@ export async function GET(
 
     const notification = await prisma.systemNotification.findFirst({
       where: {
-        id: params.id,
+        id,
         userId: user.id,
       },
       select: {
@@ -171,9 +173,10 @@ export async function GET(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const user = await getCurrentUser();
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -181,7 +184,7 @@ export async function DELETE(
 
     const notification = await prisma.systemNotification.findFirst({
       where: {
-        id: params.id,
+        id,
         userId: user.id,
       },
     });
@@ -194,7 +197,7 @@ export async function DELETE(
     }
 
     await prisma.systemNotification.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return new NextResponse(null, { status: 204 });

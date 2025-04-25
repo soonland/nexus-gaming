@@ -105,18 +105,22 @@ export const ThemeSection = () => {
     light: {
       primary: '#1976d2',
       paper: '#ffffff',
+      default: '#f5f5f5',
     },
     dark: {
       primary: '#90caf9',
       paper: '#1e1e1e',
+      default: '#121212',
     },
     gaming: {
       primary: '#00ff00',
       paper: '#2d2d2d',
+      default: '#1a1a1a',
     },
     retro: {
       primary: '#ffcc00',
       paper: '#3d3d3d',
+      default: '#2d2d2d',
     },
   };
 
@@ -129,7 +133,7 @@ export const ThemeSection = () => {
           {(Object.keys(themeNames) as ThemeOption[]).map(themeOption => (
             <Grid key={themeOption} size={6}>
               <ThemeCard
-                paperBg={themeColors[themeOption].paper}
+                paperBg={themeColors[themeOption].default}
                 primaryColor={themeColors[themeOption].primary}
                 selected={currentTheme === themeOption}
                 theme={themeOption}

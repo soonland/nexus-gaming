@@ -66,6 +66,7 @@ export const NotificationBell = () => {
     return [
       {
         id: 'password-expiration',
+        userId: '',
         type: warningConfig.type,
         level: warningConfig.level,
         title: warningConfig.title,

@@ -1,8 +1,35 @@
 ## 24 Apr 2025
 
+### Navigation et Authentification
+
+- Système d'inscription complet:
+
+  - Formulaire d'inscription avec validation
+  - Gestion des erreurs et états de chargement
+  - Redirection après inscription vers login
+  - Styles cohérents avec MUI
+
+- Menu de navigation amélioré:
+
+  - Menu admin avec contrôle d'accès par rôle
+  - Affichage conditionnel des options selon le rôle
+  - Boutons d'authentification dans la navbar
+  - Support mobile avec drawer
+  - Menu utilisateur avec avatar
+
+- Sécurité et UX:
+  - Redirection vers l'accueil après déconnexion
+  - Validation des formulaires côté client
+  - Gestion propre des états de chargement
+  - Messages d'erreur contextuels
+
 ### Notification System Improvements
 
-Added a complete notification system with the following features:
+- Préférences de notification:
+  - Alertes systèmes toujours actives in-app
+  - Interface de préférences par type
+  - Gestion des permissions de modification
+  - Création automatique des préférences à l'inscription
 
 #### API Endpoints
 

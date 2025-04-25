@@ -2,6 +2,8 @@
 
 import {
   Box,
+  Card,
+  CardContent,
   CircularProgress,
   Switch,
   Table,
@@ -59,85 +61,87 @@ export const NotificationSettings = () => {
   }
 
   return (
-    <>
-      <Typography gutterBottom variant='h6'>
-        Préférences de notifications
-      </Typography>
-      <TableContainer>
-        <Table size='small' sx={{ '& td': { py: 1.5 } }}>
-          <TableHead>
-            <TableRow>
-              <TableCell sx={{ pl: 2 }}>Type de notification</TableCell>
-              <TableCell align='center' width={120}>
-                Email
-              </TableCell>
-              <TableCell align='center' width={120}>
-                Application
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {Object.entries(NOTIFICATION_TYPES).map(([type, config]) => (
-              <TableRow
-                key={type}
-                hover
-                sx={{
-                  '&:last-child td': {
-                    border: 0,
-                  },
-                }}
-              >
-                <TableCell sx={{ pl: 2 }}>
-                  <Typography sx={{ mb: 0.5 }} variant='subtitle2'>
-                    {config.label}
-                  </Typography>
-                  <Typography
-                    color='text.secondary'
-                    sx={{ lineHeight: 1.3 }}
-                    variant='body2'
-                  >
-                    {config.description}
-                  </Typography>
+    <Card>
+      <CardContent>
+        <Typography gutterBottom variant='h6'>
+          Préférences de notifications
+        </Typography>
+        <TableContainer>
+          <Table size='small' sx={{ '& td': { py: 1.5 } }}>
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ pl: 2 }}>Type de notification</TableCell>
+                <TableCell align='center' width={120}>
+                  Email
                 </TableCell>
-                <TableCell align='center'>
-                  <Switch
-                    checked={
-                      getPreference(type as keyof typeof NOTIFICATION_TYPES)
-                        .email
-                    }
-                    disabled={
-                      !canModifyPreference(type as NotificationType, 'email')
-                    }
-                    size='small'
-                    onChange={() =>
-                      handleToggle(type as keyof typeof NOTIFICATION_TYPES)(
-                        'email'
-                      )
-                    }
-                  />
-                </TableCell>
-                <TableCell align='center'>
-                  <Switch
-                    checked={
-                      getPreference(type as keyof typeof NOTIFICATION_TYPES)
-                        .inApp
-                    }
-                    disabled={
-                      !canModifyPreference(type as NotificationType, 'inApp')
-                    }
-                    size='small'
-                    onChange={() =>
-                      handleToggle(type as keyof typeof NOTIFICATION_TYPES)(
-                        'inApp'
-                      )
-                    }
-                  />
+                <TableCell align='center' width={120}>
+                  Application
                 </TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </>
+            </TableHead>
+            <TableBody>
+              {Object.entries(NOTIFICATION_TYPES).map(([type, config]) => (
+                <TableRow
+                  key={type}
+                  hover
+                  sx={{
+                    '&:last-child td': {
+                      border: 0,
+                    },
+                  }}
+                >
+                  <TableCell sx={{ pl: 2 }}>
+                    <Typography sx={{ mb: 0.5 }} variant='subtitle2'>
+                      {config.label}
+                    </Typography>
+                    <Typography
+                      color='text.secondary'
+                      sx={{ lineHeight: 1.3 }}
+                      variant='body2'
+                    >
+                      {config.description}
+                    </Typography>
+                  </TableCell>
+                  <TableCell align='center'>
+                    <Switch
+                      checked={
+                        getPreference(type as keyof typeof NOTIFICATION_TYPES)
+                          .email
+                      }
+                      disabled={
+                        !canModifyPreference(type as NotificationType, 'email')
+                      }
+                      size='small'
+                      onChange={() =>
+                        handleToggle(type as keyof typeof NOTIFICATION_TYPES)(
+                          'email'
+                        )
+                      }
+                    />
+                  </TableCell>
+                  <TableCell align='center'>
+                    <Switch
+                      checked={
+                        getPreference(type as keyof typeof NOTIFICATION_TYPES)
+                          .inApp
+                      }
+                      disabled={
+                        !canModifyPreference(type as NotificationType, 'inApp')
+                      }
+                      size='small'
+                      onChange={() =>
+                        handleToggle(type as keyof typeof NOTIFICATION_TYPES)(
+                          'inApp'
+                        )
+                      }
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </CardContent>
+    </Card>
   );
 };

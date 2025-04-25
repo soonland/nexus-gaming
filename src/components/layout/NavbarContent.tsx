@@ -1,211 +1,64 @@
-'use client';
-
-import {
-  Avatar,
-  Button,
-  Stack,
-  Menu,
-  MenuItem,
-  IconButton,
-  Box,
-} from '@mui/material';
-import { Role } from '@prisma/client';
-import Link from 'next/link';
-import { useState } from 'react';
-import { FiMenu, FiPower, FiUser } from 'react-icons/fi';
+import { Button, Stack, useMediaQuery, useTheme } from '@mui/material';
+import { useRouter } from 'next/navigation';
 import { MdDashboard } from 'react-icons/md';
 
 import { NotificationBell } from '@/components/common/NotificationBell';
 import { useAuth } from '@/hooks/useAuth';
-import { hasSufficientRole } from '@/lib/permissions';
+
+import { AdminMenu } from './AdminMenu';
+import { MobileMenu } from './MobileMenu';
+import { UserAvatar } from './UserAvatar';
 
 export const NavbarContent = () => {
-  const { user, logout } = useAuth();
-  const [adminMenuAnchor, setAdminMenuAnchor] = useState<null | HTMLElement>(
-    null
-  );
-  const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(
-    null
-  );
+  const { user } = useAuth();
+  const router = useRouter();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+  if (isMobile) {
+    return <MobileMenu />;
+  }
 
   return (
     <Stack
+      alignItems='center'
       direction='row'
       justifyContent='space-between'
+      spacing={2}
       sx={{
         px: 2,
         py: 1,
       }}
     >
       {/* Navigation principale */}
-      <Stack alignItems='center' direction='row' spacing={2}>
-        <Button component={Link} href='/' variant='text'>
-          Accueil
-        </Button>
-        <Button component={Link} href='/articles' variant='text'>
-          Articles
-        </Button>
-        <Button component={Link} href='/games' variant='text'>
+      <Stack direction='row' spacing={2}>
+        <Button variant='text' onClick={() => router.push('/games')}>
           Jeux
         </Button>
+        <Button variant='text' onClick={() => router.push('/articles')}>
+          Articles
+        </Button>
       </Stack>
 
-      {/* Menu de droite */}
-      <Stack alignItems='center' direction='row' spacing={2}>
-        {/* Menu admin */}
-        {hasSufficientRole(user?.role, Role.EDITOR) && (
-          <>
-            <Button
-              component={Link}
-              href='/admin/dashboard'
-              startIcon={<MdDashboard />}
-              variant='text'
-            >
-              Dashboard
-            </Button>
-            <IconButton
-              aria-label="Menu d'administration"
-              onClick={e => setAdminMenuAnchor(e.currentTarget)}
-            >
-              <FiMenu />
-            </IconButton>
-            <Menu
-              anchorEl={adminMenuAnchor}
-              open={Boolean(adminMenuAnchor)}
-              sx={{
-                '& .MuiPaper-root': {
-                  bgcolor: 'background.paper',
-                  transition: 'background-color 0.3s',
-                },
-              }}
-              onClose={() => setAdminMenuAnchor(null)}
-            >
-              {hasSufficientRole(user?.role, Role.SENIOR_EDITOR) && (
-                <MenuItem
-                  component={Link}
-                  href='/admin/announcements'
-                  onClick={() => setAdminMenuAnchor(null)}
-                >
-                  Annonces
-                </MenuItem>
-              )}
-              {hasSufficientRole(user?.role, Role.EDITOR) && (
-                <MenuItem
-                  component={Link}
-                  href='/admin/users'
-                  onClick={() => setAdminMenuAnchor(null)}
-                >
-                  Utilisateurs
-                </MenuItem>
-              )}
-              {hasSufficientRole(user?.role, Role.SENIOR_EDITOR) && (
-                <MenuItem
-                  component={Link}
-                  href='/admin/approvals'
-                  onClick={() => setAdminMenuAnchor(null)}
-                >
-                  Approbations
-                </MenuItem>
-              )}
-              {hasSufficientRole(user?.role, Role.EDITOR) && (
-                <MenuItem
-                  component={Link}
-                  href='/admin/articles'
-                  onClick={() => setAdminMenuAnchor(null)}
-                >
-                  Articles
-                </MenuItem>
-              )}
-              {hasSufficientRole(user?.role, Role.SENIOR_EDITOR) && (
-                <MenuItem
-                  component={Link}
-                  href='/admin/categories'
-                  onClick={() => setAdminMenuAnchor(null)}
-                >
-                  Catégories
-                </MenuItem>
-              )}
-              <MenuItem
-                component={Link}
-                href='/admin/games'
-                onClick={() => setAdminMenuAnchor(null)}
-              >
-                Jeux
-              </MenuItem>
-              <MenuItem
-                component={Link}
-                href='/admin/platforms'
-                onClick={() => setAdminMenuAnchor(null)}
-              >
-                Plateformes
-              </MenuItem>
-              <MenuItem
-                component={Link}
-                href='/admin/companies'
-                onClick={() => setAdminMenuAnchor(null)}
-              >
-                Entreprises
-              </MenuItem>
-            </Menu>
-          </>
-        )}
-
-        {/* Notifications */}
-        {user && <NotificationBell />}
-
-        {/* Menu utilisateur ou bouton de connexion */}
-        {user ? (
-          <>
-            <Button
-              startIcon={
-                <Avatar
-                  alt={user.username}
-                  src={user.avatarUrl || undefined}
-                  sx={{ width: 32, height: 32 }}
-                />
-              }
-              variant='text'
-              onClick={e => setUserMenuAnchor(e.currentTarget)}
-            >
-              {user.username}
-            </Button>
-            <Menu
-              anchorEl={userMenuAnchor}
-              open={Boolean(userMenuAnchor)}
-              sx={{
-                '& .MuiPaper-root': {
-                  bgcolor: 'background.paper',
-                  transition: 'background-color 0.3s',
-                },
-              }}
-              onClose={() => setUserMenuAnchor(null)}
-            >
-              <MenuItem
-                component={Link}
-                href='/profile'
-                onClick={() => setUserMenuAnchor(null)}
-              >
-                <Box component={FiUser} sx={{ mr: 1 }} />
-                Mon profil
-              </MenuItem>
-              <MenuItem
-                sx={{ color: 'error.main' }}
-                onClick={() => {
-                  setUserMenuAnchor(null);
-                  logout();
-                }}
-              >
-                <Box component={FiPower} sx={{ mr: 1 }} />
-                Déconnexion
-              </MenuItem>
-            </Menu>
-          </>
-        ) : (
-          <Button component={Link} href='/login' variant='text'>
-            Connexion
+      {/* Partie droite : auth ou menu utilisateur */}
+      {user ? (
+        <Stack alignItems='center' direction='row' spacing={2}>
+          <Button
+            startIcon={<MdDashboard />}
+            variant='text'
+            onClick={() => router.push('/admin/dashboard')}
+          >
+            Dashboard
           </Button>
-        )}
-      </Stack>
+          <AdminMenu />
+          <NotificationBell />
+          <UserAvatar />
+        </Stack>
+      ) : (
+        <Button variant='text' onClick={() => router.push('/login')}>
+          Se connecter
+        </Button>
+      )}
     </Stack>
   );
 };
