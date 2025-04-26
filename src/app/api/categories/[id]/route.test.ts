@@ -50,14 +50,12 @@ describe('GET /api/categories/[id]', () => {
     const data = await response.json();
 
     expect(response.status).toBe(200);
-    expect(data).toEqual(
-      expect.objectContaining({
-        id: expect.any(String),
-        name: 'Test Category',
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
-      })
-    );
+    expect(data).toEqual({
+      id: 'cat-1',
+      name: 'Test Category',
+      createdAt: expect.any(String),
+      updatedAt: expect.any(String),
+    });
     expect(new Date(data.createdAt)).toBeInstanceOf(Date);
     expect(new Date(data.updatedAt)).toBeInstanceOf(Date);
     expect(findUniqueMock).toHaveBeenCalledWith({

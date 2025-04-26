@@ -66,16 +66,24 @@ describe('GET /api/companies', () => {
 
     expect(response.status).toBe(200);
     expect(data.companies).toHaveLength(2);
-    expect(data.companies[0]).toEqual(
+    expect(data.companies).toEqual([
       expect.objectContaining({
-        id: expect.any(String),
+        id: 'comp-1',
         name: 'Test Company',
         isDeveloper: true,
         isPublisher: false,
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
-      })
-    );
+      }),
+      expect.objectContaining({
+        id: 'comp-2',
+        name: 'Another Company',
+        isDeveloper: true,
+        isPublisher: false,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+      }),
+    ]);
     expect(data.pagination).toEqual({
       total: 2,
       pages: 1,

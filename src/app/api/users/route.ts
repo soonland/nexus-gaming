@@ -3,25 +3,28 @@ import { NextResponse } from 'next/server';
 
 import { getCurrentUser } from '@/lib/jwt';
 import { hashPassword } from '@/lib/password';
+import { canAssignRole, canCreateUsers } from '@/lib/permissions';
 import prisma from '@/lib/prisma';
 
 export async function GET(request: Request) {
   try {
     const tokenUser = await getCurrentUser();
 
-    if (!tokenUser || tokenUser.role === 'USER') {
+    if (!tokenUser || !canCreateUsers(tokenUser.role)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
     // Get URL parameters
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page') ?? '1');
-    const limit = parseInt(searchParams.get('limit') ?? '10');
+    const rawPage = searchParams.get('page');
+    const rawLimit = searchParams.get('limit');
     const search = searchParams.get('search') ?? '';
     const role = searchParams.get('role') ?? undefined;
     const status = searchParams.get('status') ?? undefined;
 
-    // Calculate pagination
+    // Validate and sanitize pagination params
+    const page = Math.max(1, parseInt(rawPage ?? '1') || 1);
+    const limit = Math.max(1, Math.min(100, parseInt(rawLimit ?? '10') || 10));
     const skip = (page - 1) * limit;
 
     // Build where clause
@@ -91,107 +94,39 @@ export async function GET(request: Request) {
   }
 }
 
-export async function PUT(request: Request) {
-  try {
-    const tokenUser = await getCurrentUser();
-
-    if (
-      !tokenUser ||
-      (tokenUser.role !== 'ADMIN' && tokenUser.role !== 'SYSADMIN')
-    ) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
-    }
-
-    const body = await request.json();
-    const { id, username, email, password, role, isActive } = body;
-
-    // Get the user being edited
-    const targetUser = await prisma.user.findUnique({
-      where: { id },
-    });
-
-    if (!targetUser) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
-    }
-
-    // SYSADMIN role checks
-    if (targetUser.role === 'SYSADMIN' && tokenUser.role !== 'SYSADMIN') {
-      return NextResponse.json(
-        { error: 'Only SYSADMIN users can modify SYSADMIN users' },
-        { status: 403 }
-      );
-    }
-
-    if (role === 'SYSADMIN' && tokenUser.role !== 'SYSADMIN') {
-      return NextResponse.json(
-        { error: 'Only SYSADMIN users can grant SYSADMIN role' },
-        { status: 403 }
-      );
-    }
-
-    // Hash password if provided and update user
-    const updateData: Prisma.UserUpdateInput = {
-      username,
-      email,
-      role,
-      isActive,
-    };
-
-    if (password) {
-      updateData.password = await hashPassword(password);
-    }
-
-    const updatedUser = await prisma.user.update({
-      where: { id },
-      data: updateData,
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        role: true,
-        isActive: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
-
-    return NextResponse.json({ user: updatedUser });
-  } catch (error) {
-    console.error('Error updating user:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
-}
-
 export async function POST(request: Request) {
   try {
     const tokenUser = await getCurrentUser();
 
-    if (
-      !tokenUser ||
-      (tokenUser.role !== 'ADMIN' && tokenUser.role !== 'SYSADMIN')
-    ) {
+    if (!tokenUser || !canCreateUsers(tokenUser.role)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
     const body = await request.json();
     const { username, email, password, role = 'USER', isActive } = body;
 
-    // Only SYSADMIN can create SYSADMIN users
-    if (role === 'SYSADMIN' && tokenUser.role !== 'SYSADMIN') {
-      return NextResponse.json(
-        { error: 'Only SYSADMIN users can create other SYSADMIN users' },
-        { status: 403 }
-      );
-    }
-
     // Basic validation
     if (!username || !email || !password) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
+      );
+    }
+
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return NextResponse.json(
+        { error: 'Invalid email format' },
+        { status: 400 }
+      );
+    }
+
+    // Check if user has sufficient role to grant the requested role
+    if (!canAssignRole(tokenUser.role, role as Role)) {
+      return NextResponse.json(
+        { error: 'You cannot assign this role level' },
+        { status: 403 }
       );
     }
 
@@ -228,6 +163,7 @@ export async function POST(request: Request) {
           isActive: true,
           createdAt: true,
           updatedAt: true,
+          lastPasswordChange: true,
         },
       });
 

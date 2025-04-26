@@ -267,6 +267,12 @@ describe('PATCH /api/platforms/[id]', () => {
       name: 'Updated Platform',
       manufacturer: 'Updated Manufacturer',
       releaseDate: null,
+      games: [
+        {
+          ...basePlatform.games[0],
+          releaseDate: null,
+        },
+      ],
     };
 
     const updateMock = vi.fn().mockResolvedValue(updatedPlatform);

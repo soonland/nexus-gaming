@@ -71,14 +71,28 @@ describe('GET /api/categories', () => {
 
     expect(response.status).toBe(200);
     expect(data).toHaveLength(2);
-    expect(data[0]).toEqual(
-      expect.objectContaining({
-        id: expect.any(String),
+    expect(data).toEqual([
+      {
+        id: 'cat-1',
         name: 'Action',
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
-      })
-    );
+        articleCount: 0,
+        _count: {
+          articles: 0,
+        },
+      },
+      {
+        id: 'cat-2',
+        name: 'Strategy',
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        articleCount: 0,
+        _count: {
+          articles: 0,
+        },
+      },
+    ]);
     expect(new Date(data[0].createdAt)).toBeInstanceOf(Date);
     expect(new Date(data[0].updatedAt)).toBeInstanceOf(Date);
     expect(findManyMock).toHaveBeenCalledWith({

@@ -69,3 +69,56 @@
 - Tooltips for clearer actions
 - Sorted notifications (unread first, then by date)
 - Visual feedback for read/unread state
+
+## 25 Apr 2025
+
+### Welcome Notifications
+
+- Mise en place de notifications de bienvenue automatiques:
+
+  - À l'inscription classique via register
+  - À la création de compte par un admin
+  - Type: SYSTEM_ALERT
+  - Level: info
+  - Message de bienvenue uniforme
+  - Création dans une transaction avec l'utilisateur
+  - Création simultanée des préférences de notifications
+
+- Points techniques:
+  - Transaction Prisma pour garantir l'atomicité des opérations
+  - Cohérence entre les deux chemins de création (register et admin)
+  - Intégration avec le système de notifications existant
+  - Notification immédiatement visible dans l'interface
+
+### API Testing Improvements
+
+- Refactoring complet des tests API:
+
+  - Meilleure structuration des mocks :
+    ```typescript
+    let findMany: ReturnType<typeof vi.fn>;
+    beforeEach(() => {
+      findMany = vi.fn(() => Promise.resolve(data));
+      (prisma.model.findMany as any).mockImplementation(findMany);
+    });
+    ```
+  - Tests précis des filtres Prisma :
+    - Validation des conditions AND/OR
+    - Test des préférences utilisateur
+    - Vérification du tri et de la pagination
+
+- Patterns de test améliorés :
+
+  - Validation exacte des requêtes Prisma
+  - Vérification des résultats retournés
+  - Test des cas limites (filtres désactivés)
+  - Meilleure couverture des erreurs
+  - Réutilisation des données de test
+  - Assertions plus précises
+
+- Points techniques :
+  - Utilisation des arrow functions pour les mocks
+  - Organisation claire des données de test
+  - Constants pour les filtres communs
+  - Validation complète des réponses API
+  - Test des conditions de sécurité
