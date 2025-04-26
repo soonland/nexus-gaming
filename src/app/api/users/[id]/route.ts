@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 
 import { getCurrentUser } from '@/lib/jwt';
 import { hashPassword } from '@/lib/password';
+import { hasSufficientRole } from '@/lib/permissions';
 import prisma from '@/lib/prisma';
 
 export async function GET(
@@ -14,10 +15,7 @@ export async function GET(
     const { id } = await params;
     const tokenUser = await getCurrentUser();
 
-    if (
-      !tokenUser ||
-      (tokenUser.role !== 'ADMIN' && tokenUser.role !== 'SYSADMIN')
-    ) {
+    if (!hasSufficientRole(tokenUser?.role, 'SENIOR_EDITOR')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
@@ -68,10 +66,11 @@ export async function PUT(
     const { id } = await params;
     const tokenUser = await getCurrentUser();
 
-    if (
-      !tokenUser ||
-      (tokenUser.role !== 'ADMIN' && tokenUser.role !== 'SYSADMIN')
-    ) {
+    if (!tokenUser) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    }
+
+    if (!hasSufficientRole(tokenUser.role, 'SENIOR_EDITOR')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
@@ -112,14 +111,23 @@ export async function PUT(
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // SYSADMIN role checks
-    if (targetUser.role === 'SYSADMIN' && tokenUser.role !== 'SYSADMIN') {
+    // Check if user has sufficient role to modify target user
+    if (!hasSufficientRole(tokenUser.role, targetUser.role)) {
       return NextResponse.json(
         { error: 'Only SYSADMIN users can modify SYSADMIN users' },
         { status: 403 }
       );
     }
 
+    // Check if user has sufficient role to grant the requested role
+    if (role && !hasSufficientRole(tokenUser.role, role as Role)) {
+      return NextResponse.json(
+        { error: 'You cannot grant a role equal to or higher than your own' },
+        { status: 403 }
+      );
+    }
+
+    // Special case for SYSADMIN role
     if (role === 'SYSADMIN' && tokenUser.role !== 'SYSADMIN') {
       return NextResponse.json(
         { error: 'Only SYSADMIN users can grant SYSADMIN role' },
@@ -181,10 +189,12 @@ export async function DELETE(
   try {
     const tokenUser = await getCurrentUser();
     const { id } = await params;
-    if (
-      !tokenUser ||
-      (tokenUser.role !== 'ADMIN' && tokenUser.role !== 'SYSADMIN')
-    ) {
+
+    if (!tokenUser) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    }
+
+    if (!hasSufficientRole(tokenUser.role, 'SENIOR_EDITOR')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
@@ -197,8 +207,8 @@ export async function DELETE(
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // SYSADMIN checks
-    if (targetUser.role === 'SYSADMIN' && tokenUser.role !== 'SYSADMIN') {
+    // Check if user has sufficient role to delete target user
+    if (!hasSufficientRole(tokenUser.role, targetUser.role)) {
       return NextResponse.json(
         { error: 'Only SYSADMIN users can delete SYSADMIN users' },
         { status: 403 }
@@ -238,10 +248,12 @@ export async function PATCH(
   try {
     const tokenUser = await getCurrentUser();
     const { id } = await params;
-    if (
-      !tokenUser ||
-      (tokenUser.role !== 'ADMIN' && tokenUser.role !== 'SYSADMIN')
-    ) {
+
+    if (!tokenUser) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    }
+
+    if (!hasSufficientRole(tokenUser.role, 'SENIOR_EDITOR')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
@@ -264,8 +276,8 @@ export async function PATCH(
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // SYSADMIN checks
-    if (targetUser.role === 'SYSADMIN' && tokenUser.role !== 'SYSADMIN') {
+    // Check if user has sufficient role to modify target user
+    if (!hasSufficientRole(tokenUser.role, targetUser.role)) {
       return NextResponse.json(
         { error: 'Only SYSADMIN users can modify SYSADMIN users' },
         { status: 403 }

@@ -41,6 +41,22 @@ export const hasSufficientRole = (
   return comparisons[operator] ?? false;
 };
 
+export const canCreateUsers = (role?: Role): boolean => {
+  return hasSufficientRole(role, Role.SENIOR_EDITOR);
+};
+
+export const canAssignRole = (currentRole: Role, targetRole: Role): boolean => {
+  // SYSADMIN peut tout faire
+  if (currentRole === Role.SYSADMIN) {
+    return true;
+  }
+
+  // Les autres peuvent uniquement créer des rôles inférieurs
+  const currentLevel = roleHierarchy[currentRole];
+  const targetLevel = roleHierarchy[targetRole];
+  return currentLevel > targetLevel;
+};
+
 export const canViewArticle = (role?: Role): boolean => {
   return hasSufficientRole(role, Role.EDITOR);
 };
