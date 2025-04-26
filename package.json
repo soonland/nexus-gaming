@@ -18,11 +18,21 @@
     "test:watch": "vitest --watch",
     "test:coverage": "vitest run --coverage",
     "test:coverage:report": "vitest run --coverage --reporter=html",
-    "test:coverage:check": "vitest run --coverage --reporter=html && open coverage/index.html"
+    "test:coverage:check": "vitest run --coverage --reporter=html && open coverage/index.html",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "lint-staged": {
-    "*.{ts,tsx}": [
+    "src/**/*.{ts,tsx}": [
       "eslint --max-warnings 0",
+      "prettier --check"
+    ],
+    ".storybook/**/*.ts": [
+      "eslint",
+      "prettier --check"
+    ],
+    "src/**/*.stories.{ts,tsx}": [
+      "eslint",
       "prettier --check"
     ],
     "*.{js,jsx,json,md}": [
@@ -53,11 +63,22 @@
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.50.1",
     "react-icons": "^5.5.0",
+    "uuid": "^11.1.0",
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@chromatic-com/storybook": "^3.2.6",
     "@commitlint/cli": "^19.8.0",
     "@commitlint/config-conventional": "^19.8.0",
+    "@storybook/addon-essentials": "^8.6.12",
+    "@storybook/addon-onboarding": "^8.6.12",
+    "@storybook/addon-themes": "^8.6.12",
+    "@storybook/blocks": "^8.6.12",
+    "@storybook/experimental-addon-test": "^8.6.12",
+    "@storybook/experimental-nextjs-vite": "^8.6.12",
+    "@storybook/nextjs": "^8.6.12",
+    "@storybook/react": "^8.6.12",
+    "@storybook/test": "^8.6.12",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
     "@types/bcrypt": "^5.0.2",
@@ -67,6 +88,7 @@
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "@vitejs/plugin-react": "^4.4.1",
+    "@vitest/browser": "^3.1.2",
     "@vitest/coverage-v8": "^3.1.2",
     "eslint": "^8.57.1",
     "eslint-config-next": "^14.1.0",
@@ -74,11 +96,14 @@
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-prettier": "^5.2.6",
     "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-storybook": "^0.12.0",
     "husky": "^9.1.7",
     "jsdom": "^26.1.0",
     "lint-staged": "^15.5.1",
+    "playwright": "^1.52.0",
     "prettier": "^3.5.3",
     "prisma": "^5.10.0",
+    "storybook": "^8.6.12",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3",
     "vitest": "^3.1.2"

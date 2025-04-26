@@ -5,31 +5,28 @@ import {
   AlertTitle,
   Box,
   Button,
-  Chip,
   Container,
-  Grid,
   Skeleton,
   Stack,
-  Typography,
-  useTheme,
 } from '@mui/material';
 import { useParams, useRouter } from 'next/navigation';
-import {
-  FiArrowLeft as ArrowBack,
-  FiUsers as Group,
-  FiAlignJustify as Article,
-} from 'react-icons/fi';
+import { FiArrowLeft } from 'react-icons/fi';
+import { v4 as uuidv4 } from 'uuid';
 
-import { ArticleCard } from '@/components/articles/ArticleCard';
-import { DateDisplay } from '@/components/common/DateDisplay';
+import type { IBadge } from '@/components/common/Hero';
 import { Hero } from '@/components/common/Hero';
+import { GameContent } from '@/components/games/GameContent';
+import { GameMeta } from '@/components/games/GameMeta';
+import { RelatedArticles } from '@/components/games/RelatedArticles';
 import { useGame } from '@/hooks/useGame';
-import { formatters } from '@/lib/dayjs';
+import dayjs from '@/lib/dayjs';
+import type { ArticleStatus } from '@/types/api';
+
+const DATE_FORMAT = 'YYYY-MM-DD';
 
 const GamePage = () => {
   const params = useParams();
   const router = useRouter();
-  const theme = useTheme();
   const id = params.id as string;
   const { data: game, isLoading, error } = useGame(id);
 
@@ -62,29 +59,37 @@ const GamePage = () => {
 
   if (!game) return null;
 
+  const formattedArticles = game.articles.map(article => ({
+    ...article,
+    publishedAt: article.publishedAt || undefined,
+    content: article.content || '',
+    createdAt: dayjs(article.createdAt).format(DATE_FORMAT),
+    updatedAt: dayjs(article.updatedAt).format(DATE_FORMAT),
+    games: [],
+    status: 'PUBLISHED' as ArticleStatus,
+  }));
+
+  const badges: IBadge[] =
+    (game.genre && [
+      {
+        id: uuidv4(),
+        label: game.genre,
+        color: 'primary',
+      },
+    ]) ??
+    [];
+
   return (
     <Box>
       <Hero
-        badges={[
-          {
-            id: crypto.randomUUID(),
-            label: game.genre || 'Non catégorisé',
-            color: 'primary',
-          },
-        ]}
+        badges={badges}
         image={game.coverImage || '/images/placeholder-game.png'}
         metadata={
-          <Stack alignItems='center' direction='row' spacing={3}>
-            <Stack alignItems='center' direction='row' spacing={1}>
-              <Group />
-              <Typography variant='body2'>
-                {game.developer.name} / {game.publisher.name}
-              </Typography>
-            </Stack>
-            {game.releaseDate && (
-              <DateDisplay date={new Date(game.releaseDate)} />
-            )}
-          </Stack>
+          <GameMeta
+            developer={game.developer.name}
+            publisher={game.publisher.name}
+            releaseDate={game.releaseDate || undefined}
+          />
         }
         title={game.title}
       />
@@ -93,113 +98,20 @@ const GamePage = () => {
       <Container maxWidth='lg' sx={{ py: 4 }}>
         <Stack spacing={4}>
           <Button
-            startIcon={<ArrowBack />}
+            startIcon={<FiArrowLeft />}
             sx={{ alignSelf: 'flex-start' }}
             onClick={() => router.back()}
           >
             Retour aux jeux
           </Button>
 
-          {/* Game Content */}
-          <Box
-            sx={{
-              backgroundColor: theme.palette.background.paper,
-              border: 1,
-              borderColor: theme.palette.divider,
-              borderRadius: 1,
-              p: 4,
-            }}
-          >
-            <Stack spacing={3}>
-              {/* Description */}
-              {game.description && (
-                <Typography
-                  component='div'
-                  sx={{ whiteSpace: 'pre-wrap' }}
-                  variant='body1'
-                >
-                  {game.description}
-                </Typography>
-              )}
+          <GameContent
+            description={game.description || undefined}
+            platforms={game.platforms}
+            variant='contained'
+          />
 
-              {/* Platforms */}
-              {game.platforms.length > 0 && (
-                <Box>
-                  <Typography gutterBottom variant='h6'>
-                    Plateformes
-                  </Typography>
-                  <Stack direction='row' flexWrap='wrap' gap={1}>
-                    {game.platforms.map(platform => (
-                      <Chip
-                        key={platform.id}
-                        label={`${platform.name} (${platform.manufacturer})`}
-                        size='medium'
-                        variant='outlined'
-                      />
-                    ))}
-                  </Stack>
-                </Box>
-              )}
-            </Stack>
-          </Box>
-
-          {/* Articles Section */}
-          {game.articles.length > 0 && (
-            <Box>
-              <Stack
-                alignItems='center'
-                direction='row'
-                spacing={1}
-                sx={{ mb: 2 }}
-              >
-                <Article />
-                <Typography variant='h5'>Articles liés</Typography>
-              </Stack>
-              <Box sx={{ width: '100%' }}>
-                <Grid container spacing={3}>
-                  {game.articles.map(article => {
-                    const articleData = {
-                      id: article.id,
-                      title: article.title,
-                      content: article.content || '',
-                      category: {
-                        id: article.category?.id || 'uncategorized',
-                        name: article.category?.name || 'Non catégorisé',
-                        createdAt: '', // dates vides car non utilisées dans l'affichage
-                        updatedAt: '',
-                      },
-                      user: {
-                        id: article.user.id,
-                        username: article.user.username,
-                        avatarUrl: undefined,
-                        role: article.user.role,
-                      },
-                      status: 'PUBLISHED' as const,
-                      publishedAt: article.publishedAt
-                        ? formatters.custom(article.publishedAt, 'YYYY-MM-DD')
-                        : undefined,
-                      games: [],
-                      createdAt: formatters.custom(
-                        article.createdAt,
-                        'YYYY-MM-DD'
-                      ),
-                      updatedAt: formatters.custom(
-                        article.updatedAt,
-                        'YYYY-MM-DD'
-                      ),
-                      heroImage: undefined,
-                    };
-
-                    return (
-                      <Grid key={article.id} size={4}>
-                        <ArticleCard article={articleData} />
-                      </Grid>
-                    );
-                  })}
-                </Grid>
-              </Box>
-            </Box>
-          )}
+          <RelatedArticles articles={formattedArticles} />
         </Stack>
       </Container>
     </Box>

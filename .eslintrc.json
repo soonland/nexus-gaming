@@ -19,7 +19,8 @@
     "plugin:react/recommended",
     "plugin:react/jsx-runtime",
     "plugin:react-hooks/recommended",
-    "plugin:prettier/recommended"
+    "plugin:prettier/recommended",
+    "plugin:storybook/recommended"
   ],
   "env": {
     "browser": true,
@@ -132,12 +133,33 @@
     // Prettier
     "prettier/prettier": "error"
   },
+  "overrides": [
+    {
+      "files": [".storybook/**/*.ts"],
+      "rules": {
+        "@typescript-eslint/no-unsafe-assignment": "off",
+        "@typescript-eslint/no-unsafe-member-access": "off",
+        "@typescript-eslint/no-unsafe-argument": "off",
+        "@typescript-eslint/no-explicit-any": "off"
+      }
+    },
+    {
+      "files": ["src/**/*.stories.*"],
+      "rules": {
+        "@typescript-eslint/no-unsafe-assignment": "off",
+        "@typescript-eslint/no-unsafe-member-access": "off",
+        "@typescript-eslint/naming-convention": "off",
+        "import/order": "off"
+      }
+    }
+  ],
   "ignorePatterns": [
     "node_modules/",
     ".next/",
     "build/",
     "dist/",
     "*.js",
-    "*.jsx"
+    "*.jsx",
+    "!.storybook/*.ts"
   ]
 }

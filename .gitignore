@@ -51,3 +51,5 @@ docker-compose.override.yml
 
 # System Files
 Thumbs.db
+
+*storybook.log

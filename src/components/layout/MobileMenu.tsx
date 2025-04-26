@@ -21,6 +21,7 @@ import {
   FiFileText,
   FiFolder,
   FiGrid,
+  FiHome,
   FiMenu,
   FiMonitor,
   FiUser,
@@ -59,9 +60,14 @@ export const MobileMenu = () => {
     setIsOpen(false);
   };
 
-  const mainNavigation = [
+  const publicNavigation = [
+    { icon: <FiHome />, label: 'Accueil', path: '/' },
     { icon: <FiGrid />, label: 'Jeux', path: '/games' },
     { icon: <FiFileText />, label: 'Articles', path: '/articles' },
+  ];
+
+  const userNavigation = [
+    ...publicNavigation,
     { icon: <FiUser />, label: 'Mon profil', path: '/profile' },
   ];
 
@@ -117,7 +123,7 @@ export const MobileMenu = () => {
             <>
               {/* Navigation principale */}
               <List>
-                {mainNavigation.map(({ icon, label, path }) => (
+                {userNavigation.map(({ icon, label, path }) => (
                   <ListItem key={path}>
                     <ListItemButton onClick={() => handleNavigation(path)}>
                       <ListItemIcon>{icon}</ListItemIcon>
@@ -179,11 +185,28 @@ export const MobileMenu = () => {
               )}
             </>
           ) : (
-            <Stack spacing={2} sx={{ p: 2 }}>
-              <Button variant='text' onClick={() => handleNavigation('/login')}>
-                Se connecter
-              </Button>
-            </Stack>
+            <>
+              {/* Navigation publique */}
+              <List>
+                {publicNavigation.map(({ icon, label, path }) => (
+                  <ListItem key={path}>
+                    <ListItemButton onClick={() => handleNavigation(path)}>
+                      <ListItemIcon>{icon}</ListItemIcon>
+                      <ListItemText primary={label} />
+                    </ListItemButton>
+                  </ListItem>
+                ))}
+              </List>
+              <Divider />
+              <Stack spacing={2} sx={{ p: 2 }}>
+                <Button
+                  variant='text'
+                  onClick={() => handleNavigation('/login')}
+                >
+                  Se connecter
+                </Button>
+              </Stack>
+            </>
           )}
         </Box>
       </Drawer>

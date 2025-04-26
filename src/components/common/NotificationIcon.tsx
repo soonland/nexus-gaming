@@ -11,7 +11,7 @@ import {
 import type { NotificationLevel } from '@/types/notifications';
 
 interface INotificationIconProps {
-  type: string;
+  type: keyof typeof iconMap;
   level?: NotificationLevel;
   size?: number;
 }

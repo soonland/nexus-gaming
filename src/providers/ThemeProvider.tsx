@@ -4,7 +4,7 @@ import { ThemeProvider as MuiThemeProvider, createTheme } from '@mui/material';
 import { createContext, useContext, useEffect, useState } from 'react';
 
 // Theme definitions
-const themes = {
+export const themes = {
   light: createTheme({
     palette: {
       mode: 'light',
