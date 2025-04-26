@@ -122,3 +122,62 @@
   - Constants pour les filtres communs
   - Validation complète des réponses API
   - Test des conditions de sécurité
+
+### User Management API Improvements
+
+- Refonte de la gestion des permissions :
+
+  - Nouvelles fonctions de permissions :
+
+    ```typescript
+    export const canCreateUsers = (role?: Role): boolean => {
+      return hasSufficientRole(role, Role.SENIOR_EDITOR);
+    };
+
+    export const canAssignRole = (
+      currentRole: Role,
+      targetRole: Role
+    ): boolean => {
+      if (currentRole === Role.SYSADMIN) return true;
+      return roleHierarchy[currentRole] > roleHierarchy[targetRole];
+    };
+    ```
+
+  - Séparation claire des responsabilités :
+    - Vérification d'accès à l'API
+    - Vérification des permissions de création
+    - Validation des attributions de rôle
+  - Gestion spéciale pour SYSADMIN
+
+- Tests exhaustifs de l'API users :
+
+  - Tests de pagination :
+
+    - Validation des paramètres page/limit
+    - Gestion des valeurs négatives et extrêmes
+    - Calcul correct du nombre de pages
+    - Limitation automatique à 100 résultats
+
+  - Tests de recherche et filtres :
+
+    - Recherche insensible à la casse
+    - Recherche sur username et email
+    - Filtres par rôle avec validation
+    - Filtres par statut (actif/inactif)
+    - Combinaison de plusieurs critères
+    - Validation des requêtes Prisma générées
+
+  - Tests de contrôle d'accès :
+
+    - Refus pour utilisateurs non autorisés
+    - Vérification par niveau hiérarchique
+    - Tests de création par rôle
+    - Validation des restrictions de rôle
+
+  - Tests de validation et erreurs :
+    - Validation des champs requis
+    - Format d'email invalide
+    - Doublons username/email
+    - Erreurs de base de données
+    - Échecs de transaction
+    - Messages d'erreur appropriés

@@ -21,7 +21,7 @@ export const DateDisplay = ({
   withTooltip = true,
   tooltipFormat,
   customFormat,
-  color = 'text.secondary',
+  color = 'inherit',
   sx,
 }: IDateDisplayProps) => {
   // Si un format personnalisé est fourni, l'utiliser
