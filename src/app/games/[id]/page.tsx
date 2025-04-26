@@ -11,6 +11,7 @@ import {
 } from '@mui/material';
 import { useParams, useRouter } from 'next/navigation';
 import { FiArrowLeft } from 'react-icons/fi';
+import { v4 as uuidv4 } from 'uuid';
 
 import type { IBadge } from '@/components/common/Hero';
 import { Hero } from '@/components/common/Hero';
@@ -20,6 +21,8 @@ import { RelatedArticles } from '@/components/games/RelatedArticles';
 import { useGame } from '@/hooks/useGame';
 import dayjs from '@/lib/dayjs';
 import type { ArticleStatus } from '@/types/api';
+
+const DATE_FORMAT = 'YYYY-MM-DD';
 
 const GamePage = () => {
   const params = useParams();
@@ -60,8 +63,8 @@ const GamePage = () => {
     ...article,
     publishedAt: article.publishedAt || undefined,
     content: article.content || '',
-    createdAt: dayjs(article.createdAt).format('YYYY-MM-DD'),
-    updatedAt: dayjs(article.updatedAt).format('YYYY-MM-DD'),
+    createdAt: dayjs(article.createdAt).format(DATE_FORMAT),
+    updatedAt: dayjs(article.updatedAt).format(DATE_FORMAT),
     games: [],
     status: 'PUBLISHED' as ArticleStatus,
   }));
@@ -69,7 +72,7 @@ const GamePage = () => {
   const badges: IBadge[] =
     (game.genre && [
       {
-        id: crypto.randomUUID(),
+        id: uuidv4(),
         label: game.genre,
         color: 'primary',
       },
