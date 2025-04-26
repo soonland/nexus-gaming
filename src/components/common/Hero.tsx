@@ -11,14 +11,16 @@ import {
 import type { SxProps, Theme } from '@mui/material';
 import type React from 'react';
 
+export interface IBadge {
+  id?: string;
+  label?: string;
+  color?: 'primary' | 'secondary' | 'error' | 'warning' | 'info' | 'success';
+}
+
 export interface IHeroProps {
   title: string;
   image?: string;
-  badges?: Array<{
-    id: string;
-    label: string;
-    color?: 'primary' | 'secondary' | 'error' | 'warning' | 'info' | 'success';
-  }>;
+  badges?: IBadge[];
   metadata?: React.ReactNode;
   minHeight?: string | { [key: string]: string };
   overlay?: boolean;
@@ -91,7 +93,7 @@ export const Hero = ({
               zIndex: 2,
             }}
           >
-            {badges.length > 0 && (
+            {badges?.length > 0 && (
               <Stack direction='row' flexWrap='wrap' gap={1} spacing={1}>
                 {badges.map(badge => (
                   <Chip

@@ -1,4 +1,5 @@
 import type { Role } from '@prisma/client';
+import { Box } from '@mui/material';
 import type { Meta, StoryObj } from '@storybook/react';
 
 import type { ArticleStatus } from '@/types/api';
@@ -75,6 +76,13 @@ const meta = {
   parameters: {
     layout: 'centered',
   },
+  decorators: [
+    Story => (
+      <Box sx={{ maxWidth: 345 }}>
+        <Story />
+      </Box>
+    ),
+  ],
   argTypes: {
     status: {
       control: 'select',

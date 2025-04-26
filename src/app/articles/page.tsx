@@ -36,7 +36,7 @@ const ArticlesPage = () => {
       <Grid container spacing={4}>
         {isLoading
           ? [...Array(3)].map((_, i) => (
-              <Grid key={i} size={4}>
+              <Grid key={i} size={{ xs: 12, sm: 6, md: 4 }}>
                 <Skeleton
                   height={350}
                   sx={{ borderRadius: 1 }}
@@ -45,7 +45,7 @@ const ArticlesPage = () => {
               </Grid>
             ))
           : articles.map(article => (
-              <Grid key={article.id} size={4}>
+              <Grid key={article.id} size={{ xs: 12, sm: 6, md: 4 }}>
                 <ArticleCard article={article} />
               </Grid>
             ))}

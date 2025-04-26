@@ -1,5 +1,6 @@
 import { Button, Stack, useMediaQuery, useTheme } from '@mui/material';
 import { useRouter } from 'next/navigation';
+import { FiHome } from 'react-icons/fi';
 import { MdDashboard } from 'react-icons/md';
 
 import { NotificationBell } from '@/components/common/NotificationBell';
@@ -32,6 +33,13 @@ export const NavbarContent = () => {
     >
       {/* Navigation principale */}
       <Stack direction='row' spacing={2}>
+        <Button
+          startIcon={<FiHome size={20} />}
+          variant='text'
+          onClick={() => router.push('/')}
+        >
+          Accueil
+        </Button>
         <Button variant='text' onClick={() => router.push('/games')}>
           Jeux
         </Button>

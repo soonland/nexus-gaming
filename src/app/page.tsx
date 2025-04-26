@@ -94,7 +94,14 @@ const Home = () => {
               Votre hub communautaire pour découvrir, discuter et partager
               autour du gaming
             </Typography>
-            <Stack direction='row' justifyContent='center' spacing={2}>
+            <Stack
+              direction={{
+                xs: 'column',
+                sm: 'row',
+              }}
+              justifyContent='center'
+              spacing={2}
+            >
               <Button
                 component={Link}
                 href='/games'
@@ -128,7 +135,7 @@ const Home = () => {
                   </Grid>
                 ))
               : articles.map(article => (
-                  <Grid key={article.id} size={4}>
+                  <Grid key={article.id} size={{ xs: 12, sm: 6, md: 4 }}>
                     <ArticleCard article={article} />
                   </Grid>
                 ))}
@@ -149,7 +156,7 @@ const Home = () => {
                   </Grid>
                 ))
               : games.map(game => (
-                  <Grid key={game.id} size={4}>
+                  <Grid key={game.id} size={{ xs: 12, sm: 6, md: 4 }}>
                     <GameCard game={game} />
                   </Grid>
                 ))}
