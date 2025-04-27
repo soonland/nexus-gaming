@@ -2,7 +2,7 @@
 
 import { Button, Stack } from '@mui/material';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { use } from 'react';
 import { FiArrowLeft, FiEdit2 } from 'react-icons/fi';
 
 import { AccessDenied } from '@/components/admin/common/AccessDenied';
@@ -14,15 +14,17 @@ import { canEditArticle, canViewArticle } from '@/lib/permissions';
 
 import { ArticleView } from '../../_components/ArticleView';
 
-const ArticleViewPage = () => {
-  const params = useParams();
-  const { user, isLoading } = useAuth();
-  const { article, isLoading: isLoadingArticle } = useAdminArticle(
-    params.id as string
-  );
+interface IPageProps {
+  params: Promise<{ id: string }>;
+}
 
-  if (isLoading || isLoadingArticle) {
-    return <LoadingOverlay isLoading={isLoading} />;
+const ArticleViewPage = ({ params }: IPageProps) => {
+  const { user, isLoading: isLoadingAuth } = useAuth();
+  const { id } = use(params);
+  const { article, isLoading } = useAdminArticle(id);
+
+  if (isLoadingAuth || isLoading) {
+    return <LoadingOverlay isLoading={true} />;
   }
 
   if (!canViewArticle(user?.role)) {

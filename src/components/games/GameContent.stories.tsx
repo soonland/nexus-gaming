@@ -66,7 +66,6 @@ export const Contained: Story = {
   args: {
     description: shortDescription,
     platforms,
-    variant: 'contained',
   },
 };
 

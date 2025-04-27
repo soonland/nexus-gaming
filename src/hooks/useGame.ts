@@ -36,9 +36,18 @@ export type RelatedArticle = {
 };
 
 type GameWithRelations = Omit<Game, 'developerId' | 'publisherId'> & {
-  platforms: Pick<Platform, 'id' | 'name' | 'manufacturer' | 'releaseDate'>[];
-  developer: Pick<Company, 'id' | 'name'>;
-  publisher: Pick<Company, 'id' | 'name'>;
+  platforms: Pick<
+    Platform,
+    'id' | 'name' | 'manufacturer' | 'releaseDate' | 'createdAt' | 'updatedAt'
+  >[];
+  developer: Pick<
+    Company,
+    'id' | 'name' | 'createdAt' | 'updatedAt' | 'isDeveloper' | 'isPublisher'
+  >;
+  publisher: Pick<
+    Company,
+    'id' | 'name' | 'createdAt' | 'updatedAt' | 'isDeveloper' | 'isPublisher'
+  >;
   articles: RelatedArticle[];
 };
 

@@ -27,6 +27,8 @@ export async function GET(
             name: true,
             manufacturer: true,
             releaseDate: true,
+            createdAt: true,
+            updatedAt: true,
           },
         },
         articles: {
@@ -171,6 +173,8 @@ export async function PATCH(
             name: true,
             manufacturer: true,
             releaseDate: true,
+            createdAt: true,
+            updatedAt: true,
           },
         },
         developer: {
