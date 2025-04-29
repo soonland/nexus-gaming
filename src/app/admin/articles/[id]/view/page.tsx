@@ -24,7 +24,7 @@ const ArticleViewPage = ({ params }: IPageProps) => {
   const { article, isLoading } = useAdminArticle(id);
 
   if (isLoadingAuth || isLoading) {
-    return <LoadingOverlay isLoading={true} />;
+    return <LoadingOverlay isLoading={isLoadingAuth || isLoading} />;
   }
 
   if (!canViewArticle(user?.role)) {
