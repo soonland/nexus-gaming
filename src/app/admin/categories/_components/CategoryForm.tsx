@@ -1,6 +1,6 @@
 'use client';
 
-import { Stack, TextField } from '@mui/material';
+import { Box, Stack, TextField } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -12,6 +12,7 @@ interface ICategoryFormProps {
   initialData?: {
     id: string;
     name: string;
+    color?: string | null;
   };
   mode: 'create' | 'edit';
 }
@@ -19,6 +20,7 @@ interface ICategoryFormProps {
 export const CategoryForm = ({ initialData, mode }: ICategoryFormProps) => {
   const router = useRouter();
   const [name, setName] = useState(initialData?.name || '');
+  const [color, setColor] = useState(initialData?.color || '#007FFF');
   const [nameError, setNameError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { createCategory, updateCategory } = useCategories();
@@ -51,6 +53,7 @@ export const CategoryForm = ({ initialData, mode }: ICategoryFormProps) => {
     try {
       const data = {
         name,
+        color,
       };
 
       if (mode === 'create') {
@@ -91,6 +94,32 @@ export const CategoryForm = ({ initialData, mode }: ICategoryFormProps) => {
             if (nameError) setNameError('');
           }}
         />
+        <Stack direction='row' spacing={2}>
+          <TextField
+            fullWidth
+            label='Couleur'
+            sx={{
+              '& .MuiInputBase-input': {
+                p: 1,
+                height: 40,
+              },
+            }}
+            type='color'
+            value={color}
+            onChange={e => setColor(e.target.value)}
+          />
+          <Box
+            sx={{
+              width: 48,
+              height: 48,
+              borderRadius: '50%',
+              bgcolor: color,
+              border: '2px solid',
+              borderColor: 'divider',
+              flexShrink: 0,
+            }}
+          />
+        </Stack>
       </Stack>
     </AdminForm>
   );

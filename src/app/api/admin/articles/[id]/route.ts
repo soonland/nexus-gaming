@@ -35,6 +35,7 @@ export async function GET(
           select: {
             id: true,
             name: true,
+            color: true,
           },
         },
         user: {
@@ -172,6 +173,7 @@ export async function PATCH(
           select: {
             id: true,
             name: true,
+            color: true,
             createdAt: true,
             updatedAt: true,
           },

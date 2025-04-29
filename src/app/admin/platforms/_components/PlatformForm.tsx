@@ -1,6 +1,6 @@
 'use client';
 
-import { FormControl, Stack, TextField } from '@mui/material';
+import { Box, FormControl, Stack, TextField } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import type { Dayjs } from 'dayjs';
 import { useRouter } from 'next/navigation';
@@ -16,6 +16,7 @@ interface IPlatformFormProps {
     id: string;
     name: string;
     manufacturer: string;
+    color?: string | null;
     releaseDate?: string | null;
   };
   mode: 'create' | 'edit';
@@ -29,6 +30,7 @@ export const PlatformForm = ({ initialData, mode }: IPlatformFormProps) => {
     initialData?.manufacturer || ''
   );
   const [manufacturerError, setManufacturerError] = useState('');
+  const [color, setColor] = useState(initialData?.color || '#000000');
   const [releaseDate, setReleaseDate] = useState<Dayjs | null>(
     initialData?.releaseDate ? dayjs(initialData.releaseDate) : null
   );
@@ -78,6 +80,7 @@ export const PlatformForm = ({ initialData, mode }: IPlatformFormProps) => {
       const data = {
         name,
         manufacturer,
+        color,
         releaseDate: releaseDate
           ? dayjs(releaseDate).format('YYYY-MM-DD')
           : null,
@@ -134,6 +137,27 @@ export const PlatformForm = ({ initialData, mode }: IPlatformFormProps) => {
             if (manufacturerError) setManufacturerError('');
           }}
         />
+        <Stack alignItems='center' direction='row' spacing={2}>
+          <TextField
+            fullWidth
+            label='Couleur'
+            name='color'
+            type='color'
+            value={color}
+            onChange={e => setColor(e.target.value)}
+          />
+          <Box
+            sx={{
+              width: 48,
+              height: 48,
+              borderRadius: '50%',
+              bgcolor: color,
+              border: '2px solid',
+              borderColor: 'divider',
+              flexShrink: 0,
+            }}
+          />
+        </Stack>
         <FormControl>
           <DatePicker
             label='Date de sortie'

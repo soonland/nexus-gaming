@@ -46,7 +46,7 @@ export async function PATCH(
     const { id } = await params;
 
     const body = await request.json();
-    const { name } = body;
+    const { name, color } = body;
 
     if (!name) {
       return NextResponse.json({ error: 'Name is required' }, { status: 400 });
@@ -56,6 +56,7 @@ export async function PATCH(
       where: { id },
       data: {
         name,
+        color,
       },
     });
 

@@ -12,6 +12,7 @@ import {
   AdminPageLayout,
   defaultActions,
 } from '@/components/admin';
+import { CategoryChip } from '@/components/common';
 import { useNotifier } from '@/components/common/Notifier';
 import { useCategories } from '@/hooks/useCategories';
 import dayjs from '@/lib/dayjs';
@@ -118,6 +119,7 @@ const AdminCategoriesPage = () => {
             {
               field: 'name',
               headerName: 'Nom',
+              render: row => <CategoryChip category={row} variant='filled' />,
               sortable: true,
             },
             {

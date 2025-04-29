@@ -23,6 +23,8 @@ import { FiChevronsLeft, FiChevronsRight, FiInbox } from 'react-icons/fi';
 type DataColumn<TData> = {
   field: keyof TData;
   headerName: string;
+  headerAlign?: 'left' | 'right' | 'center';
+  itemsAlign?: 'left' | 'right' | 'center';
   render?: (row: TData) => ReactNode;
   sortable?: boolean;
   width?: string;
@@ -31,6 +33,8 @@ type DataColumn<TData> = {
 type ActionsColumn<TData> = {
   field: 'actions';
   headerName: string;
+  headerAlign?: 'left' | 'right' | 'center';
+  itemsAlign?: 'left' | 'right' | 'center';
   render: (row: TData) => ReactNode;
   sortable?: false;
   width?: string;
@@ -251,6 +255,7 @@ export const AdminDataTable = <TData, TSortField extends keyof TData>({
               {columns.map(column => (
                 <TableCell
                   key={String(column.field)}
+                  align={column.headerAlign ?? 'left'}
                   style={{ width: column.width }}
                 >
                   {column.sortable && onSort ? (
@@ -341,7 +346,11 @@ export const AdminDataTable = <TData, TSortField extends keyof TData>({
                     </TableCell>
                   )}
                   {columns.map(column => (
-                    <TableCell key={String(column.field)} sx={{ py: 1, px: 2 }}>
+                    <TableCell
+                      key={String(column.field)}
+                      align={column.itemsAlign ?? 'left'}
+                      sx={{ py: 1, px: 2 }}
+                    >
                       {column.render
                         ? column.render(row)
                         : column.field === 'actions'

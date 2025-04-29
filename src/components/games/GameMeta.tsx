@@ -4,6 +4,7 @@ import { Stack, Typography, type StackProps } from '@mui/material';
 import { FiUsers } from 'react-icons/fi';
 
 import { DateDisplay } from '@/components/common/DateDisplay';
+import dayjs from '@/lib/dayjs';
 
 interface IGameMetaProps extends Omit<StackProps, 'children'> {
   developer: string;
@@ -30,13 +31,7 @@ export const GameMeta = ({
         </Typography>
       </Stack>
       {releaseDate && (
-        <DateDisplay
-          date={
-            typeof releaseDate === 'string'
-              ? new Date(releaseDate)
-              : releaseDate
-          }
-        />
+        <DateDisplay date={dayjs(releaseDate).toDate()} format='calendar' />
       )}
     </Stack>
   );

@@ -1,6 +1,9 @@
 'use client';
 
+import { Button, Stack } from '@mui/material';
+import Link from 'next/link';
 import { useState } from 'react';
+import { FiTrash2 } from 'react-icons/fi';
 
 import {
   AdminActionButtons,
@@ -10,7 +13,6 @@ import {
   AdminFilters,
   AdminList,
   AdminPageLayout,
-  Pagination,
   defaultActions,
 } from '@/components/admin';
 import { ColorDot } from '@/components/common';
@@ -24,14 +26,18 @@ type GameSortField = keyof Pick<IGameData, 'title' | 'createdAt' | 'updatedAt'>;
 interface IDeleteDialogState {
   isOpen: boolean;
   gameId: string | null;
+  isBatchDelete: boolean;
 }
 
-const DEFAULT_PAGE_SIZE = 10;
+const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
+const DEFAULT_PAGE_SIZE = PAGE_SIZE_OPTIONS[0];
 
 const AdminGamesPage = () => {
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [deleteDialog, setDeleteDialog] = useState<IDeleteDialogState>({
     isOpen: false,
     gameId: null,
+    isBatchDelete: false,
   });
   const [searchQuery, setSearchQuery] = useState('');
   const [sortField, setSortField] = useState<GameSortField>('createdAt');
@@ -80,17 +86,42 @@ const AdminGamesPage = () => {
   const isEmpty = !filteredGames.length;
 
   const handleDelete = async () => {
-    if (deleteDialog.gameId) {
-      try {
+    try {
+      if (deleteDialog.isBatchDelete) {
+        await Promise.all(selectedIds.map(id => deleteGame.mutateAsync(id)));
+        showSuccess('Jeux supprimés avec succès');
+        setSelectedIds([]);
+      } else if (deleteDialog.gameId) {
         await deleteGame.mutateAsync(deleteDialog.gameId);
         showSuccess('Jeu supprimé avec succès');
-        setDeleteDialog({ isOpen: false, gameId: null });
-      } catch (error) {
-        console.error('Error deleting game:', error);
-        showError('Une erreur est survenue lors de la suppression');
       }
+      setDeleteDialog({ isOpen: false, gameId: null, isBatchDelete: false });
+    } catch (error) {
+      console.error('Error deleting game:', error);
+      showError('Une erreur est survenue lors de la suppression');
     }
   };
+
+  const renderBatchActions = () => (
+    <Stack direction='row' spacing={2}>
+      <Button
+        color='error'
+        disabled={selectedIds.length === 0}
+        size='small'
+        startIcon={<FiTrash2 />}
+        variant='outlined'
+        onClick={() =>
+          setDeleteDialog({
+            isOpen: true,
+            gameId: null,
+            isBatchDelete: true,
+          })
+        }
+      >
+        Supprimer
+      </Button>
+    </Stack>
+  );
 
   const renderPlatforms = (game: IGameData) => {
     return (
@@ -120,16 +151,6 @@ const AdminGamesPage = () => {
         searchPlaceholder='Rechercher un jeu...'
         onSearch={setSearchQuery}
       />
-      {pagination && (
-        <Pagination
-          currentPage={page}
-          pageSize={pageSize}
-          total={pagination.total}
-          totalPages={pagination.pages}
-          onPageChange={setPage}
-          onPageSizeChange={handlePageSizeChange}
-        />
-      )}
       <AdminList
         emptyMessage='Aucun jeu trouvé'
         error={error}
@@ -137,11 +158,25 @@ const AdminGamesPage = () => {
         isLoading={isLoading}
       >
         <AdminDataTable<IGameData, GameSortField>
+          selectable
+          batchActions={renderBatchActions}
           columns={[
             {
               field: 'title',
               headerName: 'Titre',
               sortable: true,
+              render: row => (
+                <Link
+                  className='hover:underline'
+                  href={`/admin/games/${row.id}/view`}
+                  style={{
+                    color: 'var(--mui-palette-primary-main)',
+                    textDecoration: 'none',
+                  }}
+                >
+                  {row.title}
+                </Link>
+              ),
             },
             {
               field: 'developer',
@@ -177,6 +212,7 @@ const AdminGamesPage = () => {
                       setDeleteDialog({
                         isOpen: true,
                         gameId: row.id,
+                        isBatchDelete: false,
                       })
                     ),
                   ]}
@@ -185,28 +221,33 @@ const AdminGamesPage = () => {
               width: '120px',
             },
           ]}
+          getRowId={row => row.id}
+          page={page}
+          pageSize={pageSize}
+          pageSizeOptions={PAGE_SIZE_OPTIONS}
+          pages={pagination?.pages ?? 1}
           rows={filteredGames}
+          selectedIds={selectedIds}
           sortField={sortField}
           sortOrder={sortOrder}
+          onPageChange={setPage}
+          onPageSizeChange={handlePageSizeChange}
+          onSelectionChange={setSelectedIds}
           onSort={handleSort}
         />
       </AdminList>
-      {pagination && (
-        <Pagination
-          currentPage={page}
-          pageSize={pageSize}
-          total={pagination.total}
-          totalPages={pagination.pages}
-          onPageChange={setPage}
-          onPageSizeChange={handlePageSizeChange}
-        />
-      )}
       <AdminDeleteDialog
         isLoading={false}
         isOpen={deleteDialog.isOpen}
-        message='Êtes-vous sûr de vouloir supprimer ce jeu ?'
+        message={
+          deleteDialog.isBatchDelete
+            ? `Êtes-vous sûr de vouloir supprimer les ${selectedIds.length} jeux sélectionnés ?`
+            : 'Êtes-vous sûr de vouloir supprimer ce jeu ?'
+        }
         title='Supprimer le jeu'
-        onClose={() => setDeleteDialog({ isOpen: false, gameId: null })}
+        onClose={() =>
+          setDeleteDialog({ isOpen: false, gameId: null, isBatchDelete: false })
+        }
         onConfirm={handleDelete}
       />
     </AdminPageLayout>

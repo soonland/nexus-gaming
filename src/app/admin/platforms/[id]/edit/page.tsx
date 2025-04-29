@@ -26,6 +26,7 @@ const EditPlatformPage = () => {
               name: platform.name,
               manufacturer: platform.manufacturer,
               releaseDate: platform.releaseDate || null,
+              color: platform.color,
             }}
             mode='edit'
           />

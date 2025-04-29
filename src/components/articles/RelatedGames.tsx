@@ -4,8 +4,9 @@ import { Box, Grid, Stack, Typography } from '@mui/material';
 import dayjs from 'dayjs';
 import { FaGamepad } from 'react-icons/fa';
 
-import { GameCard } from '@/components/games/GameCard';
 import type { IGameData } from '@/types';
+
+import { GameCardMiniature } from '../games/GameCardMiniature';
 
 interface IRelatedGamesProps {
   games: Array<Partial<IGameData>>;
@@ -32,7 +33,7 @@ export const RelatedGames = ({
   if (games.length === 0) return null;
 
   return (
-    <Box>
+    <Box px={4}>
       <Stack alignItems='center' direction='row' spacing={1} sx={{ mb: 2 }}>
         {showIcon && <FaGamepad size={iconSize} />}
         <Typography variant='h5'>{title}</Typography>
@@ -43,7 +44,7 @@ export const RelatedGames = ({
 
           return (
             <Grid key={game.id} size={{ xs: 12, sm: 6, md: 4 }}>
-              <GameCard
+              <GameCardMiniature
                 game={{
                   id: game.id,
                   title: game.title,

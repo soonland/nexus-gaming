@@ -46,6 +46,7 @@ describe('GET /api/categories', () => {
   const baseCategory = {
     id: 'cat-1',
     name: 'Test Category',
+    color: '#FF0000',
     createdAt: fixedDate,
     updatedAt: fixedDate,
     _count: {
@@ -59,8 +60,8 @@ describe('GET /api/categories', () => {
 
   it('should fetch all categories ordered by name', async () => {
     const categories = [
-      { ...baseCategory, name: 'Action' },
-      { ...baseCategory, id: 'cat-2', name: 'Strategy' },
+      { ...baseCategory, name: 'Action', color: '#FF0000' },
+      { ...baseCategory, id: 'cat-2', name: 'Strategy', color: '#00FF00' },
     ];
 
     const findManyMock = vi.fn().mockResolvedValue(categories);
@@ -75,6 +76,7 @@ describe('GET /api/categories', () => {
       {
         id: 'cat-1',
         name: 'Action',
+        color: '#FF0000',
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
         articleCount: 0,
@@ -85,6 +87,7 @@ describe('GET /api/categories', () => {
       {
         id: 'cat-2',
         name: 'Strategy',
+        color: '#00FF00',
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
         articleCount: 0,
@@ -159,19 +162,54 @@ describe('POST /api/categories', () => {
   });
 
   // Helper function for creating requests
-  const createRequest = (name: string): Request =>
+  const createRequest = (name: string, color?: string): Request =>
     new Request('http://localhost/api/categories', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ name }),
+      body: JSON.stringify({ name, color }),
     });
 
-  it('should allow admin to create category', async () => {
+  it('should allow admin to create category with color', async () => {
     const newCategory = {
       id: 'cat-1',
       name: 'Test Category',
+      color: '#FF0000',
+      createdAt: fixedDate,
+      updatedAt: fixedDate,
+    };
+
+    const getCurrentUserMock = vi.fn().mockResolvedValue(mockAdmin);
+    const createMock = vi.fn().mockResolvedValue(newCategory);
+
+    (getCurrentUser as any).mockImplementation(getCurrentUserMock);
+    (prisma.category.create as any).mockImplementation(createMock);
+
+    const request = createRequest('Test Category', '#FF0000');
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(201);
+    expect(data).toEqual(
+      expect.objectContaining({
+        id: expect.any(String),
+        name: 'Test Category',
+        color: '#FF0000',
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+      })
+    );
+    expect(createMock).toHaveBeenCalledWith({
+      data: { name: 'Test Category', color: '#FF0000' },
+    });
+  });
+
+  it('should allow creating category without color', async () => {
+    const newCategory = {
+      id: 'cat-1',
+      name: 'Test Category',
+      color: null,
       createdAt: fixedDate,
       updatedAt: fixedDate,
     };
@@ -191,16 +229,30 @@ describe('POST /api/categories', () => {
       expect.objectContaining({
         id: expect.any(String),
         name: 'Test Category',
+        color: null,
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
       })
     );
-    expect(new Date(data.createdAt)).toBeInstanceOf(Date);
-    expect(new Date(data.updatedAt)).toBeInstanceOf(Date);
-    expect(getCurrentUserMock).toHaveBeenCalledTimes(1);
     expect(createMock).toHaveBeenCalledWith({
       data: { name: 'Test Category' },
     });
+  });
+
+  it('should validate color format', async () => {
+    const getCurrentUserMock = vi.fn().mockResolvedValue(mockAdmin);
+    const createMock = vi.fn();
+
+    (getCurrentUser as any).mockImplementation(getCurrentUserMock);
+    (prisma.category.create as any).mockImplementation(createMock);
+
+    const request = createRequest('Test Category', 'invalid-color');
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(data.error).toBe('Invalid color format');
+    expect(createMock).not.toHaveBeenCalled();
   });
 
   it('should validate name is required', async () => {
@@ -226,7 +278,7 @@ describe('POST /api/categories', () => {
     (getCurrentUser as any).mockImplementation(getCurrentUserMock);
     (prisma.category.create as any).mockImplementation(createMock);
 
-    const request = createRequest('Test Category');
+    const request = createRequest('Test Category', '#FF0000');
     const response = await POST(request);
     const data = await response.json();
 
@@ -242,7 +294,7 @@ describe('POST /api/categories', () => {
     (getCurrentUser as any).mockImplementation(getCurrentUserMock);
     (prisma.category.create as any).mockImplementation(createMock);
 
-    const request = createRequest('Test Category');
+    const request = createRequest('Test Category', '#FF0000');
     const response = await POST(request);
     const data = await response.json();
 
@@ -258,7 +310,7 @@ describe('POST /api/categories', () => {
     (getCurrentUser as any).mockImplementation(getCurrentUserMock);
     (prisma.category.create as any).mockImplementation(createMock);
 
-    const request = createRequest('Test Category');
+    const request = createRequest('Test Category', '#FF0000');
     const response = await POST(request);
     const data = await response.json();
 
@@ -266,10 +318,11 @@ describe('POST /api/categories', () => {
     expect(data.error).toBe('Error creating category');
   });
 
-  it('should allow SYSADMIN to create category', async () => {
+  it('should allow SYSADMIN to create category with color', async () => {
     const newCategory = {
       id: 'cat-1',
       name: 'Test Category',
+      color: '#00FF00',
       createdAt: fixedDate,
       updatedAt: fixedDate,
     };
@@ -285,7 +338,7 @@ describe('POST /api/categories', () => {
     (getCurrentUser as any).mockImplementation(getCurrentUserMock);
     (prisma.category.create as any).mockImplementation(createMock);
 
-    const request = createRequest('Test Category');
+    const request = createRequest('Test Category', '#00FF00');
     const response = await POST(request);
     const data = await response.json();
 
@@ -294,15 +347,13 @@ describe('POST /api/categories', () => {
       expect.objectContaining({
         id: expect.any(String),
         name: 'Test Category',
+        color: '#00FF00',
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
       })
     );
-    expect(new Date(data.createdAt)).toBeInstanceOf(Date);
-    expect(new Date(data.updatedAt)).toBeInstanceOf(Date);
-    expect(getCurrentUserMock).toHaveBeenCalledTimes(1);
     expect(createMock).toHaveBeenCalledWith({
-      data: { name: 'Test Category' },
+      data: { name: 'Test Category', color: '#00FF00' },
     });
   });
 

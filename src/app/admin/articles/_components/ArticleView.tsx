@@ -1,180 +1,121 @@
 'use client';
 
-import { Box, Stack, Typography } from '@mui/material';
-import { FiTag, FiCalendar, FiUser } from 'react-icons/fi';
+import { Paper, Tab, Tabs, Box, Button } from '@mui/material';
+import { useState } from 'react';
+import { FiExternalLink } from 'react-icons/fi';
 
-import { ColorDot } from '@/components/common';
-import { useAuth } from '@/hooks/useAuth';
-import dayjs from '@/lib/dayjs';
-import { canViewApprovalHistory } from '@/lib/permissions';
-
-import { getStatusStyle } from './articleStyles';
+import { ArticleBaseInfo } from './ArticleBaseInfo';
+import { ArticleContentView } from './ArticleContentView';
+import { ArticleHistoryView } from './ArticleHistoryView';
+import { ArticleRelationsView } from './ArticleRelationsView';
 import type { IArticleWithRelations } from './form';
 
 interface IArticleViewProps {
   article: IArticleWithRelations;
 }
 
-export const ArticleView = ({ article }: IArticleViewProps) => {
-  const { user } = useAuth();
+interface ITabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
+}
+
+const CustomTabPanel = (props: ITabPanelProps) => {
+  const { children, value, index, ...other } = props;
 
   return (
-    <Stack spacing={4} sx={{ maxWidth: '800px', mx: 'auto', py: 4 }}>
-      {/* Métadonnées */}
-      <Stack direction='row' spacing={3} sx={{ color: 'text.secondary' }}>
-        <Stack alignItems='center' direction='row' spacing={1}>
-          <FiUser />
-          <Typography>{article.user.username}</Typography>
-        </Stack>
-        <Stack alignItems='center' direction='row' spacing={1}>
-          <FiCalendar />
-          <Typography>{dayjs(article.createdAt).format('LL')}</Typography>
-        </Stack>
-        <Stack alignItems='center' direction='row' spacing={1}>
-          <FiTag />
-          <Typography>{article.category.name}</Typography>
-        </Stack>
-        <ColorDot
-          color={getStatusStyle(article.status).color}
-          label={getStatusStyle(article.status).label}
-        />
-      </Stack>
+    <div
+      aria-labelledby={`article-tab-${index}`}
+      hidden={value !== index}
+      id={`article-tabpanel-${index}`}
+      role='tabpanel'
+      {...other}
+    >
+      {value === index && <Box sx={{ py: 3 }}>{children}</Box>}
+    </div>
+  );
+};
 
-      {/* Image de couverture */}
-      {article.heroImage && (
-        <Box
-          alt={article.title}
-          component='img'
-          src={article.heroImage}
+export const ArticleView = ({ article }: IArticleViewProps) => {
+  const [currentTab, setCurrentTab] = useState(0);
+
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setCurrentTab(newValue);
+  };
+
+  return (
+    <Paper sx={{ p: 4 }}>
+      {/* Lien vers la vue publique */}
+      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'flex-end' }}>
+        <Button
+          color='primary'
+          component='a'
+          href={`/articles/${article.id}`}
+          rel='noopener noreferrer'
+          size='small'
+          startIcon={<FiExternalLink size={16} />}
           sx={{
-            width: '100%',
-            height: 'auto',
-            maxHeight: '400px',
-            objectFit: 'cover',
-            borderRadius: 1,
+            'borderRadius': 2,
+            'textTransform': 'none',
+            'gap': 0.5,
+            '&:hover': {
+              'bgcolor': 'action.hover',
+              '& svg': {
+                transform: 'translate(1px, -1px)',
+              },
+            },
+            '& svg': {
+              transition: 'transform 0.2s ease-in-out',
+            },
           }}
-        />
-      )}
+          target='_blank'
+          variant='outlined'
+        >
+          Voir sur le site
+        </Button>
+      </Box>
 
-      {/* Contenu */}
-      <Typography
-        component='div'
-        dangerouslySetInnerHTML={{ __html: article.content }}
-        sx={{
-          'typography': 'body1',
-          '& h1': { typography: 'h4', mt: 4, mb: 2 },
-          '& h2': { typography: 'h5', mt: 3, mb: 2 },
-          '& h3': { typography: 'h6', mt: 2, mb: 1 },
-          '& p': { mb: 2 },
-          '& ul, & ol': { mb: 2, pl: 4 },
-          '& li': { mb: 0.5 },
-          '& a': {
-            'color': 'primary.main',
-            'textDecoration': 'none',
-            '&:hover': { textDecoration: 'underline' },
-          },
-        }}
-      />
+      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
+        <Tabs
+          aria-label='article information tabs'
+          value={currentTab}
+          onChange={handleTabChange}
+        >
+          <Tab
+            aria-controls='article-tabpanel-0'
+            id='article-tab-0'
+            label='Informations de base'
+          />
+          <Tab
+            aria-controls='article-tabpanel-1'
+            id='article-tab-1'
+            label='Contenu'
+          />
+          <Tab
+            aria-controls='article-tabpanel-2'
+            id='article-tab-2'
+            label='Relations'
+          />
+          <Tab
+            aria-controls='article-tabpanel-3'
+            id='article-tab-3'
+            label='Historique'
+          />
+        </Tabs>
+      </Box>
 
-      {/* Jeux associés */}
-      {article.games.length > 0 && (
-        <Box>
-          <Typography gutterBottom variant='h6'>
-            Jeux associés
-          </Typography>
-          <Stack direction='row' spacing={1}>
-            {article.games.map(game => (
-              <Typography
-                key={game.id}
-                sx={{
-                  px: 1,
-                  py: 0.5,
-                  borderRadius: 1,
-                  bgcolor: 'action.hover',
-                }}
-                variant='body2'
-              >
-                {game.title}
-              </Typography>
-            ))}
-          </Stack>
-        </Box>
-      )}
-
-      {/* Historique d'approbation */}
-      {canViewApprovalHistory(
-        user?.role,
-        { userId: article.user.id },
-        user?.id
-      ) && (
-        <Box>
-          <Typography gutterBottom variant='h6'>
-            Historique d'approbation
-          </Typography>
-          {article.approvalHistory?.length ? (
-            <Stack spacing={2}>
-              {article.approvalHistory.map(history => (
-                <Box
-                  key={history.id}
-                  sx={{
-                    p: 2,
-                    borderRadius: 1,
-                    bgcolor: 'background.paper',
-                    border: 1,
-                    borderColor: 'divider',
-                  }}
-                >
-                  <Stack
-                    alignItems='center'
-                    direction='row'
-                    justifyContent='space-between'
-                    mb={1}
-                  >
-                    <Typography variant='subtitle2'>
-                      {history.actionBy.username}
-                    </Typography>
-                    <Typography color='text.secondary' variant='caption'>
-                      {dayjs(history.createdAt).format('LLL')}
-                    </Typography>
-                  </Stack>
-                  <Stack alignItems='center' direction='row' spacing={1}>
-                    <ColorDot
-                      color={getStatusStyle(history.fromStatus).color}
-                      label={getStatusStyle(history.fromStatus).label}
-                    />
-                    <Typography>→</Typography>
-                    <ColorDot
-                      color={getStatusStyle(history.toStatus).color}
-                      label={getStatusStyle(history.toStatus).label}
-                    />
-                  </Stack>
-                  {history.comment && (
-                    <Typography
-                      color='text.secondary'
-                      sx={{ mt: 1 }}
-                      variant='body2'
-                    >
-                      {history.comment}
-                    </Typography>
-                  )}
-                </Box>
-              ))}
-            </Stack>
-          ) : (
-            <Box
-              sx={{
-                p: 2,
-                borderRadius: 1,
-                bgcolor: 'action.hover',
-                color: 'text.secondary',
-                fontStyle: 'italic',
-              }}
-            >
-              Aucun historique d'approbation pour cet article
-            </Box>
-          )}
-        </Box>
-      )}
-    </Stack>
+      <CustomTabPanel index={0} value={currentTab}>
+        <ArticleBaseInfo article={article} />
+      </CustomTabPanel>
+      <CustomTabPanel index={1} value={currentTab}>
+        <ArticleContentView article={article} />
+      </CustomTabPanel>
+      <CustomTabPanel index={2} value={currentTab}>
+        <ArticleRelationsView article={article} />
+      </CustomTabPanel>
+      <CustomTabPanel index={3} value={currentTab}>
+        <ArticleHistoryView article={article} />
+      </CustomTabPanel>
+    </Paper>
   );
 };

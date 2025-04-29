@@ -1,5 +1,13 @@
 import { Role, ArticleStatus } from '@prisma/client';
 
+export const canEditGames = (role?: Role): boolean => {
+  return hasSufficientRole(role, Role.EDITOR);
+};
+
+export const canManageGames = (role?: Role): boolean => {
+  return hasSufficientRole(role, Role.SENIOR_EDITOR);
+};
+
 export const canViewAnnouncements = (role: Role): boolean => {
   return hasSufficientRole(role, Role.EDITOR);
 };

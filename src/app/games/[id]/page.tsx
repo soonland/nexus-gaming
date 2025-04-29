@@ -68,17 +68,31 @@ const GamePage = () => {
     games: [],
     status: 'PUBLISHED' as ArticleStatus,
   }));
+  // Create badges array with genre first, then platforms
+  const badges: IBadge[] = [];
 
-  const badges: IBadge[] =
-    (game.genre && [
-      {
+  // Add genre badge if exists
+  if (game.genre) {
+    badges.push({
+      id: uuidv4(),
+      label: game.genre,
+      color: 'primary' as const,
+    });
+  }
+
+  // Add platform badges
+  if (game.platforms?.length) {
+    badges.push(
+      ...game.platforms.map(platform => ({
         id: uuidv4(),
-        label: game.genre,
-        color: 'primary',
-      },
-    ]) ??
-    [];
-
+        platform: {
+          id: platform.id,
+          name: platform.name,
+          color: platform.color,
+        },
+      }))
+    );
+  }
   return (
     <Box>
       <Hero
@@ -95,8 +109,8 @@ const GamePage = () => {
       />
 
       {/* Content Section */}
-      <Container maxWidth='lg' sx={{ py: 4 }}>
-        <Stack spacing={4}>
+      <Container maxWidth='lg'>
+        <Stack spacing={2}>
           <Button
             startIcon={<FiArrowLeft />}
             sx={{ alignSelf: 'flex-start' }}
@@ -105,11 +119,7 @@ const GamePage = () => {
             Retour aux jeux
           </Button>
 
-          <GameContent
-            description={game.description || undefined}
-            platforms={game.platforms}
-            variant='contained'
-          />
+          <GameContent description={game.description || undefined} />
 
           <RelatedArticles articles={formattedArticles} />
         </Stack>

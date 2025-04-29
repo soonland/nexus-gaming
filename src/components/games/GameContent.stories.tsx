@@ -22,24 +22,6 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof GameContent>;
 
-const platforms = [
-  {
-    id: 'ps5',
-    name: 'PlayStation 5',
-    manufacturer: 'Sony',
-  },
-  {
-    id: 'xbox',
-    name: 'Xbox Series X',
-    manufacturer: 'Microsoft',
-  },
-  {
-    id: 'pc',
-    name: 'PC',
-    manufacturer: 'Multiple',
-  },
-];
-
 const shortDescription = `Un jeu d'action-RPG en monde ouvert épique dans un univers post-apocalyptique.`;
 
 const longDescription = `Plongez dans une aventure épique dans un monde post-apocalyptique où la nature a repris ses droits. 
@@ -58,39 +40,34 @@ Le jeu propose également un mode coopératif en ligne pour partager l'aventure 
 export const Default: Story = {
   args: {
     description: shortDescription,
-    platforms,
   },
 };
 
-export const Contained: Story = {
+export const WithMaxHeight: Story = {
   args: {
-    description: shortDescription,
-    platforms,
-    variant: 'contained',
-  },
-};
-
-export const DescriptionOnly: Story = {
-  args: {
-    description: shortDescription,
+    description: longDescription,
+    maxHeight: 200,
+    showOverflow: true,
   },
   parameters: {
     docs: {
       description: {
-        story: 'Affiche uniquement la description, sans plateformes.',
+        story: 'Limite la hauteur avec défilement.',
       },
     },
   },
 };
 
-export const PlatformsOnly: Story = {
+export const NoOverflow: Story = {
   args: {
-    platforms,
+    description: longDescription,
+    maxHeight: 200,
+    showOverflow: false,
   },
   parameters: {
     docs: {
       description: {
-        story: 'Affiche uniquement les plateformes, sans description.',
+        story: 'Limite la hauteur sans défilement.',
       },
     },
   },
@@ -99,7 +76,6 @@ export const PlatformsOnly: Story = {
 export const LongDescription: Story = {
   args: {
     description: longDescription,
-    platforms,
   },
   parameters: {
     docs: {
@@ -110,15 +86,12 @@ export const LongDescription: Story = {
   },
 };
 
-export const SinglePlatform: Story = {
-  args: {
-    description: shortDescription,
-    platforms: [platforms[0]],
-  },
+export const Empty: Story = {
+  args: {},
   parameters: {
     docs: {
       description: {
-        story: 'Pour les jeux exclusifs à une plateforme.',
+        story: 'Sans contenu.',
       },
     },
   },

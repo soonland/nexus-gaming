@@ -8,13 +8,27 @@ import {
   Chip,
   useTheme,
 } from '@mui/material';
+import type { ChipProps } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material';
 import type React from 'react';
+
+import { CategoryChip } from './CategoryChip';
+import { PlatformChip } from './PlatformChip';
 
 export interface IBadge {
   id?: string;
   label?: string;
-  color?: 'primary' | 'secondary' | 'error' | 'warning' | 'info' | 'success';
+  color?: ChipProps['color'];
+  platform?: {
+    id: string;
+    name: string;
+    color?: string | null;
+  };
+  category?: {
+    id: string;
+    name: string;
+    color?: string | null;
+  };
 }
 
 export interface IHeroProps {
@@ -95,20 +109,40 @@ export const Hero = ({
           >
             {badges?.length > 0 && (
               <Stack direction='row' flexWrap='wrap' gap={1} spacing={1}>
-                {badges.map(badge => (
-                  <Chip
-                    key={badge.id}
-                    color={badge.color || 'primary'}
-                    label={badge.label}
-                    size='small'
-                    sx={{
-                      'color': 'common.white',
-                      '& .MuiChip-label': {
-                        color: 'common.white',
-                      },
-                    }}
-                  />
-                ))}
+                {badges.map(badge => {
+                  if (badge.platform) {
+                    return (
+                      <PlatformChip
+                        key={badge.id}
+                        platform={badge.platform}
+                        size='small'
+                      />
+                    );
+                  }
+                  if (badge.category) {
+                    return (
+                      <CategoryChip
+                        key={badge.id}
+                        category={badge.category}
+                        size='small'
+                      />
+                    );
+                  }
+                  return (
+                    <Chip
+                      key={badge.id}
+                      color={badge.color || 'primary'}
+                      label={badge.label}
+                      size='small'
+                      sx={{
+                        'color': 'common.white',
+                        '& .MuiChip-label': {
+                          color: 'common.white',
+                        },
+                      }}
+                    />
+                  );
+                })}
               </Stack>
             )}
 

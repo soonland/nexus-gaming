@@ -6,12 +6,12 @@ import {
   CardMedia,
   Typography,
   Stack,
-  Chip,
   useTheme,
 } from '@mui/material';
 import Link from 'next/link';
 
 import { DateDisplay } from '@/components/common/DateDisplay';
+import { PlatformChip } from '@/components/common/PlatformChip';
 import type { GameData } from '@/types';
 
 interface IGameCardProps {
@@ -100,12 +100,10 @@ export const GameCard = ({ game }: IGameCardProps) => {
           {Array.isArray(game.platforms) && game.platforms.length > 0 && (
             <Stack direction='row' flexWrap='wrap' spacing={1}>
               {game.platforms.map(platform => (
-                <Chip
-                  key={platform.name}
-                  color='primary'
-                  label={platform.name}
+                <PlatformChip
+                  key={platform.id}
+                  platform={platform}
                   size='small'
-                  variant='filled'
                 />
               ))}
             </Stack>
