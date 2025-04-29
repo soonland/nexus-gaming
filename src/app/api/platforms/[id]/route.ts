@@ -24,6 +24,7 @@ export async function GET(
         id: true,
         name: true,
         manufacturer: true,
+        color: true,
         releaseDate: true,
         createdAt: true,
         updatedAt: true,
@@ -74,7 +75,7 @@ export async function PATCH(
   try {
     const { id } = await params;
     const body = (await request.json()) as IPlatformForm;
-    const { name, manufacturer, releaseDate } = body;
+    const { name, manufacturer, color, releaseDate } = body;
 
     if (!id) {
       return NextResponse.json(
@@ -95,12 +96,14 @@ export async function PATCH(
       data: {
         name,
         manufacturer,
+        color,
         releaseDate: releaseDate ? new Date(releaseDate) : null,
       },
       select: {
         id: true,
         name: true,
         manufacturer: true,
+        color: true,
         releaseDate: true,
         createdAt: true,
         updatedAt: true,

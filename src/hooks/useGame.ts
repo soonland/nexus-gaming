@@ -38,7 +38,13 @@ export type RelatedArticle = {
 type GameWithRelations = Omit<Game, 'developerId' | 'publisherId'> & {
   platforms: Pick<
     Platform,
-    'id' | 'name' | 'manufacturer' | 'releaseDate' | 'createdAt' | 'updatedAt'
+    | 'id'
+    | 'name'
+    | 'manufacturer'
+    | 'color'
+    | 'releaseDate'
+    | 'createdAt'
+    | 'updatedAt'
   >[];
   developer: Pick<
     Company,

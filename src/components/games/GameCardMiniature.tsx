@@ -1,15 +1,9 @@
 'use client';
 
-import {
-  Card,
-  CardContent,
-  CardMedia,
-  Typography,
-  Stack,
-  Chip,
-} from '@mui/material';
+import { Card, CardContent, CardMedia, Typography, Stack } from '@mui/material';
 import Link from 'next/link';
 
+import { PlatformChip } from '@/components/common/PlatformChip';
 import type { GameData } from '@/types';
 
 interface IGameCardProps {
@@ -65,12 +59,10 @@ export const GameCardMiniature = ({ game }: IGameCardProps) => {
           {Array.isArray(game.platforms) && game.platforms.length > 0 && (
             <Stack direction='row' flexWrap='wrap' spacing={1}>
               {game.platforms.map(platform => (
-                <Chip
-                  key={platform.name}
-                  color='primary'
-                  label={platform.name}
+                <PlatformChip
+                  key={platform.id}
+                  platform={platform}
                   size='small'
-                  variant='filled'
                 />
               ))}
             </Stack>

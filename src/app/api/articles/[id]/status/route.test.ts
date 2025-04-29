@@ -58,6 +58,7 @@ describe('PATCH /api/articles/[id]/status', () => {
   const mockCategory = {
     id: 'cat-1',
     name: 'Test Category',
+    color: '#FF0000',
     createdAt: new Date(),
     updatedAt: new Date(),
   };
@@ -172,6 +173,7 @@ describe('PATCH /api/articles/[id]/status', () => {
 
     expect(response.status).toBe(200);
     expect(data.status).toBe('PUBLISHED');
+    expect(data.category.color).toBe('#FF0000');
     expect(getCurrentUserMock).toHaveBeenCalledTimes(1);
     expect(findUniqueMock).toHaveBeenCalledTimes(1);
   });
@@ -206,6 +208,7 @@ describe('PATCH /api/articles/[id]/status', () => {
 
     expect(response.status).toBe(200);
     expect(data.status).toBe('NEEDS_CHANGES');
+    expect(data.category.color).toBe('#FF0000');
     expect(getCurrentUserMock).toHaveBeenCalledTimes(1);
     expect(findUniqueMock).toHaveBeenCalledTimes(1);
   });
@@ -256,6 +259,7 @@ describe('PATCH /api/articles/[id]/status', () => {
 
     expect(response.status).toBe(200);
     expect(data.status).toBe('PENDING_APPROVAL');
+    expect(data.category.color).toBe('#FF0000');
     expect(getCurrentUserMock).toHaveBeenCalledTimes(1);
     expect(findUniqueMock).toHaveBeenCalledTimes(1);
   });
@@ -308,6 +312,7 @@ describe('PATCH /api/articles/[id]/status', () => {
 
     expect(response.status).toBe(200);
     expect(data.currentReviewerId).toBe(reviewerId);
+    expect(data.category.color).toBe('#FF0000');
   });
 
   it('should not allow editor to assign reviewer', async () => {
@@ -355,6 +360,7 @@ describe('PATCH /api/articles/[id]/status', () => {
 
     expect(response.status).toBe(200);
     expect(data.publishedAt).toBeDefined();
+    expect(data.category.color).toBe('#FF0000');
     expect(new Date(data.publishedAt)).toBeInstanceOf(Date);
   });
 
@@ -404,5 +410,34 @@ describe('PATCH /api/articles/[id]/status', () => {
         }),
       })
     );
+  });
+
+  it('should include category data in response', async () => {
+    const updatedArticle = {
+      ...baseArticle,
+      category: {
+        ...mockCategory,
+        color: '#00FF00', // Different color to test specific value
+      },
+    } satisfies ArticleMock;
+
+    const getCurrentUserMock = vi.fn().mockResolvedValue(mockSeniorEditor);
+    const findUniqueMock = vi.fn().mockResolvedValue(baseArticle);
+    const updateMock = vi.fn().mockResolvedValue(updatedArticle);
+
+    (getCurrentUser as any).mockImplementation(getCurrentUserMock);
+    (prisma.article.findUnique as any).mockImplementation(findUniqueMock);
+    (prisma.article.update as any).mockImplementation(updateMock);
+
+    const request = createRequest('PENDING_APPROVAL', 'Testing category data');
+    const response = await PATCH(request, {
+      params: Promise.resolve({ id: '1' }),
+    });
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.category).toBeDefined();
+    expect(data.category.color).toBe('#00FF00');
+    expect(data.category.name).toBe('Test Category');
   });
 });

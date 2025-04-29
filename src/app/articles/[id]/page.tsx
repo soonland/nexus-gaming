@@ -11,10 +11,12 @@ import {
 } from '@mui/material';
 import { useParams, useRouter } from 'next/navigation';
 import { FiArrowLeft } from 'react-icons/fi';
+import { v4 as uuidv4 } from 'uuid';
 
 import { ArticleContent } from '@/components/articles/ArticleContent';
 import { ArticleMeta } from '@/components/articles/ArticleMeta';
 import { RelatedGames } from '@/components/articles/RelatedGames';
+import type { IBadge } from '@/components/common/Hero';
 import { Hero } from '@/components/common/Hero';
 import { useArticle } from '@/hooks/useArticle';
 import dayjs from '@/lib/dayjs';
@@ -66,20 +68,22 @@ const ArticlePage = () => {
     platforms: game.platforms,
   }));
 
+  const badges: IBadge[] = [];
+  // Add platform badges
+  if (article.category) {
+    badges.push({
+      id: uuidv4(),
+      platform: {
+        id: article.category.id,
+        name: article.category.name,
+        color: article.category.color,
+      },
+    });
+  }
   return (
     <Box>
       <Hero
-        badges={
-          article.category
-            ? [
-                {
-                  id: crypto.randomUUID(),
-                  label: article.category.name,
-                  color: 'primary',
-                },
-              ]
-            : []
-        }
+        badges={badges}
         image={article.heroImage || article.games[0]?.coverImage || undefined}
         metadata={
           <ArticleMeta

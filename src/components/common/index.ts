@@ -1,4 +1,5 @@
 export * from './AnimatedCounter';
+export * from './CategoryChip';
 export * from './ColorDot';
 export * from './DateDisplay';
 export * from './Hero';

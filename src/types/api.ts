@@ -11,12 +11,14 @@ export type ArticleStatus =
 export interface ICategoryData {
   id: string;
   name: string;
+  color?: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface ICategoryForm {
   name: string;
+  color?: string | null;
 }
 
 export type GameGenre =
@@ -58,6 +60,7 @@ export interface IPlatformData {
   id: string;
   name: string;
   manufacturer: string;
+  color?: string | null;
   releaseDate?: string | null;
   createdAt: string;
   updatedAt: string;
@@ -66,6 +69,7 @@ export interface IPlatformData {
 export interface IPlatformForm {
   name: string;
   manufacturer: string;
+  color?: string | null;
   releaseDate?: string | null;
 }
 

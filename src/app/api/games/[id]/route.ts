@@ -21,11 +21,14 @@ export async function GET(
         genre: true,
         createdAt: true,
         updatedAt: true,
+        developerId: true,
+        publisherId: true,
         platforms: {
           select: {
             id: true,
             name: true,
             manufacturer: true,
+            color: true,
             releaseDate: true,
             createdAt: true,
             updatedAt: true,
@@ -51,6 +54,7 @@ export async function GET(
               select: {
                 id: true,
                 name: true,
+                color: true,
               },
             },
           },
@@ -172,6 +176,7 @@ export async function PATCH(
             id: true,
             name: true,
             manufacturer: true,
+            color: true,
             releaseDate: true,
             createdAt: true,
             updatedAt: true,

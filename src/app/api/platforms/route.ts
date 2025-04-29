@@ -23,6 +23,7 @@ export async function GET(request: Request) {
           id: true,
           name: true,
           manufacturer: true,
+          color: true,
           releaseDate: true,
           createdAt: true,
           updatedAt: true,
@@ -70,7 +71,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as IPlatformForm;
-    const { name, manufacturer, releaseDate } = body;
+    const { name, manufacturer, color, releaseDate } = body;
 
     if (!name || !manufacturer) {
       return NextResponse.json(
@@ -83,12 +84,14 @@ export async function POST(request: Request) {
       data: {
         name,
         manufacturer,
+        color,
         releaseDate: releaseDate ? new Date(releaseDate) : null,
       },
       select: {
         id: true,
         name: true,
         manufacturer: true,
+        color: true,
         releaseDate: true,
         createdAt: true,
         updatedAt: true,

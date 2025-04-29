@@ -13,7 +13,7 @@ type GameWithDetails = Pick<
 type ArticleWithRelations = Article & {
   heroImage?: string | null;
   user: Pick<User, 'username'>;
-  category: Pick<Category, 'name'> | null;
+  category: Pick<Category, 'id' | 'name' | 'color'> | null;
   games: GameWithDetails[];
 };
 

@@ -14,13 +14,14 @@ import {
   defaultActions,
 } from '@/components/admin';
 import { useNotifier } from '@/components/common/Notifier';
+import { PlatformChip } from '@/components/common/PlatformChip';
 import { usePlatforms } from '@/hooks/usePlatforms';
 import dayjs from '@/lib/dayjs';
 import type { IPlatformData } from '@/types/api';
 
 type PlatformSortField = keyof Pick<
   IPlatformData,
-  'name' | 'manufacturer' | 'releaseDate' | 'createdAt' | 'updatedAt'
+  'name' | 'manufacturer' | 'releaseDate' | 'createdAt' | 'updatedAt' | 'color'
 >;
 
 interface IDeleteDialogState {
@@ -152,6 +153,7 @@ const AdminPlatformsPage = () => {
             {
               field: 'name',
               headerName: 'Nom',
+              render: row => <PlatformChip platform={row} variant='filled' />,
               sortable: true,
             },
             {

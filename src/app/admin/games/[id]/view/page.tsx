@@ -108,6 +108,7 @@ const GameViewPage = ({ params }: IPageProps) => {
             releaseDate: p.releaseDate ? dayjs(p.releaseDate).format() : null,
             createdAt: dayjs(p.createdAt).format(),
             updatedAt: dayjs(p.updatedAt).format(),
+            color: p.color,
           })),
           createdAt: dayjs(game.createdAt).format(),
           updatedAt: dayjs(game.updatedAt).format(),

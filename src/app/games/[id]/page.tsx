@@ -85,8 +85,11 @@ const GamePage = () => {
     badges.push(
       ...game.platforms.map(platform => ({
         id: uuidv4(),
-        label: platform.name,
-        color: 'info' as const,
+        platform: {
+          id: platform.id,
+          name: platform.name,
+          color: platform.color,
+        },
       }))
     );
   }
