@@ -1,6 +1,7 @@
 import type { ArticleStatus, Role } from '@prisma/client';
 import type { Dayjs } from 'dayjs';
 
+import type { IArticleFormData as SharedArticleFormData } from '@/types';
 import type {
   IGameData,
   ICategoryData,
@@ -9,7 +10,13 @@ import type {
 } from '@/types/api';
 
 export interface IArticleWithRelations
-  extends Omit<IArticleData, 'category' | 'games' | 'user'> {
+  extends Omit<
+    IArticleData,
+    'category' | 'games' | 'user' | 'approvalHistory' | 'currentReviewer'
+  > {
+  slug: string;
+  userId: string;
+  currentReviewerId: string | null;
   categoryId: string;
   category: ICategoryData;
   games: IGameData[];
@@ -19,6 +26,13 @@ export interface IArticleWithRelations
     avatarUrl?: string;
     role: Role;
   };
+  currentReviewer?: {
+    id: string;
+    username: string;
+    avatarUrl?: string;
+    role: Role;
+  };
+  approvalHistory?: IApprovalHistoryData[];
 }
 
 export interface IArticleMetadataPanelProps {
@@ -58,17 +72,7 @@ export interface IArticleStatusSelectProps {
   onStatusChange: (status: ArticleStatus, comment?: string) => Promise<void>;
 }
 
-export interface IArticleFormData {
-  title: string;
-  content: string;
-  categoryId: string;
-  gameIds: string[];
-  status: ArticleStatus;
-  publishedAt: string | null;
-  updatedAt: string | null;
-  heroImage: string | null;
-  userId: string;
-}
+export type IArticleFormData = SharedArticleFormData;
 
 export interface IArticleHeroImageProps {
   heroImage: string | null;

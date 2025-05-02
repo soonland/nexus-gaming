@@ -18,6 +18,8 @@ import { GameCard } from '@/components/games/GameCard';
 import { GameCardSkeleton } from '@/components/games/GameCardSkeleton';
 import { useArticles } from '@/hooks/useArticles';
 import { useGames } from '@/hooks/useGames';
+import dayjs from '@/lib/dayjs';
+import type { IArticleBasicData } from '@/types/api';
 
 const SectionTitle = ({ children }: { children: React.ReactNode }) => (
   <Typography
@@ -62,6 +64,39 @@ const Home = () => {
   });
 
   const skeletonArray = Array.from({ length: 3 }, (_, index) => index);
+
+  const formattedArticles = articles.map(article => {
+    // Format category dates if they exist
+    const category = article.category
+      ? {
+          ...article.category,
+          createdAt: dayjs(article.category.createdAt).format(),
+          updatedAt: dayjs(article.category.updatedAt).format(),
+        }
+      : undefined;
+
+    // Convert IArticleData to IArticleBasicData
+    const basicArticle: IArticleBasicData = {
+      id: article.id,
+      title: article.title,
+      content: article.content,
+      heroImage: article.heroImage || undefined,
+      status: article.status,
+      publishedAt: article.publishedAt
+        ? dayjs(article.publishedAt).format()
+        : undefined,
+      category,
+      user: article.user,
+      games: article.games.map(game => ({
+        id: game.id,
+        title: game.title,
+      })),
+      createdAt: dayjs(article.createdAt).format(),
+      updatedAt: dayjs(article.updatedAt).format(),
+    };
+
+    return basicArticle;
+  });
 
   return (
     <Box sx={{ pb: 8 }}>
@@ -130,11 +165,14 @@ const Home = () => {
           <Grid container spacing={4}>
             {articlesLoading
               ? skeletonArray.map(index => (
-                  <Grid key={`skeleton-${index}`} size={4}>
+                  <Grid
+                    key={`skeleton-${index}`}
+                    size={{ xs: 12, sm: 6, md: 4 }}
+                  >
                     <ArticleCardSkeleton />
                   </Grid>
                 ))
-              : articles.map(article => (
+              : formattedArticles.map(article => (
                   <Grid key={article.id} size={{ xs: 12, sm: 6, md: 4 }}>
                     <ArticleCard article={article} />
                   </Grid>
@@ -151,7 +189,10 @@ const Home = () => {
           <Grid container spacing={4}>
             {gamesLoading
               ? skeletonArray.map(index => (
-                  <Grid key={`skeleton-${index}`} size={4}>
+                  <Grid
+                    key={`skeleton-${index}`}
+                    size={{ xs: 12, sm: 6, md: 4 }}
+                  >
                     <GameCardSkeleton />
                   </Grid>
                 ))

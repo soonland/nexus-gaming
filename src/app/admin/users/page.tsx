@@ -136,8 +136,6 @@ const AdminUsersPage = () => {
         />
       )}
       <AdminList
-        emptyMessage='Aucun utilisateur trouvé'
-        isEmpty={!response?.users.length}
         isLoading={isLoading || deleteUser.isPending || toggleStatus.isPending}
       >
         <AdminDataTable<IUserData, UserSortField>

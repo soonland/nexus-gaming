@@ -13,12 +13,7 @@ const EditCategoryPage = () => {
 
   return (
     <AdminPageLayout title='Modifier la catégorie'>
-      <AdminList
-        emptyMessage='Catégorie introuvable'
-        error={error}
-        isEmpty={!category}
-        isLoading={isLoading}
-      >
+      <AdminList error={error} isLoading={isLoading}>
         {category && (
           <CategoryForm
             initialData={{

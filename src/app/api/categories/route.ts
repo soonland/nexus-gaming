@@ -3,6 +3,9 @@ import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/jwt';
 import prisma from '@/lib/prisma';
 
+// Hex color format validation regex
+const HEX_COLOR_REGEX = /^#[0-9A-F]{6}$/i;
+
 export async function GET() {
   try {
     const categories = await prisma.category.findMany({
@@ -47,6 +50,14 @@ export async function POST(request: Request) {
 
     if (!name) {
       return NextResponse.json({ error: 'Name is required' }, { status: 400 });
+    }
+
+    // Validate color format if provided
+    if (color !== null && color !== undefined && !HEX_COLOR_REGEX.test(color)) {
+      return NextResponse.json(
+        { error: 'Invalid color format' },
+        { status: 400 }
+      );
     }
 
     const category = await prisma.category.create({

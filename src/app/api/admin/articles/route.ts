@@ -9,6 +9,15 @@ import type { ArticleForm } from '@/types';
 const ADMIN_ROLES = [Role.SENIOR_EDITOR, Role.ADMIN, Role.SYSADMIN] as const;
 type AdminRole = (typeof ADMIN_ROLES)[number];
 
+const generateSlug = (title: string): string => {
+  return title
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+};
+
 const isAdminRole = (role?: Role): role is AdminRole => {
   return !!role && ADMIN_ROLES.includes(role as AdminRole);
 };
@@ -27,12 +36,20 @@ export async function GET(request: Request) {
     const limit = parseInt(searchParams.get('limit') ?? '10');
     const search = searchParams.get('search') ?? '';
     const status = searchParams.get('status') ?? '';
+    const includeDeleted = searchParams.get('includeDeleted') === 'true';
 
     // Calculate pagination
     const skip = (page - 1) * limit;
 
     // Build base where clause with search and status independently
     const baseWhere: Prisma.ArticleWhereInput = {
+      // N'exclure les articles DELETED que si on ne les demande pas spécifiquement
+      // et que includeDeleted est false
+      ...(!includeDeleted && status !== 'DELETED'
+        ? {
+            NOT: { status: 'DELETED' as ArticleStatus },
+          }
+        : {}),
       ...(search
         ? {
             OR: [
@@ -80,6 +97,8 @@ export async function GET(request: Request) {
           title: true,
           content: true,
           status: true,
+          previousStatus: true,
+          deletedAt: true,
           heroImage: true,
           publishedAt: true,
           createdAt: true,
@@ -88,6 +107,7 @@ export async function GET(request: Request) {
             select: {
               id: true,
               name: true,
+              color: true,
               createdAt: true,
               updatedAt: true,
             },
@@ -146,8 +166,8 @@ export async function GET(request: Request) {
       articles,
       pagination: {
         total: totalResults,
-        pages: Math.ceil(totalResults / limit),
-        page,
+        pages: Math.max(1, Math.ceil(totalResults / limit)),
+        page: totalResults === 0 ? 1 : page,
         limit,
       },
     });
@@ -173,10 +193,11 @@ export async function POST(request: Request) {
       title,
       content,
       categoryId,
-      status,
+      status = 'DRAFT',
       publishedAt,
       gameIds = [],
       heroImage,
+      userId = user.id,
     } = data;
 
     if (!title || !content || !categoryId) {
@@ -190,11 +211,12 @@ export async function POST(request: Request) {
       data: {
         title,
         content,
-        status: status || 'DRAFT',
+        status,
         publishedAt: publishedAt ? new Date(publishedAt) : null,
         categoryId,
-        userId: user.id,
+        userId,
         heroImage,
+        slug: generateSlug(title),
         games: {
           connect: gameIds.map(id => ({ id })),
         },
@@ -204,6 +226,8 @@ export async function POST(request: Request) {
         title: true,
         content: true,
         status: true,
+        previousStatus: true,
+        deletedAt: true,
         heroImage: true,
         publishedAt: true,
         createdAt: true,
@@ -212,6 +236,7 @@ export async function POST(request: Request) {
           select: {
             id: true,
             name: true,
+            color: true,
             createdAt: true,
             updatedAt: true,
           },

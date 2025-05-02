@@ -91,6 +91,7 @@ enum GameGenre {
 
 model Game {
   id          String    @id @default(uuid())
+  slug        String    @unique // Slug for idempotent generation
   title       String    @unique
   description String?
   coverImage  String?
@@ -119,10 +120,13 @@ model Platform {
 
 model Article {
   id                String                    @id @default(uuid())
+  slug              String                    @unique // Slug for idempotent generation
   title             String
   content           String
   heroImage         String?
   status            ArticleStatus             @default(DRAFT)
+  previousStatus    ArticleStatus?            // Pour restaurer au statut précédent
+  deletedAt         DateTime?                 // Pour suivre la date de mise à la corbeille
   publishedAt       DateTime?
   category          Category                  @relation(fields: [categoryId], references: [id])
   categoryId        String
@@ -161,11 +165,12 @@ enum ApprovalAction {
   PUBLISHED      // Publié
   ARCHIVED       // Archivé
   DELETED        // Supprimé
+  RESTORED       // Restauré de la corbeille
 }
 
 model ArticleApprovalHistory {
   id            String         @id @default(uuid())
-  article       Article        @relation(fields: [articleId], references: [id])
+  article       Article        @relation(fields: [articleId], references: [id], onDelete: Cascade)
   articleId     String
   fromStatus    ArticleStatus
   toStatus      ArticleStatus

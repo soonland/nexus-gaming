@@ -33,9 +33,12 @@ export type GameGenre =
   | 'SIMULATION'
   | 'FIGHTING';
 
-export interface IGameData {
+export interface IGameBasicData {
   id: string;
   title: string;
+}
+
+export interface IGameData extends IGameBasicData {
   description?: string;
   coverImage?: string;
   releaseDate?: string;
@@ -73,20 +76,31 @@ export interface IPlatformForm {
   releaseDate?: string | null;
 }
 
-export interface IArticleData {
+// Base interface for minimal article data
+export interface IArticleBasicData {
   id: string;
   title: string;
   content: string;
-  heroImage?: string;
+  heroImage?: string | null;
   status: ArticleStatus;
   publishedAt?: string;
-  category: ICategoryData;
+  category?: ICategoryData;
   user: {
     id: string;
     username: string;
     avatarUrl?: string;
     role: Role;
   };
+  games: IGameBasicData[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Full article interface with all fields
+export interface IArticleData extends IArticleBasicData {
+  previousStatus?: ArticleStatus;
+  deletedAt?: string;
+  category: ICategoryData;
   currentReviewer?: {
     id: string;
     username: string;
@@ -95,8 +109,6 @@ export interface IArticleData {
   };
   approvalHistory?: IApprovalHistoryData[];
   games: IGameData[];
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface IApprovalHistoryData {
@@ -127,9 +139,19 @@ export type ArticleForm = {
 
 export type ArticleStatusUpdate = {
   status: ArticleStatus;
+  previousStatus?: ArticleStatus;
   comment?: string;
   reviewerId?: string;
-};
+} & (
+  | {
+      status: 'DELETED';
+      previousStatus: ArticleStatus;
+    }
+  | {
+      status: Exclude<ArticleStatus, 'DELETED'>;
+      previousStatus?: ArticleStatus;
+    }
+);
 
 export type GameForm = {
   title: string;

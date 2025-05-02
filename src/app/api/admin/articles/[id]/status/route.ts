@@ -16,6 +16,8 @@ const getApprovalAction = (
   if (toStatus === 'PUBLISHED') return 'APPROVED';
   if (toStatus === 'NEEDS_CHANGES') return 'CHANGES_NEEDED';
   if (toStatus === 'ARCHIVED') return 'ARCHIVED';
+  if (toStatus === 'DELETED') return 'DELETED';
+  if (fromStatus === 'DELETED') return 'RESTORED';
   return 'SUBMITTED'; // Default for other transitions
 };
 
@@ -28,7 +30,18 @@ const statusUpdateSchema = z
       'NEEDS_CHANGES',
       'PUBLISHED',
       'ARCHIVED',
+      'DELETED',
     ]),
+    previousStatus: z
+      .enum([
+        'DRAFT',
+        'PENDING_APPROVAL',
+        'NEEDS_CHANGES',
+        'PUBLISHED',
+        'ARCHIVED',
+        'DELETED',
+      ])
+      .optional(),
     comment: z.string().optional(),
     reviewerId: z.string().optional(),
   })
@@ -38,6 +51,13 @@ const statusUpdateSchema = z
         code: z.ZodIssueCode.custom,
         message: 'Comment is required when requesting changes',
         path: ['comment'],
+      });
+    }
+    if (data.status === 'DELETED' && !data.previousStatus) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Previous status is required when moving to trash',
+        path: ['previousStatus'],
       });
     }
   });
@@ -91,7 +111,9 @@ export async function PATCH(
       !canTransitionToStatus(
         article.status as ArticleStatus,
         newStatus as ArticleStatus,
-        user.role
+        user.role,
+        { userId: article.userId },
+        user.id
       )
     ) {
       return new Response(
@@ -132,6 +154,11 @@ export async function PATCH(
         where: { id: article.id },
         data: {
           status: newStatus,
+          previousStatus:
+            newStatus === 'DELETED'
+              ? article.status // When moving to trash, save current status
+              : null, // When restoring or other changes, clear previousStatus
+          deletedAt: newStatus === 'DELETED' ? new Date() : null,
           currentReviewerId: reviewerId,
           publishedAt:
             newStatus === 'PUBLISHED' ? new Date() : article.publishedAt,

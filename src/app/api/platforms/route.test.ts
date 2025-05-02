@@ -25,6 +25,7 @@ type PlatformMock = Prisma.PlatformGetPayload<{
   select: {
     id: true;
     name: true;
+    color: true;
     manufacturer: true;
     releaseDate: true;
     createdAt: true;
@@ -45,6 +46,7 @@ const fixedDate = new Date('2025-04-23T23:30:01.222Z');
 const basePlatform = {
   id: 'plat-1',
   name: 'Test Platform',
+  color: '#FF0000',
   manufacturer: 'Test Manufacturer',
   releaseDate: fixedDate,
   createdAt: fixedDate,
@@ -78,6 +80,7 @@ describe('GET /api/platforms', () => {
       expect.objectContaining({
         id: expect.any(String),
         name: 'Test Platform',
+        color: '#FF0000',
         manufacturer: 'Test Manufacturer',
         releaseDate: fixedDate.toISOString(),
         createdAt: expect.any(String),
@@ -102,6 +105,7 @@ describe('GET /api/platforms', () => {
       select: {
         id: true,
         name: true,
+        color: true,
         manufacturer: true,
         releaseDate: true,
         createdAt: true,
@@ -146,6 +150,7 @@ describe('GET /api/platforms', () => {
       select: {
         id: true,
         name: true,
+        color: true,
         manufacturer: true,
         releaseDate: true,
         createdAt: true,
@@ -219,9 +224,11 @@ describe('POST /api/platforms', () => {
     vi.clearAllMocks();
   });
 
+  // Helper function for creating requests
   const createRequest = (
     name: string,
     manufacturer: string,
+    color?: string,
     releaseDate?: string
   ): Request =>
     new Request('http://localhost/api/platforms', {
@@ -232,7 +239,8 @@ describe('POST /api/platforms', () => {
       body: JSON.stringify({
         name,
         manufacturer,
-        releaseDate,
+        color: color ?? undefined,
+        releaseDate: releaseDate ?? undefined,
       }),
     });
 
@@ -241,6 +249,8 @@ describe('POST /api/platforms', () => {
       ...basePlatform,
       name: 'New Platform',
       manufacturer: 'New Manufacturer',
+      color: '#FF0000',
+      releaseDate: fixedDate,
       games: [],
     };
 
@@ -250,6 +260,7 @@ describe('POST /api/platforms', () => {
     const request = createRequest(
       'New Platform',
       'New Manufacturer',
+      '#FF0000',
       fixedDate.toISOString()
     );
     const response = await POST(request);
@@ -260,6 +271,7 @@ describe('POST /api/platforms', () => {
       expect.objectContaining({
         id: expect.any(String),
         name: 'New Platform',
+        color: '#FF0000',
         manufacturer: 'New Manufacturer',
         releaseDate: expect.any(String),
         createdAt: expect.any(String),
@@ -269,12 +281,14 @@ describe('POST /api/platforms', () => {
     expect(createMock).toHaveBeenCalledWith({
       data: {
         name: 'New Platform',
+        color: '#FF0000',
         manufacturer: 'New Manufacturer',
         releaseDate: fixedDate,
       },
       select: {
         id: true,
         name: true,
+        color: true,
         manufacturer: true,
         releaseDate: true,
         createdAt: true,
@@ -294,6 +308,7 @@ describe('POST /api/platforms', () => {
     const newPlatform = {
       ...basePlatform,
       name: 'New Platform',
+      color: null,
       manufacturer: 'New Manufacturer',
       releaseDate: null,
       games: [],
@@ -312,6 +327,7 @@ describe('POST /api/platforms', () => {
       data: {
         name: 'New Platform',
         manufacturer: 'New Manufacturer',
+        color: undefined,
         releaseDate: null,
       },
       select: expect.any(Object),
@@ -348,6 +364,7 @@ describe('POST /api/platforms', () => {
     const request = createRequest(
       'New Platform',
       'New Manufacturer',
+      '#FF0000',
       'invalid-date'
     );
     const response = await POST(request);
@@ -368,7 +385,7 @@ describe('POST /api/platforms', () => {
     const request = createRequest(
       'New Platform',
       'New Manufacturer',
-      fixedDate.toISOString()
+      '#FF0000'
     );
     const response = await POST(request);
     const data = await response.json();

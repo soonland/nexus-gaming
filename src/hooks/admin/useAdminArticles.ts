@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 
 import type { IArticleWithRelations } from '@/app/admin/articles/_components/form/types';
-import type { IArticleData, ArticleForm, ArticleStatusUpdate } from '@/types';
+import type { IArticleData, ArticleForm, IArticleStatusUpdate } from '@/types';
 
 interface IAdminArticleParams {
   page?: number;
@@ -12,6 +12,7 @@ interface IAdminArticleParams {
   status?: ArticleStatus;
   sortField?: string;
   sortOrder?: 'asc' | 'desc';
+  includeDeleted?: boolean;
 }
 
 interface IPaginatedArticlesResponse {
@@ -56,11 +57,17 @@ const adminArticlesApi = {
     await axios.delete(`/api/admin/articles/${id}`);
   },
 
-  updateStatus: async (id: string, status: ArticleStatus, comment?: string) => {
+  updateStatus: async (
+    id: string,
+    status: ArticleStatus,
+    comment?: string,
+    previousStatus?: string
+  ) => {
     const response = await axios.patch(`/api/admin/articles/${id}/status`, {
       status,
       comment,
-    } as ArticleStatusUpdate);
+      previousStatus,
+    } as IArticleStatusUpdate);
     return response.data as IArticleData;
   },
 };
@@ -143,11 +150,13 @@ export function useAdminArticles(params: IAdminArticleParams = {}) {
       id,
       status,
       comment,
+      previousStatus,
     }: {
       id: string;
       status: ArticleStatus;
       comment?: string;
-    }) => adminArticlesApi.updateStatus(id, status, comment),
+      previousStatus?: ArticleStatus;
+    }) => adminArticlesApi.updateStatus(id, status, comment, previousStatus),
     onSuccess: (_, { id }) => {
       // Only refetch the current query
       queryClient.refetchQueries({

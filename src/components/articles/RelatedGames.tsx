@@ -4,12 +4,12 @@ import { Box, Grid, Stack, Typography } from '@mui/material';
 import dayjs from 'dayjs';
 import { FaGamepad } from 'react-icons/fa';
 
-import type { IGameData } from '@/types';
+import type { GameData } from '@/types';
 
 import { GameCardMiniature } from '../games/GameCardMiniature';
 
 interface IRelatedGamesProps {
-  games: Array<Partial<IGameData>>;
+  games: Array<Partial<GameData>>;
   title?: string;
   showIcon?: boolean;
   iconSize?: number;

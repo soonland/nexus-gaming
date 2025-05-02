@@ -17,7 +17,7 @@ import { useNotifier } from '@/components/common/Notifier';
 import { PlatformChip } from '@/components/common/PlatformChip';
 import { usePlatforms } from '@/hooks/usePlatforms';
 import dayjs from '@/lib/dayjs';
-import type { IPlatformData } from '@/types/api';
+import type { IPlatformData } from '@/types';
 
 type PlatformSortField = keyof Pick<
   IPlatformData,
@@ -89,8 +89,6 @@ const AdminPlatformsPage = () => {
       platform.manufacturer.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const isEmpty = !isLoading && filteredPlatforms.length === 0;
-
   const handleDelete = async () => {
     if (deleteDialog.platformId) {
       try {
@@ -142,12 +140,7 @@ const AdminPlatformsPage = () => {
           onPageSizeChange={handlePageSizeChange}
         />
       )}
-      <AdminList
-        emptyMessage='Aucune plateforme trouvée'
-        error={error}
-        isEmpty={isEmpty}
-        isLoading={isLoading}
-      >
+      <AdminList error={error} isLoading={isLoading}>
         <AdminDataTable<IPlatformData, PlatformSortField>
           columns={[
             {

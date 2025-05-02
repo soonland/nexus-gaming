@@ -143,41 +143,57 @@
     };
     ```
 
-  - Séparation claire des responsabilités :
-    - Vérification d'accès à l'API
-    - Vérification des permissions de création
-    - Validation des attributions de rôle
-  - Gestion spéciale pour SYSADMIN
+## 30 Apr 2025
 
-- Tests exhaustifs de l'API users :
+### Article Management Improvements
 
-  - Tests de pagination :
+- Filtres avancés pour la gestion des articles :
 
-    - Validation des paramètres page/limit
-    - Gestion des valeurs négatives et extrêmes
-    - Calcul correct du nombre de pages
-    - Limitation automatique à 100 résultats
+  - Ajout d'un filtre par statut avec gestion des permissions
+  - Interface adaptative selon le rôle de l'utilisateur
+  - Intégration avec le système existant de permissions
+  - Support complet de tous les statuts d'articles
 
-  - Tests de recherche et filtres :
+- Aspects techniques :
+  - Extension du composant AdminFilters pour le support des statuts
+  - Filtrage basé sur les permissions dans useAdminArticles
+  - Conservation de l'historique de statut pour l'audit
+  - Optimisation des requêtes avec filtres combinés
+  - Gestion des statuts spéciaux (DELETED) via switch séparé pour Senior Editors
 
-    - Recherche insensible à la casse
-    - Recherche sur username et email
-    - Filtres par rôle avec validation
-    - Filtres par statut (actif/inactif)
-    - Combinaison de plusieurs critères
-    - Validation des requêtes Prisma générées
+## 1 May 2025
 
-  - Tests de contrôle d'accès :
+### Type System and Data Management Improvements
 
-    - Refus pour utilisateurs non autorisés
-    - Vérification par niveau hiérarchique
-    - Tests de création par rôle
-    - Validation des restrictions de rôle
+- Refonte des interfaces pour une meilleure cohérence des données :
 
-  - Tests de validation et erreurs :
-    - Validation des champs requis
-    - Format d'email invalide
-    - Doublons username/email
-    - Erreurs de base de données
-    - Échecs de transaction
-    - Messages d'erreur appropriés
+  - Mise à jour de ICategoryData :
+    ```typescript
+    interface ICategoryData {
+      id: string;
+      name: string;
+      color?: string | null;
+      createdAt: string; // Format standardisé des dates
+      updatedAt: string;
+    }
+    ```
+  - Interface simplifiée IArticleBasicData pour les vues en liste
+  - Séparation claire entre interfaces complètes et basiques
+  - Gestion unifiée des champs optionnels (null vs undefined)
+
+- Amélioration des hooks et composants :
+
+  - Correction de useCategories avec les bonnes interfaces
+  - Mise à jour CategoryChip et stories :
+    - Props typées correctement
+    - Control des tailles standardisé
+  - Conversion cohérente des dates dans tous les composants
+  - Gestion plus robuste des données partielles
+
+- Points techniques :
+  - Migration vers des types plus stricts
+  - Export/import des types optimisés
+  - Standardisation des formats de date
+  - Meilleure gestion des valeurs nullables
+  - Types réutilisables pour les données partielles
+  - Conversion automatique des dates au niveau des hooks

@@ -25,6 +25,7 @@ type PlatformMock = Prisma.PlatformGetPayload<{
   select: {
     id: true;
     name: true;
+    color: true;
     manufacturer: true;
     releaseDate: true;
     createdAt: true;
@@ -46,6 +47,7 @@ const fixedDate = new Date('2025-04-23T23:30:01.222Z');
 const basePlatform = {
   id: 'plat-1',
   name: 'Test Platform',
+  color: '#FF0000',
   manufacturer: 'Test Manufacturer',
   releaseDate: fixedDate,
   createdAt: fixedDate,
@@ -79,6 +81,7 @@ describe('GET /api/platforms/[id]', () => {
       expect.objectContaining({
         id: expect.any(String),
         name: 'Test Platform',
+        color: '#FF0000',
         manufacturer: 'Test Manufacturer',
         releaseDate: fixedDate.toISOString(),
         createdAt: expect.any(String),
@@ -98,6 +101,7 @@ describe('GET /api/platforms/[id]', () => {
       select: {
         id: true,
         name: true,
+        color: true,
         manufacturer: true,
         releaseDate: true,
         createdAt: true,

@@ -1,35 +1,29 @@
 /* eslint-disable no-console */
-import { PrismaClient, Role } from '@prisma/client';
-import { hash } from 'bcrypt';
-const prisma = new PrismaClient();
+import { seedUsers } from './users';
 
-const SALT_ROUNDS = 10;
+// Configuration des utilisateurs administrateurs
+const adminConfig = {
+  admin: {
+    count: 2, // 2 admins + 2 sysadmins (défini par le template)
+    enabled: true,
+  },
+  editorial: {
+    enabled: false, // Les éditeurs sont générés ailleurs
+  },
+  moderation: {
+    enabled: false, // Les modérateurs sont générés ailleurs
+  },
+  regular: {
+    count: 10, // 10 utilisateurs réguliers
+    enabled: true, // Les utilisateurs réguliers sont générés avec les admins
+  },
+};
 
 export const seedAdmin = async () => {
   try {
-    // Check if SYSADMIN already exists
-    const existingAdmin = await prisma.user.findFirst({
-      where: { role: Role.SYSADMIN },
-    });
-
-    if (!existingAdmin) {
-      // Create initial SYSADMIN user with hashed password
-      const hashedPassword = await hash('Adm1nP@ss123!', SALT_ROUNDS);
-      await prisma.user.create({
-        data: {
-          username: 'sysadmin',
-          email: 'sysadmin@nx-gaming.com',
-          password: hashedPassword, // This should be changed after first login
-          role: Role.SYSADMIN,
-          isActive: true,
-        },
-      });
-      console.log('✅ Initial SYSADMIN user created');
-    } else {
-      console.log('ℹ️ SYSADMIN user already exists');
-    }
+    await seedUsers(adminConfig);
   } catch (error) {
-    console.error('Error seeding admin:', error);
+    console.error('Error seeding admin team:', error);
     throw error;
   }
 };

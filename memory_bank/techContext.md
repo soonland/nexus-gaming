@@ -1,170 +1,195 @@
 # Technical Context
 
-## Frontend Architecture
+## Architecture Patterns
 
-### Components Organization
+### Next.js App Router
 
-- Base components for reusability
-- Integration components for business logic
-- Clear separation of concerns between UI and data management
-- Form components with validation
-- Protected routes with role-based access
-- Shared layout components
+L'application utilise le nouveau App Router de Next.js 13+, avec une
+organisation claire des fichiers:
 
-### State Management
+```
+src/
+  app/              # Routes et pages
+    (auth)/         # Routes protégées
+    api/           # API routes
+  components/      # Composants React réutilisables
+  hooks/          # Custom hooks React
+  lib/            # Utilitaires et services
+  types/          # Types TypeScript
+```
 
-- TanStack Query v5 for server state
-- Local state for UI interactions
-- Proper loading state management
-- Optimistic updates for better UX
-- Form state with validation
-- Authentication context
+### API Design
 
-### Type Safety
+Les endpoints API suivent une structure REST classique, avec quelques
+adaptations pour Next.js :
 
-- TypeScript interfaces for components props
-- API response typing
-- Prisma generated types
-- Type guards for runtime validation
-- Zod schema validation
-- Route params typing
-
-## Backend Architecture
-
-### API Routes
-
-- RESTful endpoints
-- Clear error handling
-- Resource-based URLs
-- Proper HTTP methods usage (GET, PATCH, POST)
-- Role-based access control
-- Input validation
-
-### Authentication & Authorization
-
-- JWT-based authentication
-- Per-resource authorization checks
-- User context handling
-- Role-based permissions
-- Session management
-- Password policies
-
-### File Upload
-
-- Cloudinary integration
-- Image optimization
-- File type validation
-- Size limits
-- Progress tracking
-
-## Database Design
-
-### Prisma Schema
-
-- Proper relation handling
-- Type generation
-- Schema validation
-- Cascade operations
-- Soft delete patterns
-- Indexing strategy
-
-### Models
-
-```prisma
-model User {
-  id                String              @id @default(cuid())
-  email             String              @unique
-  firstName         String?
-  lastName          String?
-  role              Role                @default(USER)
-  password          String
-  lastPasswordChange DateTime           @default(now())
-  articles          Article[]
-  notifications     SystemNotification[]
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
-}
-
-model Article {
-  id          String    @id @default(cuid())
-  title       String
-  content     String
-  status      Status    @default(DRAFT)
-  authorId    String
-  author      User      @relation(fields: [authorId], references: [id])
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-}
-
-model SystemNotification {
-  id        String      @id @default(cuid())
-  userId    String
-  type      NotificationType
-  level     String
-  title     String
-  message   String
-  isRead    Boolean     @default(false)
-  data      Json?
-  expiresAt DateTime?
-  createdAt DateTime    @default(now())
-  user      User        @relation(fields: [userId], references: [id])
+```typescript
+// Route handler moderne avec API route handlers de Next.js 13+
+export async function GET(request: Request) {
+  const searchParams = new URL(request.url).searchParams;
+  // ...
+  return NextResponse.json({ data });
 }
 ```
 
-## Libraries and Tools
+### Prisma ORM
 
-### Core Dependencies
+Prisma est utilisé comme ORM avec une configuration adaptée au projet:
 
-- Next.js 14+ (App Router)
-- MUI (Material UI)
-- TanStack Query v5
-- Prisma ORM
-- React Icons
-- React Hook Form
-- Zod
-- Cloudinary
-- JWT
-- bcrypt
+- Schema descriptif dans `prisma/schema.prisma`
+- Migrations versionnées dans `prisma/migrations`
+- Client généré avec types TypeScript
+- Helpers custom pour transactions et relations
 
-### Development Tools
+## Conventions de Code
 
-- TypeScript
-- ESLint
-- Prettier
-- Vitest
-- MSW (Mock Service Worker)
-- Storybook
-- Husky
-- lint-staged
+### TypeScript
 
-### Testing Strategy
+- Utilisation strict des types avec `strict: true`
+- Interfaces préfixées par `I` (ex: `IUserData`)
+- Types utilitaires dans des fichiers dédiés
+- Extensions de type pour les props de composants
 
-- Unit tests with Vitest
-- Integration tests
-- API mocking with MSW
-- Component testing
-- E2E with Playwright
+#### Patterns de Typage
 
-## Security Measures
+1. Types de Base vs Types Étendus :
+
+```typescript
+// Type de base pour les données minimales
+interface IArticleBasicData {
+  id: string;
+  title: string;
+  content: string;
+  heroImage?: string | null;
+}
+
+// Type complet avec toutes les données
+interface IArticleData extends IArticleBasicData {
+  category: ICategoryData;
+  user: IUserBasicData;
+  // ...
+}
+```
+
+2. Gestion des Dates :
+
+```typescript
+// Dates sous forme de chaînes ISO dans les interfaces
+interface IEntityData {
+  createdAt: string; // Format ISO
+  updatedAt: string; // Format ISO
+  publishedAt?: string; // Format ISO ou undefined
+}
+
+// Conversion aux points d'entrée/sortie
+const formatEntity = (raw: RawEntity): IEntityData => ({
+  ...raw,
+  createdAt: dayjs(raw.createdAt).format(),
+  updatedAt: dayjs(raw.updatedAt).format(),
+});
+```
+
+3. Gestion des Champs Optionnels :
+
+```typescript
+// Préférer undefined à null pour les champs optionnels dans les interfaces
+interface IFormData {
+  title: string;
+  description?: string; // undefined si non défini
+  heroImage?: string; // undefined si non défini
+}
+
+// Utiliser null pour les champs DB nullable
+interface IDBEntity {
+  title: string;
+  description: string | null; // null en DB
+  heroImage: string | null; // null en DB
+}
+```
+
+4. Types Partiels et Utilitaires :
+
+```typescript
+// Types pour les formulaires
+type ArticleForm = Partial<IArticleData>;
+
+// Types pour les mises à jour
+type ArticleUpdate = {
+  id: string;
+  data: Partial<IArticleData>;
+};
+```
+
+### React Patterns
+
+- Hooks custom pour la logique réutilisable
+- Props fortement typées avec TypeScript
+- Composants atomiques dans `/components/common`
+- Tests unitaires avec Vitest
+
+### Gestion d'État
+
+- React Query pour les données serveur
+- État local avec useState/useReducer
+- Context pour l'état global limité (auth, theme)
+
+### Tests
+
+- Tests unitaires : Vitest + React Testing Library
+- Tests API : Vitest + Supertest
+- Tests E2E : Playwright
+
+## Outils
+
+### Développement
+
+- pnpm comme gestionnaire de paquets
+- ESLint pour le linting
+- Prettier pour le formatage
+- Husky pour les hooks git
+
+### CI/CD
+
+- GitHub Actions pour :
+  - Tests
+  - Lint
+  - Build
+  - Preview deployments
+  - Production deployments
+
+### Monitoring
+
+- Sentry pour le tracking d'erreurs
+- Custom logging pour les events importants
+- Métriques de performance avec Vercel
+
+## Sécurité
 
 ### Authentication
 
-- Password hashing with bcrypt
-- JWT token management
-- Password expiration
-- Multi-factor authentication (planned)
+- NextAuth.js pour l'auth
+- JWT pour les sessions
+- Middleware de protection des routes
+- RBAC pour les permissions
 
-### Authorization
+### API Security
 
-- Role-based access control
-- Resource ownership validation
-- API route protection
-- Frontend route guards
-
-### Data Protection
-
-- Input sanitization
-- XSS prevention
-- CSRF protection
 - Rate limiting
-- File upload validation
+- CORS configuration
+- Input validation
+- Error handling sécurisé
+
+## Performance
+
+### Optimisations Frontend
+
+- Code splitting automatique
+- Image optimization
+- Prefetching intelligent
+- Caching approprié
+
+### Optimisations Backend
+
+- Query caching avec React Query
+- Optimistic updates
+- Debouncing/throttling

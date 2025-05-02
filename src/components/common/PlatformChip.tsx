@@ -1,7 +1,8 @@
 'use client';
 
-import { Chip } from '@mui/material';
+import { Chip, useTheme } from '@mui/material';
 import type { ChipProps } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 
 export interface IPlatformChipProps {
   platform: {
@@ -23,6 +24,8 @@ export const PlatformChip = ({
   onChipClick,
 }: IPlatformChipProps) => {
   const { color } = platform;
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
 
   return (
     <Chip
@@ -30,16 +33,20 @@ export const PlatformChip = ({
       label={platform.name}
       size={size}
       sx={{
-        'color': 'common.white',
         'borderColor': color || undefined,
-        'backgroundColor': color ? `${color}` : undefined,
+        'backgroundColor': color ? alpha(color, isDark ? 0.7 : 1) : undefined,
+        'color': theme.palette.getContrastText(
+          color || theme.palette.info.main
+        ),
         '&:hover': clickable
           ? {
-              backgroundColor: color ? '#000' : undefined,
+              backgroundColor: color
+                ? alpha(color, isDark ? 0.9 : 0.8)
+                : undefined,
             }
           : undefined,
         '& .MuiChip-label': {
-          color: 'common.white',
+          color: 'inherit',
         },
       }}
       variant={variant}

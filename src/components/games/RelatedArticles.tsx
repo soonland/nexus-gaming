@@ -1,13 +1,14 @@
 'use client';
 
 import { Box, Grid, Stack, Typography } from '@mui/material';
+import dayjs from 'dayjs';
 import { FiAlignJustify } from 'react-icons/fi';
 
 import { ArticleCard } from '@/components/articles/ArticleCard';
-import type { IArticleData } from '@/types/api';
+import type { IArticleBasicData } from '@/types/api';
 
 interface IRelatedArticlesProps {
-  articles: Array<Partial<IArticleData>>;
+  articles: Array<Partial<IArticleBasicData>>;
   title?: string;
   showIcon?: boolean;
   iconSize?: number;
@@ -21,6 +22,32 @@ export const RelatedArticles = ({
 }: IRelatedArticlesProps) => {
   if (articles.length === 0) return null;
 
+  // Convert partial articles to complete IArticleBasicData
+  const formattedArticles = articles
+    .map(article => {
+      if (!article?.id || !article.title) return null;
+
+      const formattedArticle: IArticleBasicData = {
+        id: article.id,
+        title: article.title,
+        content: article.content || '',
+        status: article.status || 'PUBLISHED',
+        publishedAt: article.publishedAt,
+        category: article.category,
+        user: {
+          id: article.user?.id || 'unknown',
+          username: article.user?.username || 'Anonyme',
+          role: article.user?.role || 'USER',
+        },
+        games: article.games || [],
+        createdAt: dayjs(article.createdAt).format(),
+        updatedAt: dayjs(article.updatedAt).format(),
+      };
+
+      return formattedArticle;
+    })
+    .filter((article): article is IArticleBasicData => article !== null);
+
   return (
     <Box>
       <Stack alignItems='center' direction='row' spacing={1} sx={{ mb: 2 }}>
@@ -28,37 +55,11 @@ export const RelatedArticles = ({
         <Typography variant='h5'>{title}</Typography>
       </Stack>
       <Grid container spacing={3}>
-        {articles.map(article => {
-          if (!article.id || !article.title) return null;
-
-          return (
-            <Grid key={article.id} size={{ xs: 12, sm: 6, md: 4 }}>
-              <ArticleCard
-                article={{
-                  id: article.id,
-                  title: article.title,
-                  content: article.content || '',
-                  category: article.category || {
-                    id: 'uncategorized',
-                    name: 'Non catégorisé',
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString(),
-                  },
-                  user: article.user || {
-                    id: 'unknown',
-                    username: 'Anonyme',
-                    role: 'USER',
-                  },
-                  status: 'PUBLISHED',
-                  publishedAt: article.publishedAt,
-                  games: article.games || [],
-                  createdAt: article.createdAt || new Date().toISOString(),
-                  updatedAt: article.updatedAt || new Date().toISOString(),
-                }}
-              />
-            </Grid>
-          );
-        })}
+        {formattedArticles.map(article => (
+          <Grid key={article.id} size={{ xs: 12, sm: 6, md: 4 }}>
+            <ArticleCard article={article} />
+          </Grid>
+        ))}
       </Grid>
     </Box>
   );

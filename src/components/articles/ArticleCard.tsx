@@ -11,11 +11,11 @@ import {
 } from '@mui/material';
 import Link from 'next/link';
 
-import { CategoryChip, DateDisplay } from '@/components/common';
-import type { ArticleData } from '@/types';
+import { CategoryChip } from '@/components/common';
+import type { IArticleBasicData } from '@/types/api';
 
 interface IArticleCardProps {
-  article: ArticleData;
+  article: IArticleBasicData;
 }
 
 export const ArticleCard = ({ article }: IArticleCardProps) => {
@@ -57,16 +57,10 @@ export const ArticleCard = ({ article }: IArticleCardProps) => {
               {article.title}
             </Typography>
             <Stack alignItems='center' direction='row' spacing={1}>
-              <CategoryChip
-                category={article.category}
-                size='small'
-                variant='filled'
-              />
-              {article.publishedAt && (
-                <DateDisplay
-                  color='text.secondary'
-                  date={article.publishedAt}
-                  format='calendar'
+              {article.category && (
+                <CategoryChip
+                  bgColor={article.category.color || undefined}
+                  name={article.category.name}
                 />
               )}
             </Stack>

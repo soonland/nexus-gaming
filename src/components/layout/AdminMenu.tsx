@@ -1,4 +1,11 @@
-import { Box, Button, ListItemIcon, Menu, MenuItem } from '@mui/material';
+import {
+  Box,
+  Button,
+  ListItemIcon,
+  Menu,
+  MenuItem,
+  useTheme,
+} from '@mui/material';
 import type { Role } from '@prisma/client';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -11,6 +18,7 @@ import {
   FiMonitor,
   FiUsers,
 } from 'react-icons/fi';
+import { MdDashboard } from 'react-icons/md';
 
 import { useAuth } from '@/hooks/useAuth';
 import { hasSufficientRole } from '@/lib/permissions';
@@ -22,6 +30,7 @@ const ADMIN = 'ADMIN' as Role;
 export const AdminMenu = () => {
   const router = useRouter();
   const { user } = useAuth();
+  const theme = useTheme();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   if (!user || !hasSufficientRole(user.role, EDITOR)) {
@@ -40,7 +49,20 @@ export const AdminMenu = () => {
   return (
     <Box component='span'>
       <Button
-        color='inherit'
+        startIcon={<MdDashboard />}
+        variant='text'
+        onClick={() => router.push('/admin/dashboard')}
+      >
+        Dashboard
+      </Button>
+
+      <Button
+        sx={{
+          'color': theme.palette.text.primary,
+          '&:hover': {
+            color: theme.palette.primary.main,
+          },
+        }}
         variant='text'
         onClick={e => setAnchorEl(e.currentTarget)}
       >

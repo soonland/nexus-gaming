@@ -13,12 +13,7 @@ const EditUserPage = () => {
 
   return (
     <AdminPageLayout title='Modifier un utilisateur'>
-      <AdminList
-        emptyMessage='Utilisateur introuvable'
-        error={error}
-        isEmpty={!user}
-        isLoading={isLoading}
-      >
+      <AdminList error={error} isLoading={isLoading}>
         {user && (
           <UserForm
             initialData={{

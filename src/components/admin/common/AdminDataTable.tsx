@@ -120,7 +120,7 @@ export const AdminDataTable = <TData, TSortField extends keyof TData>({
   return (
     <Paper elevation={0} variant='outlined'>
       <TableContainer>
-        {(selectable || (pages > 1 && onPageChange)) && (
+        {(selectable || onPageChange) && (
           <Stack
             alignItems='center'
             direction='row'

@@ -1,5 +1,9 @@
 import { Role, ArticleStatus } from '@prisma/client';
 
+export const canAccessDashboard = (role?: Role): boolean => {
+  return hasSufficientRole(role, Role.EDITOR);
+};
+
 export const canEditGames = (role?: Role): boolean => {
   return hasSufficientRole(role, Role.EDITOR);
 };
@@ -129,10 +133,9 @@ export const canDeleteArticles = (
     return true;
   }
 
-  // Si l'article et l'userId sont fournis
-  if (article && userId) {
-    // L'utilisateur peut supprimer ses propres articles en DRAFT
-    return article.status === ArticleStatus.DRAFT && article.userId === userId;
+  // Un EDITOR peut supprimer ses propres articles
+  if (role === Role.EDITOR && article && userId) {
+    return article.userId === userId;
   }
 
   return false;
@@ -145,34 +148,56 @@ export const canAssignReviewer = (role?: Role): boolean => {
 export const canTransitionToStatus = (
   fromStatus: ArticleStatus,
   toStatus: ArticleStatus,
-  role?: Role
+  role?: Role,
+  article?: { userId: string },
+  userId?: string
 ): boolean => {
-  // For editors to submit their articles
+  // Les ADMIN peuvent faire n'importe quelle transition
+  if (hasSufficientRole(role, Role.ADMIN)) {
+    return true;
+  }
+
+  // Cas spécial : suppression (peut être fait depuis n'importe quel statut)
+  if (toStatus === 'DELETED') {
+    // On vérifie directement les permissions de suppression
+    return canDeleteArticles(
+      role,
+      { status: fromStatus, userId: article?.userId ?? '' },
+      userId
+    );
+  }
+
+  // Cas spécial : restauration depuis la corbeille
+  if (fromStatus === 'DELETED') {
+    // Seul un SENIOR_EDITOR ou plus peut restaurer
+    return hasSufficientRole(role, Role.SENIOR_EDITOR);
+  }
+
+  // Pour les editors pour soumettre leurs articles
   if (fromStatus === 'DRAFT' && toStatus === 'PENDING_APPROVAL') {
     return hasSufficientRole(role, Role.EDITOR);
   }
 
-  // Other transitions require review permissions
+  // Les autres transitions nécessitent des permissions de review
   if (!canReviewArticles(role)) return false;
 
   const transitions: Record<ArticleStatus, ArticleStatus[]> = {
-    DRAFT: ['PENDING_APPROVAL', 'PUBLISHED'], // Allow direct publishing from DRAFT
+    DRAFT: ['PENDING_APPROVAL', 'PUBLISHED'],
     PENDING_APPROVAL: ['PUBLISHED', 'NEEDS_CHANGES'],
     NEEDS_CHANGES: ['PENDING_APPROVAL'],
     PUBLISHED: ['ARCHIVED'],
     ARCHIVED: [],
-    DELETED: [], // No transitions allowed from DELETED
+    DELETED: [], // Pas de transition possible depuis DELETED (géré plus haut)
   };
 
-  // Get allowed transitions for current status
+  // Récupérer les transitions autorisées pour le statut actuel
   const allowedTransitions = transitions[fromStatus] || [];
 
-  // If transition is not in allowed list, return false
+  // Si la transition n'est pas dans la liste autorisée, retourner false
   if (!allowedTransitions.includes(toStatus)) return false;
 
-  // Special cases
+  // Cas spécial publication
   if (toStatus === 'PUBLISHED' && !canPublishArticles(role)) return false;
-  if (toStatus === 'DELETED' && !canDeleteArticles(role)) return false;
 
   return true;
 };

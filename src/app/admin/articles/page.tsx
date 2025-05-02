@@ -12,10 +12,10 @@ import {
   AdminDataTable,
   AdminDeleteDialog,
   AdminFilters,
-  AdminList,
   AdminPageLayout,
   defaultActions,
 } from '@/components/admin';
+import type { IStatusOption } from '@/components/admin/common/AdminFilters';
 import { ColorDot, useNotifier } from '@/components/common';
 import { useAdminArticles } from '@/hooks/admin/useAdminArticles';
 import { useAuth } from '@/hooks/useAuth';
@@ -24,6 +24,7 @@ import {
   canDeleteArticles,
   canPublishArticles,
   canEditArticle,
+  hasSufficientRole,
 } from '@/lib/permissions';
 import type { IArticleData } from '@/types';
 
@@ -43,6 +44,15 @@ interface IDeleteDialogState {
   isBatchDelete: boolean;
 }
 
+const STATUS_OPTIONS: IStatusOption[] = [
+  { value: 'all', label: 'Tous les statuts' },
+  { value: ArticleStatus.DRAFT, label: 'Brouillon' },
+  { value: ArticleStatus.PENDING_APPROVAL, label: 'En attente' },
+  { value: ArticleStatus.NEEDS_CHANGES, label: 'À modifier' },
+  { value: ArticleStatus.PUBLISHED, label: 'Publié' },
+  { value: ArticleStatus.ARCHIVED, label: 'Archivé' },
+];
+
 const AdminArticlesPage = () => {
   const { user } = useAuth();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -56,6 +66,9 @@ const AdminArticlesPage = () => {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [selectedStatus, setSelectedStatus] = useState<ArticleStatus | 'all'>(
+    'all'
+  );
 
   const {
     articles,
@@ -69,6 +82,7 @@ const AdminArticlesPage = () => {
     search: searchQuery,
     sortField,
     sortOrder,
+    status: selectedStatus === 'all' ? undefined : selectedStatus,
   });
   const { showSuccess, showError } = useNotifier();
 
@@ -82,33 +96,63 @@ const AdminArticlesPage = () => {
     setPage(1); // Reset to first page when changing page size
   };
 
-  const isEmpty = articles.length === 0;
+  // Filtrer les options de statut selon les permissions
+  const filteredStatusOptions = STATUS_OPTIONS.filter(option => {
+    if (option.value === 'all') return true; // Toujours afficher "Tous les statuts"
+    if (hasSufficientRole(user?.role, 'SENIOR_EDITOR')) return true; // Senior Editor voit tout
+
+    if (option.value === ArticleStatus.DELETED) {
+      return false; // Géré par le switch
+    }
+
+    // Pour les autres, vérifier les permissions
+    const mockArticle = {
+      status: option.value as ArticleStatus,
+      userId: user?.id ?? '',
+    };
+    return canEditArticle(user?.role, mockArticle, user?.id);
+  });
+
+  const moveToTrash = async ({
+    id,
+    status,
+  }: {
+    id: string;
+    status: ArticleStatus;
+  }) => {
+    return updateArticleStatus.mutateAsync({
+      id,
+      status: ArticleStatus.DELETED,
+      comment: 'Article déplacé dans la corbeille',
+      previousStatus: status,
+    });
+  };
 
   const handleDelete = async () => {
     if (!deleteDialog.articleId && !deleteDialog.isBatchDelete) return;
 
     try {
       if (deleteDialog.isBatchDelete) {
-        // Marquer tous les articles sélectionnés comme supprimés
+        // Déplacer tous les articles sélectionnés dans la corbeille
         await Promise.all(
-          selectedIds.map(id =>
-            updateArticleStatus.mutateAsync({
-              id,
-              status: ArticleStatus.DELETED,
-              comment: 'Article supprimé',
-            })
-          )
+          selectedIds.map(id => {
+            const article = articles.find(a => a.id === id);
+            if (!article) return Promise.resolve();
+            return moveToTrash({ id, status: article.status });
+          })
         );
-        showSuccess('Articles supprimés avec succès');
+        showSuccess('Articles déplacés dans la corbeille');
         setSelectedIds([]);
       } else if (deleteDialog.articleId) {
-        // Marquer l'article comme supprimé
-        await updateArticleStatus.mutateAsync({
-          id: deleteDialog.articleId,
-          status: ArticleStatus.DELETED,
-          comment: 'Article supprimé',
-        });
-        showSuccess('Article supprimé avec succès');
+        // Déplacer l'article dans la corbeille
+        const article = articles.find(a => a.id === deleteDialog.articleId);
+        if (article) {
+          await moveToTrash({
+            id: deleteDialog.articleId,
+            status: article.status,
+          });
+          showSuccess('Article déplacé dans la corbeille');
+        }
       }
       setDeleteDialog({
         isOpen: false,
@@ -138,6 +182,8 @@ const AdminArticlesPage = () => {
             await updateArticleStatus.mutateAsync({
               id: row.id,
               status: ArticleStatus.PUBLISHED,
+              previousStatus: row.status,
+              comment: 'Article publié',
             });
             showSuccess('Article publié avec succès');
           } catch (error) {
@@ -160,6 +206,8 @@ const AdminArticlesPage = () => {
             await updateArticleStatus.mutateAsync({
               id: row.id,
               status: ArticleStatus.PENDING_APPROVAL,
+              previousStatus: row.status,
+              comment: 'Article dépublié',
             });
             showSuccess('Article mis en attente avec succès');
           } catch (error) {
@@ -210,12 +258,18 @@ const AdminArticlesPage = () => {
       });
 
       await Promise.all(
-        articlesToUpdate.map(id =>
-          updateArticleStatus.mutateAsync({
+        articlesToUpdate.map(id => {
+          const article = articles.find(a => a.id === id);
+          return updateArticleStatus.mutateAsync({
             id,
             status,
-          })
-        )
+            previousStatus: article?.status,
+            comment:
+              status === ArticleStatus.PUBLISHED
+                ? 'Article publié'
+                : 'Article dépublié',
+          });
+        })
       );
 
       showSuccess(
@@ -299,116 +353,132 @@ const AdminArticlesPage = () => {
   return (
     <AdminPageLayout
       actions={
-        <AdminActions
-          createHref='/admin/articles/new'
-          createLabel='Ajouter un article'
-        />
+        <Stack alignItems='center' direction='row'>
+          {hasSufficientRole(user?.role, 'SENIOR_EDITOR') && (
+            <Button
+              component={Link}
+              href='/admin/articles/trash'
+              size='small'
+              startIcon={<FiTrash2 />}
+              sx={{ mr: 2 }}
+              variant='outlined'
+            >
+              Corbeille
+            </Button>
+          )}
+          <AdminActions
+            createHref='/admin/articles/new'
+            createLabel='Ajouter un article'
+          />
+        </Stack>
       }
       title='Gestion des articles'
     >
-      <AdminFilters
-        searchPlaceholder='Rechercher un article...'
-        onSearch={setSearchQuery}
-      />
-      <AdminList
-        emptyMessage='Aucun article trouvé'
-        isEmpty={isEmpty}
-        isLoading={deleteArticle.isPending || isLoading}
-      >
-        <AdminDataTable<IArticleData, ArticleSortField>
-          selectable
-          batchActions={renderBatchActions}
-          columns={[
-            {
-              field: 'title',
-              headerName: 'Titre',
-              sortable: true,
-              width: '150px',
-              render: row => (
-                <Link
-                  className='hover:underline'
-                  href={`/admin/articles/${row.id}/view`}
-                  style={{
-                    color: 'var(--mui-palette-primary-main)',
-                    textDecoration: 'none',
-                  }}
-                >
-                  {row.title}
-                </Link>
-              ),
-            },
-            {
-              field: 'status',
-              headerName: 'Statut',
-              sortable: true,
-              render: row => {
-                const style = getStatusStyle(row.status);
-                return <ColorDot color={style.color} label={style.label} />;
-              },
-              width: '120px',
-            },
-            {
-              field: 'category',
-              headerName: 'Catégorie',
-              render: row => row.category?.name,
-              sortable: true,
-              width: '150px',
-            },
-            {
-              field: 'createdAt',
-              headerName: 'Créé le',
-              render: row => dayjs(row.createdAt).format('LL'),
-              sortable: true,
-              width: '200px',
-            },
-            {
-              field: 'updatedAt',
-              headerName: 'Mis à jour le',
-              render: row => dayjs(row.updatedAt).format('LL'),
-              sortable: true,
-              width: '200px',
-            },
-            {
-              field: 'user',
-              headerName: 'Auteur',
-              render: row => row.user?.username,
-              sortable: true,
-              width: '150px',
-            },
-            {
-              field: 'actions',
-              headerName: 'Actions',
-              render: renderActions,
-              width: '120px',
-            },
-          ]}
-          getRowId={row => row.id}
-          page={page}
-          pageSize={pageSize}
-          pageSizeOptions={PAGE_SIZE_OPTIONS}
-          pages={pagination?.pages ?? 1}
-          rows={articles}
-          selectedIds={selectedIds}
-          sortField={sortField}
-          sortOrder={sortOrder}
-          onPageChange={setPage}
-          onPageSizeChange={handlePageSizeChange}
-          onSelectionChange={setSelectedIds}
-          onSort={handleSort}
+      <Stack direction='row' justifyContent='space-between' mb={2}>
+        <AdminFilters
+          showStatusFilter
+          searchPlaceholder='Rechercher un article...'
+          selectedStatus={selectedStatus}
+          statusOptions={filteredStatusOptions}
+          onSearch={setSearchQuery}
+          onStatusChange={setSelectedStatus}
         />
-      </AdminList>
+      </Stack>
+      <AdminDataTable<IArticleData, ArticleSortField>
+        selectable
+        batchActions={renderBatchActions}
+        columns={[
+          {
+            field: 'title',
+            headerName: 'Titre',
+            sortable: true,
+            width: '150px',
+            render: row => (
+              <Link
+                className='hover:underline'
+                href={`/admin/articles/${row.id}/view`}
+                style={{
+                  color: 'var(--mui-palette-primary-main)',
+                  textDecoration: 'none',
+                }}
+              >
+                {row.title}
+              </Link>
+            ),
+          },
+          {
+            field: 'status',
+            headerName: 'Statut',
+            sortable: true,
+            render: row => {
+              const style = getStatusStyle(row.status);
+              return <ColorDot color={style.color} label={style.label} />;
+            },
+            width: '120px',
+          },
+          {
+            field: 'category',
+            headerName: 'Catégorie',
+            render: row => row.category?.name,
+            sortable: true,
+            width: '150px',
+          },
+          {
+            field: 'createdAt',
+            headerName: 'Créé le',
+            render: row => dayjs(row.createdAt).format('LL'),
+            sortable: true,
+            width: '200px',
+          },
+          {
+            field: 'updatedAt',
+            headerName: 'Mis à jour le',
+            render: row => dayjs(row.updatedAt).format('LL'),
+            sortable: true,
+            width: '200px',
+          },
+          {
+            field: 'user',
+            headerName: 'Auteur',
+            render: row => row.user?.username,
+            sortable: true,
+            width: '150px',
+          },
+          {
+            field: 'actions',
+            headerName: 'Actions',
+            render: renderActions,
+            width: '120px',
+          },
+        ]}
+        emptyMessage='Aucun article trouvé'
+        getRowId={row => row.id}
+        isLoading={isLoading || deleteArticle.isPending}
+        page={page}
+        pageSize={pageSize}
+        pageSizeOptions={PAGE_SIZE_OPTIONS}
+        pages={pagination?.pages ?? 1}
+        rows={articles}
+        selectedIds={selectedIds}
+        sortField={sortField}
+        sortOrder={sortOrder}
+        onPageChange={setPage}
+        onPageSizeChange={handlePageSizeChange}
+        onSelectionChange={setSelectedIds}
+        onSort={handleSort}
+      />
       <AdminDeleteDialog
         isLoading={deleteArticle.isPending}
         isOpen={deleteDialog.isOpen}
         message={
           deleteDialog.isBatchDelete
-            ? `Êtes-vous sûr de vouloir supprimer les ${selectedIds.length} articles sélectionnés ?`
-            : 'Êtes-vous sûr de vouloir supprimer cet article ?'
+            ? `Êtes-vous sûr de vouloir déplacer les ${selectedIds.length} articles sélectionnés vers la corbeille ?`
+            : 'Êtes-vous sûr de vouloir déplacer cet article vers la corbeille ?'
         }
         title={
           deleteDialog.isBatchDelete
-            ? 'Supprimer les articles'
-            : "Supprimer l'article"
+            ? 'Déplacer vers la corbeille'
+            : 'Déplacer vers la corbeille'
         }
         onClose={() =>
           !deleteArticle.isPending &&

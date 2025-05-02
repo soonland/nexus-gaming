@@ -8,7 +8,7 @@ import { ArticleBaseInfo } from './ArticleBaseInfo';
 import { ArticleContentView } from './ArticleContentView';
 import { ArticleHistoryView } from './ArticleHistoryView';
 import { ArticleRelationsView } from './ArticleRelationsView';
-import type { IArticleWithRelations } from './form';
+import type { IArticleWithRelations } from './form/types';
 
 interface IArticleViewProps {
   article: IArticleWithRelations;

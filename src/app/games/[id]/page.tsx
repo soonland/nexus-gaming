@@ -9,6 +9,7 @@ import {
   Skeleton,
   Stack,
 } from '@mui/material';
+import type { ArticleStatus } from '@prisma/client';
 import { useParams, useRouter } from 'next/navigation';
 import { FiArrowLeft } from 'react-icons/fi';
 import { v4 as uuidv4 } from 'uuid';
@@ -20,9 +21,11 @@ import { GameMeta } from '@/components/games/GameMeta';
 import { RelatedArticles } from '@/components/games/RelatedArticles';
 import { useGame } from '@/hooks/useGame';
 import dayjs from '@/lib/dayjs';
-import type { ArticleStatus } from '@/types/api';
-
-const DATE_FORMAT = 'YYYY-MM-DD';
+import type {
+  IArticleBasicData,
+  ICategoryData,
+  IGameBasicData,
+} from '@/types/api';
 
 const GamePage = () => {
   const params = useParams();
@@ -59,15 +62,46 @@ const GamePage = () => {
 
   if (!game) return null;
 
-  const formattedArticles = game.articles.map(article => ({
-    ...article,
-    publishedAt: article.publishedAt || undefined,
-    content: article.content || '',
-    createdAt: dayjs(article.createdAt).format(DATE_FORMAT),
-    updatedAt: dayjs(article.updatedAt).format(DATE_FORMAT),
-    games: [],
-    status: 'PUBLISHED' as ArticleStatus,
-  }));
+  const formattedArticles: Partial<IArticleBasicData>[] = game.articles.map(
+    article => {
+      const category: ICategoryData | undefined = article.category
+        ? {
+            id: article.category.id,
+            name: article.category.name,
+            color: article.category.color,
+            createdAt: dayjs(article.category.createdAt).format(),
+            updatedAt: dayjs(article.category.updatedAt).format(),
+          }
+        : undefined;
+
+      const games: IGameBasicData[] = [
+        {
+          id: game.id,
+          title: game.title,
+        },
+      ];
+
+      return {
+        id: article.id,
+        title: article.title,
+        content: article.content || '',
+        status: 'PUBLISHED' as ArticleStatus,
+        publishedAt: article.publishedAt
+          ? dayjs(article.publishedAt).format()
+          : undefined,
+        category,
+        user: {
+          id: article.user.id,
+          username: article.user.username,
+          role: article.user.role,
+        },
+        games,
+        createdAt: dayjs(article.createdAt).format(),
+        updatedAt: dayjs(article.updatedAt).format(),
+      };
+    }
+  );
+
   // Create badges array with genre first, then platforms
   const badges: IBadge[] = [];
 
@@ -93,6 +127,7 @@ const GamePage = () => {
       }))
     );
   }
+
   return (
     <Box>
       <Hero

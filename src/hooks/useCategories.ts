@@ -1,8 +1,7 @@
-import type { Category } from '@prisma/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 
-import type { CategoryData, CategoryForm } from '@/types';
+import type { ICategoryData, ICategoryForm } from '@/types';
 
 // Hook principal pour la gestion des catégories
 export function useCategories() {
@@ -12,7 +11,7 @@ export function useCategories() {
     data: categories,
     isLoading,
     error,
-  } = useQuery<CategoryData[]>({
+  } = useQuery<ICategoryData[]>({
     queryKey: ['categories'],
     queryFn: async () => {
       const response = await axios.get('/api/categories');
@@ -21,7 +20,7 @@ export function useCategories() {
   });
 
   const createCategory = useMutation({
-    mutationFn: async (data: CategoryForm) => {
+    mutationFn: async (data: ICategoryForm) => {
       const response = await axios.post('/api/categories', data);
       return response.data;
     },
@@ -31,7 +30,7 @@ export function useCategories() {
   });
 
   const updateCategory = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: CategoryForm }) => {
+    mutationFn: async ({ id, data }: { id: string; data: ICategoryForm }) => {
       const response = await axios.patch(`/api/categories/${id}`, data);
       return response.data;
     },
@@ -69,7 +68,7 @@ export function useCategory(id: string) {
     data: category,
     isLoading,
     error,
-  } = useQuery<Category>({
+  } = useQuery<ICategoryData>({
     queryKey: ['category', id],
     queryFn: async () => {
       const response = await axios.get(`/api/categories/${id}`);

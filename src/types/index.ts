@@ -1,18 +1,83 @@
 import type {
-  IArticleData,
+  Game,
+  User,
+  Role,
+  Category,
+  Article,
+  ArticleStatus,
+} from '@prisma/client';
+
+export type {
+  GameForm,
+  IGameData as GameData,
+  IPlatformForm,
+  IPlatformData,
   ICategoryData,
   ICategoryForm,
-  ICompanyData,
-  IGameData,
-  IPlatformData,
 } from './api';
 
-// Legacy types (to be removed once migration is complete)
-export type ArticleData = IArticleData;
-export type CategoryData = ICategoryData;
-export type CategoryForm = ICategoryForm;
-export type CompanyData = ICompanyData;
-export type GameData = IGameData;
-export type PlatformData = IPlatformData;
+export interface IArticleFormData {
+  title: string;
+  content: string;
+  categoryId: string;
+  gameIds: string[];
+  status?: ArticleStatus;
+  publishedAt?: string | null;
+  updatedAt?: string | null;
+  heroImage?: string | null;
+  userId?: string;
+}
 
-export * from './api';
+// ArticleForm now includes all fields from IArticleFormData
+export type ArticleForm = IArticleFormData;
+
+export interface IArticleData extends Article {
+  category: Category;
+  user: {
+    id: string;
+    username: string;
+    role: Role;
+  };
+  games: Game[];
+}
+
+export interface IArticleWithAuthor extends Article {
+  user: {
+    id: string;
+    username: string;
+    role: Role;
+  };
+  category?: {
+    id: string;
+    name: string;
+    color?: string | null;
+    createdAt: string;
+    updatedAt: string;
+  };
+  games?: {
+    id: string;
+    title: string;
+    coverImage: string | null;
+    genre: string;
+  }[];
+}
+
+export interface IArticleStatusUpdate {
+  status: ArticleStatus;
+  comment?: string;
+  previousStatus?: ArticleStatus;
+  reviewerId?: string;
+}
+
+export interface INotificationData {
+  id: string;
+  title: string;
+  content: string;
+  type: 'SUCCESS' | 'INFO' | 'WARNING' | 'ERROR';
+  createdAt: Date;
+  isRead: boolean;
+}
+
+export interface IUser extends User {
+  avatarUrl: string | null;
+}
