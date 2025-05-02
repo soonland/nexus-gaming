@@ -1,6 +1,6 @@
 'use client';
 
-import { Box, Container, Stack, Typography } from '@mui/material';
+import { Box, Container, Stack, Typography, useTheme } from '@mui/material';
 
 interface IAdminPageLayoutProps {
   children: React.ReactNode;
@@ -13,6 +13,8 @@ export const AdminPageLayout = ({
   title,
   actions,
 }: IAdminPageLayoutProps) => {
+  const theme = useTheme();
+
   return (
     <Container maxWidth='lg' sx={{ py: 4 }}>
       <Stack spacing={4}>
@@ -23,7 +25,13 @@ export const AdminPageLayout = ({
             alignItems: 'center',
           }}
         >
-          <Typography component='h1' variant='h4'>
+          <Typography
+            component='h1'
+            sx={{
+              color: theme.palette.text.primary,
+            }}
+            variant='h4'
+          >
             {title}
           </Typography>
           {actions && <Box>{actions}</Box>}

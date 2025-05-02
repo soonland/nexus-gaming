@@ -16,6 +16,7 @@ const getApprovalAction = (
   if (toStatus === 'PUBLISHED') return 'APPROVED';
   if (toStatus === 'NEEDS_CHANGES') return 'CHANGES_NEEDED';
   if (toStatus === 'ARCHIVED') return 'ARCHIVED';
+  if (toStatus === 'DELETED') return 'DELETED';
   return 'SUBMITTED'; // Default for other transitions
 };
 
@@ -28,6 +29,7 @@ const statusUpdateSchema = z
       'NEEDS_CHANGES',
       'PUBLISHED',
       'ARCHIVED',
+      'DELETED',
     ]),
     comment: z.string().optional(),
     reviewerId: z.string().optional(),
@@ -133,8 +135,10 @@ export async function PATCH(
         data: {
           status: newStatus,
           currentReviewerId: reviewerId,
+          previousStatus: article.status,
           publishedAt:
             newStatus === 'PUBLISHED' ? new Date() : article.publishedAt,
+          deletedAt: newStatus === 'DELETED' ? new Date() : article.deletedAt,
         },
         include: {
           category: true,

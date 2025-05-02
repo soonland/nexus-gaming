@@ -2,6 +2,7 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import prisma from '@/lib/prisma';
+import { generateSlug } from '@/lib/slug';
 import type { GameForm } from '@/types';
 
 export async function GET(
@@ -147,6 +148,7 @@ export async function PATCH(
       where: { id },
       data: {
         title: data.title,
+        slug: generateSlug(data.title), // Add slug generation on update
         description: data.description,
         releaseDate: data.releaseDate ? new Date(data.releaseDate) : null,
         coverImage: data.coverImage,

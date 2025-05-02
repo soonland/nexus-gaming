@@ -83,7 +83,6 @@ const AdminGamesPage = () => {
   );
 
   const deleteGame = useDeleteGame();
-  const isEmpty = !filteredGames.length;
 
   const handleDelete = async () => {
     try {
@@ -151,12 +150,7 @@ const AdminGamesPage = () => {
         searchPlaceholder='Rechercher un jeu...'
         onSearch={setSearchQuery}
       />
-      <AdminList
-        emptyMessage='Aucun jeu trouvé'
-        error={error}
-        isEmpty={isEmpty}
-        isLoading={isLoading}
-      >
+      <AdminList error={error} isLoading={isLoading}>
         <AdminDataTable<IGameData, GameSortField>
           selectable
           batchActions={renderBatchActions}

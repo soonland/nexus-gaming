@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import prisma from '@/lib/prisma';
-import type { IPlatformForm } from '@/types/api';
+import type { IPlatformForm } from '@/types';
 
 // GET - Liste des plateformes
 export async function GET(request: Request) {

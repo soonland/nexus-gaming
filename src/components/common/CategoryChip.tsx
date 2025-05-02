@@ -1,51 +1,28 @@
-'use client';
+import { Chip, type ChipProps } from '@mui/material';
 
-import { Chip } from '@mui/material';
-import type { ChipProps } from '@mui/material';
-
-export interface ICategoryChipProps {
-  category: {
-    id: string;
-    name: string;
-    color?: string | null;
-  };
-  size?: ChipProps['size'];
-  variant?: ChipProps['variant'];
-  clickable?: boolean;
-  onChipClick?: (category: { id: string; name: string }) => void;
+export interface ICategoryChipProps extends Omit<ChipProps, 'color' | 'label'> {
+  name: string;
+  bgColor?: string;
 }
 
 export const CategoryChip = ({
-  category,
+  name,
+  bgColor,
   size = 'small',
-  variant = 'outlined',
-  clickable,
-  onChipClick,
+  ...props
 }: ICategoryChipProps) => {
-  const { color } = category;
-
   return (
     <Chip
-      color={color ? undefined : 'info'}
-      label={category.name}
+      label={name}
       size={size}
       sx={{
-        'color': 'common.white',
-        'borderColor': color || undefined,
-        'backgroundColor': color ? `${color}` : undefined,
-        '&:hover': clickable
-          ? {
-              backgroundColor: color ? '#000' : undefined,
-            }
-          : undefined,
-        '& .MuiChip-label': {
-          color: 'common.white',
+        'backgroundColor': bgColor || 'primary.main',
+        'color': 'white',
+        '&:hover': {
+          backgroundColor: bgColor || 'primary.dark',
         },
       }}
-      variant={variant}
-      onClick={
-        clickable && onChipClick ? () => onChipClick(category) : undefined
-      }
+      {...props}
     />
   );
 };

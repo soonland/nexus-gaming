@@ -123,8 +123,8 @@ export const Hero = ({
                     return (
                       <CategoryChip
                         key={badge.id}
-                        category={badge.category}
-                        size='small'
+                        bgColor={badge.category.color || undefined}
+                        name={badge.category.name}
                       />
                     );
                   }

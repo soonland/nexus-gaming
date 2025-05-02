@@ -1,32 +1,15 @@
 'use client';
 
-import {
-  Alert,
-  Box,
-  CircularProgress,
-  Paper,
-  Stack,
-  Typography,
-} from '@mui/material';
+import { Alert, Box, CircularProgress } from '@mui/material';
 import { FiAlertTriangle } from 'react-icons/fi';
 
 interface IAdminListProps {
   children: React.ReactNode;
   isLoading?: boolean;
   error?: Error | null;
-  isEmpty?: boolean;
-  emptyMessage?: string;
-  emptyAction?: React.ReactNode;
 }
 
-export const AdminList = ({
-  children,
-  isLoading,
-  error,
-  isEmpty,
-  emptyMessage = 'Aucun élément trouvé',
-  emptyAction,
-}: IAdminListProps) => {
+export const AdminList = ({ children, isLoading, error }: IAdminListProps) => {
   if (error) {
     return (
       <Alert icon={<FiAlertTriangle />} severity='error' variant='outlined'>
@@ -40,19 +23,6 @@ export const AdminList = ({
       <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
         <CircularProgress />
       </Box>
-    );
-  }
-
-  if (isEmpty) {
-    return (
-      <Paper sx={{ p: 4 }}>
-        <Stack alignItems='center' spacing={2}>
-          <Typography color='text.secondary' variant='body1'>
-            {emptyMessage}
-          </Typography>
-          {emptyAction}
-        </Stack>
-      </Paper>
     );
   }
 

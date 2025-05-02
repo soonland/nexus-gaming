@@ -13,12 +13,7 @@ const EditPlatformPage = () => {
 
   return (
     <AdminPageLayout title='Modifier la plateforme'>
-      <AdminList
-        emptyMessage='Plateforme introuvable'
-        error={error}
-        isEmpty={!platform}
-        isLoading={isLoading}
-      >
+      <AdminList error={error} isLoading={isLoading}>
         {platform && (
           <PlatformForm
             initialData={{

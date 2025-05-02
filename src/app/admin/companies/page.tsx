@@ -85,8 +85,6 @@ const AdminCompaniesPage = () => {
     company.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const isEmpty = !filteredCompanies.length;
-
   const handleDelete = async () => {
     if (deleteDialog.companyId) {
       try {
@@ -148,11 +146,7 @@ const AdminCompaniesPage = () => {
           onPageSizeChange={handlePageSizeChange}
         />
       )}
-      <AdminList
-        emptyMessage='Aucune société trouvée'
-        isEmpty={isEmpty}
-        isLoading={isLoading}
-      >
+      <AdminList isLoading={isLoading}>
         <AdminDataTable<ICompanyData, CompanySortField>
           columns={[
             {

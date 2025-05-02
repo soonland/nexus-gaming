@@ -1,6 +1,10 @@
 'use client';
 
-import { ThemeProvider as MuiThemeProvider, createTheme } from '@mui/material';
+import {
+  ThemeProvider as MuiThemeProvider,
+  createTheme,
+  CssBaseline,
+} from '@mui/material';
 import { createContext, useContext, useEffect, useState } from 'react';
 
 // Theme definitions
@@ -106,6 +110,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   return (
     <ThemeContext.Provider value={{ currentTheme, setTheme, themeNames }}>
       <MuiThemeProvider theme={themes[currentTheme]}>
+        <CssBaseline />
         {children}
       </MuiThemeProvider>
     </ThemeContext.Provider>

@@ -81,8 +81,6 @@ const AdminAnnouncementsPage = () => {
     announcement.message.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const isEmpty = filteredAnnouncements.length === 0;
-
   const handleDelete = async () => {
     if (!deleteDialog.announcementId && !deleteDialog.isBatchDelete) return;
 
@@ -278,11 +276,7 @@ const AdminAnnouncementsPage = () => {
         searchPlaceholder='Rechercher une annonce...'
         onSearch={setSearchQuery}
       />
-      <AdminList
-        emptyMessage='Aucune annonce trouvée'
-        isEmpty={isEmpty}
-        isLoading={isLoading}
-      >
+      <AdminList isLoading={isLoading}>
         <AdminDataTable<IAdminAnnouncement, AnnouncementSortField>
           selectable
           batchActions={renderBatchActions}

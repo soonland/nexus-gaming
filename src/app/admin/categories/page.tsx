@@ -65,8 +65,6 @@ const AdminCategoriesPage = () => {
     category.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const isEmpty = !isLoading && filteredCategories.length === 0;
-
   const handleDelete = async () => {
     if (deleteDialog.categoryId) {
       try {
@@ -108,18 +106,18 @@ const AdminCategoriesPage = () => {
         searchPlaceholder='Rechercher une catégorie...'
         onSearch={setSearchQuery}
       />
-      <AdminList
-        emptyMessage='Aucune catégorie trouvée'
-        error={error}
-        isEmpty={isEmpty}
-        isLoading={isLoading}
-      >
+      <AdminList error={error} isLoading={isLoading}>
         <AdminDataTable<ICategoryData, CategorySortField>
           columns={[
             {
               field: 'name',
               headerName: 'Nom',
-              render: row => <CategoryChip category={row} variant='filled' />,
+              render: row => (
+                <CategoryChip
+                  bgColor={row.color || undefined}
+                  name={row.name}
+                />
+              ),
               sortable: true,
             },
             {

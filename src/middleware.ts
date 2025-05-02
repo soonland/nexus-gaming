@@ -1,34 +1,38 @@
-import { NextResponse } from 'next/server';
+import type { Role } from '@prisma/client';
 import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 import { getCurrentUser } from '@/lib/jwt';
-
-// Paths that require authentication
-const protectedPaths = ['/profile', '/admin'];
+import { canAccessDashboard } from '@/lib/permissions';
 
 export async function middleware(request: NextRequest) {
-  // Check if the path should be protected
-  const isProtectedPath = protectedPaths.some(path =>
-    request.nextUrl.pathname.startsWith(path)
-  );
+  try {
+    // All admin routes start with /admin
+    const isAdminRoute = request.nextUrl.pathname.startsWith('/admin');
 
-  if (isProtectedPath) {
-    try {
-      const user = await getCurrentUser();
-      if (!user) {
-        throw new Error('Not authenticated');
-      }
-    } catch (error) {
-      // Redirect to login with return URL
-      const loginUrl = new URL('/login', request.url);
-      loginUrl.searchParams.set('redirect', request.nextUrl.pathname);
-      return NextResponse.redirect(loginUrl);
+    if (!isAdminRoute) {
+      return NextResponse.next();
     }
-  }
 
-  return NextResponse.next();
+    // Admin route protection
+    const user = await getCurrentUser();
+
+    if (!user) {
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
+
+    // Vérifier les permissions d'accès au dashboard
+    if (!canAccessDashboard(user.role as Role)) {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+
+    return NextResponse.next();
+  } catch (error) {
+    console.error('Middleware error:', error);
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
 }
 
 export const config = {
-  matcher: ['/profile/:path*', '/admin/:path*'],
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
 };

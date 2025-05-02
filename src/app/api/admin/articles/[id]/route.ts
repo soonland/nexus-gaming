@@ -1,23 +1,27 @@
-import type { NextRequest } from 'next/server';
+import { ApprovalAction, ArticleStatus } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
 import { getCurrentUser } from '@/lib/jwt';
-import { canSelectArticleAuthor } from '@/lib/permissions';
+import { canDeleteArticles, canViewArticle } from '@/lib/permissions';
 import prisma from '@/lib/prisma';
-import type { ArticleForm } from '@/types';
+import type { IArticleStatusUpdate } from '@/types';
 
 export async function GET(
-  request: NextRequest,
+  _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Auth check for admin routes
+    const { id } = await params;
+
     const user = await getCurrentUser();
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } = await params;
+    if (!canViewArticle(user.role)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const article = await prisma.article.findUnique({
       where: { id },
       select: {
@@ -25,8 +29,8 @@ export async function GET(
         title: true,
         content: true,
         status: true,
-        categoryId: true,
-        userId: true,
+        previousStatus: true,
+        deletedAt: true,
         heroImage: true,
         publishedAt: true,
         createdAt: true,
@@ -36,6 +40,8 @@ export async function GET(
             id: true,
             name: true,
             color: true,
+            createdAt: true,
+            updatedAt: true,
           },
         },
         user: {
@@ -58,12 +64,15 @@ export async function GET(
           select: {
             id: true,
             title: true,
+            coverImage: true,
+            genre: true,
           },
         },
         approvalHistory: {
           orderBy: {
             createdAt: 'desc',
           },
+          take: 5,
           select: {
             id: true,
             fromStatus: true,
@@ -97,67 +106,56 @@ export async function GET(
   }
 }
 
-export async function PATCH(
-  request: NextRequest,
+export async function PUT(
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Auth check for admin routes
     const user = await getCurrentUser();
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { id } = await params;
-    const data = (await request.json()) as ArticleForm & { id: string };
-    const {
-      title,
-      content,
-      categoryId,
-      status,
-      publishedAt,
-      gameIds = [],
-      heroImage,
-      userId,
-    } = data;
+    const data = (await request.json()) as IArticleStatusUpdate;
 
-    if (!title || !content || !categoryId) {
+    // Validate that previousStatus is set when moving to trash
+    if (data.status === ArticleStatus.DELETED && !data.previousStatus) {
       return NextResponse.json(
-        { error: 'Title, content and category are required' },
+        { error: 'previousStatus is required when moving to trash' },
         { status: 400 }
       );
-    }
-
-    // Check if user has permission to change article author
-    if (userId !== user.id && !canSelectArticleAuthor(user.role)) {
-      return NextResponse.json(
-        { error: 'Permission denied to change article author' },
-        { status: 403 }
-      );
-    }
-
-    // Get current article to validate permissions
-    const currentArticle = await prisma.article.findUnique({
-      where: { id },
-      select: { userId: true },
-    });
-
-    if (!currentArticle) {
-      return NextResponse.json({ error: 'Article not found' }, { status: 404 });
     }
 
     const article = await prisma.article.update({
       where: { id },
       data: {
-        title,
-        content,
-        status,
-        publishedAt: publishedAt ? new Date(publishedAt) : null,
-        categoryId,
-        heroImage,
-        ...(userId && { userId }), // Only include userId if it's provided
-        games: {
-          set: gameIds.map(id => ({ id })),
+        status: { set: data.status },
+        previousStatus: {
+          set:
+            data.status === ArticleStatus.DELETED ? data.previousStatus : null,
+        },
+        deletedAt: {
+          set: data.status === ArticleStatus.DELETED ? new Date() : null,
+        },
+        currentReviewerId: { set: data.reviewerId },
+        approvalHistory: {
+          create: {
+            fromStatus: data.previousStatus || ArticleStatus.DRAFT,
+            toStatus: data.status,
+            action:
+              data.status === ArticleStatus.DELETED
+                ? ApprovalAction.DELETED
+                : data.previousStatus === ArticleStatus.DELETED
+                  ? ApprovalAction.RESTORED
+                  : data.status === ArticleStatus.PUBLISHED
+                    ? ApprovalAction.PUBLISHED
+                    : data.status === ArticleStatus.ARCHIVED
+                      ? ApprovalAction.ARCHIVED
+                      : ApprovalAction.SUBMITTED,
+            comment: data.comment || '',
+            actionById: user.id,
+          },
         },
       },
       select: {
@@ -165,6 +163,8 @@ export async function PATCH(
         title: true,
         content: true,
         status: true,
+        previousStatus: true,
+        deletedAt: true,
         heroImage: true,
         publishedAt: true,
         createdAt: true,
@@ -237,11 +237,10 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  request: NextRequest,
+  _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Auth check for admin routes
     const user = await getCurrentUser();
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -249,6 +248,29 @@ export async function DELETE(
 
     const { id } = await params;
 
+    // Récupérer l'article pour vérifier les permissions
+    const article = await prisma.article.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        userId: true,
+        status: true,
+      },
+    });
+
+    if (!article) {
+      return NextResponse.json({ error: 'Article not found' }, { status: 404 });
+    }
+
+    // Vérifier les permissions de suppression
+    if (!canDeleteArticles(user.role, article, user.id)) {
+      return NextResponse.json(
+        { error: 'You do not have permission to delete this article' },
+        { status: 403 }
+      );
+    }
+
+    // Supprimer l'article
     await prisma.article.delete({
       where: { id },
     });

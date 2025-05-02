@@ -2,6 +2,7 @@ import type { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
 import prisma from '@/lib/prisma';
+import { generateSlug } from '@/lib/slug';
 import type { GameForm } from '@/types';
 
 export async function GET(request: Request) {
@@ -132,12 +133,13 @@ export async function GET(request: Request) {
         updatedAt: new Date(game.publisher.updatedAt),
       },
     }));
+
     return NextResponse.json({
       games: formattedGames,
       pagination: {
         total: totalCount,
-        pages: Math.ceil(totalCount / limit),
-        page,
+        pages: Math.max(1, Math.ceil(totalCount / limit)),
+        page: totalCount === 0 ? 1 : page,
         limit,
       },
     });
@@ -157,9 +159,11 @@ export async function POST(request: Request) {
     const game = await prisma.game.create({
       data: {
         title: data.title,
+        slug: generateSlug(data.title),
         description: data.description,
         releaseDate: data.releaseDate ? new Date(data.releaseDate) : null,
         coverImage: data.coverImage,
+        genre: data.genre,
         developer: {
           connect: { id: data.developerId },
         },
@@ -176,6 +180,7 @@ export async function POST(request: Request) {
         description: true,
         coverImage: true,
         releaseDate: true,
+        genre: true,
         createdAt: true,
         updatedAt: true,
         developer: {
