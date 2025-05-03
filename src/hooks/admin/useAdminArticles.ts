@@ -49,7 +49,7 @@ const adminArticlesApi = {
   },
 
   update: async (id: string, data: ArticleForm) => {
-    const response = await axios.patch(`/api/admin/articles/${id}`, data);
+    const response = await axios.put(`/api/admin/articles/${id}`, data);
     return response.data as IArticleData;
   },
 

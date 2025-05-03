@@ -56,7 +56,10 @@ export interface IArticleMetadataPanelProps {
     id: string;
     username: string;
   }>;
+  canAssignReviewer: boolean;
+  currentReviewerId: string | null | undefined;
   onCategoryChange: (value: string) => void;
+  onReviewerChange: (value: string | null) => void;
   onClose: () => void;
   onGamesChange: (gameIds: string[]) => void;
   onImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;

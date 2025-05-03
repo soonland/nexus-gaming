@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/jwt';
 import { canDeleteArticles, canViewArticle } from '@/lib/permissions';
 import prisma from '@/lib/prisma';
-import type { IArticleStatusUpdate } from '@/types';
+import type { IArticleFormData, IArticleStatusUpdate } from '@/types';
 
 export async function GET(
   _request: Request,
@@ -106,6 +106,240 @@ export async function GET(
   }
 }
 
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { id } = await params;
+    const data = await request.json();
+
+    if ('status' in data && typeof data.status === 'string') {
+      // Status update
+      const statusData = data as IArticleStatusUpdate;
+
+      // Validate that previousStatus is set when moving to trash
+      if (
+        statusData.status === ArticleStatus.DELETED &&
+        !statusData.previousStatus
+      ) {
+        return NextResponse.json(
+          { error: 'previousStatus is required when moving to trash' },
+          { status: 400 }
+        );
+      }
+
+      const article = await prisma.article.update({
+        where: { id },
+        data: {
+          status: { set: statusData.status },
+          previousStatus: {
+            set:
+              statusData.status === ArticleStatus.DELETED
+                ? statusData.previousStatus
+                : null,
+          },
+          deletedAt: {
+            set:
+              statusData.status === ArticleStatus.DELETED ? new Date() : null,
+          },
+          currentReviewerId: { set: statusData.reviewerId ?? null },
+          approvalHistory: {
+            create: {
+              fromStatus: statusData.previousStatus || ArticleStatus.DRAFT,
+              toStatus: statusData.status,
+              action:
+                statusData.status === ArticleStatus.DELETED
+                  ? ApprovalAction.DELETED
+                  : statusData.previousStatus === ArticleStatus.DELETED
+                    ? ApprovalAction.RESTORED
+                    : statusData.status === ArticleStatus.PUBLISHED
+                      ? ApprovalAction.PUBLISHED
+                      : statusData.status === ArticleStatus.ARCHIVED
+                        ? ApprovalAction.ARCHIVED
+                        : ApprovalAction.SUBMITTED,
+              comment: statusData.comment || '',
+              actionById: user.id,
+            },
+          },
+        },
+        select: {
+          id: true,
+          title: true,
+          content: true,
+          status: true,
+          previousStatus: true,
+          deletedAt: true,
+          heroImage: true,
+          publishedAt: true,
+          createdAt: true,
+          updatedAt: true,
+          category: {
+            select: {
+              id: true,
+              name: true,
+              color: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
+          user: {
+            select: {
+              id: true,
+              username: true,
+              avatarUrl: true,
+              role: true,
+            },
+          },
+          currentReviewer: {
+            select: {
+              id: true,
+              username: true,
+              avatarUrl: true,
+              role: true,
+            },
+          },
+          games: {
+            select: {
+              id: true,
+              title: true,
+              coverImage: true,
+              genre: true,
+            },
+          },
+          approvalHistory: {
+            orderBy: {
+              createdAt: 'desc',
+            },
+            take: 5,
+            select: {
+              id: true,
+              fromStatus: true,
+              toStatus: true,
+              action: true,
+              comment: true,
+              createdAt: true,
+              actionBy: {
+                select: {
+                  id: true,
+                  username: true,
+                  role: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      return NextResponse.json(article);
+    } else {
+      // Regular article update
+      const formData = data as IArticleFormData;
+
+      const article = await prisma.article.update({
+        where: { id },
+        data: {
+          title: formData.title,
+          content: formData.content,
+          status: formData.status || undefined,
+          heroImage: formData.heroImage,
+          publishedAt: formData.publishedAt
+            ? { set: new Date(formData.publishedAt) }
+            : { set: undefined },
+          updatedAt: formData.updatedAt
+            ? { set: new Date(formData.updatedAt) }
+            : { set: undefined },
+          categoryId: formData.categoryId,
+          userId: formData.userId,
+          currentReviewerId: formData.currentReviewerId || null,
+          games: {
+            set: formData.gameIds.map((id: string) => ({ id })),
+          },
+        },
+        select: {
+          id: true,
+          title: true,
+          content: true,
+          status: true,
+          previousStatus: true,
+          deletedAt: true,
+          heroImage: true,
+          publishedAt: true,
+          createdAt: true,
+          updatedAt: true,
+          category: {
+            select: {
+              id: true,
+              name: true,
+              color: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
+          user: {
+            select: {
+              id: true,
+              username: true,
+              avatarUrl: true,
+              role: true,
+            },
+          },
+          currentReviewer: {
+            select: {
+              id: true,
+              username: true,
+              avatarUrl: true,
+              role: true,
+            },
+          },
+          games: {
+            select: {
+              id: true,
+              title: true,
+              coverImage: true,
+              genre: true,
+            },
+          },
+          approvalHistory: {
+            orderBy: {
+              createdAt: 'desc',
+            },
+            take: 5,
+            select: {
+              id: true,
+              fromStatus: true,
+              toStatus: true,
+              action: true,
+              comment: true,
+              createdAt: true,
+              actionBy: {
+                select: {
+                  id: true,
+                  username: true,
+                  role: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      return NextResponse.json(article);
+    }
+  } catch (error) {
+    console.error('Error updating article:', error);
+    return NextResponse.json(
+      { error: 'Error updating article' },
+      { status: 500 }
+    );
+  }
+}
+
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -138,7 +372,7 @@ export async function PUT(
         deletedAt: {
           set: data.status === ArticleStatus.DELETED ? new Date() : null,
         },
-        currentReviewerId: { set: data.reviewerId },
+        currentReviewerId: { set: data.reviewerId ?? null },
         approvalHistory: {
           create: {
             fromStatus: data.previousStatus || ArticleStatus.DRAFT,

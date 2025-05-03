@@ -312,8 +312,28 @@ describe('User API Permissions', () => {
                 },
                 {},
                 {},
+                {},
               ],
             },
+            orderBy: {
+              username: 'asc',
+            },
+            select: {
+              _count: {
+                select: {
+                  articles: true,
+                },
+              },
+              createdAt: true,
+              email: true,
+              id: true,
+              isActive: true,
+              role: true,
+              updatedAt: true,
+              username: true,
+            },
+            skip: 0,
+            take: 10,
           })
         );
       });
@@ -337,8 +357,27 @@ describe('User API Permissions', () => {
         expect(findManyMock).toHaveBeenCalledWith(
           expect.objectContaining({
             where: {
-              AND: [{}, { role: 'EDITOR' }, {}],
+              AND: [{}, { role: 'EDITOR' }, {}, {}],
             },
+            orderBy: {
+              username: 'asc',
+            },
+            select: {
+              _count: {
+                select: {
+                  articles: true,
+                },
+              },
+              createdAt: true,
+              email: true,
+              id: true,
+              isActive: true,
+              role: true,
+              updatedAt: true,
+              username: true,
+            },
+            skip: 0,
+            take: 10,
           })
         );
       });
@@ -362,8 +401,27 @@ describe('User API Permissions', () => {
         expect(findManyMock).toHaveBeenCalledWith(
           expect.objectContaining({
             where: {
-              AND: [{}, {}, { isActive: true }],
+              AND: [{}, {}, { isActive: true }, {}],
             },
+            orderBy: {
+              username: 'asc',
+            },
+            select: {
+              _count: {
+                select: {
+                  articles: true,
+                },
+              },
+              createdAt: true,
+              email: true,
+              id: true,
+              isActive: true,
+              role: true,
+              updatedAt: true,
+              username: true,
+            },
+            skip: 0,
+            take: 10,
           })
         );
       });
@@ -405,8 +463,28 @@ describe('User API Permissions', () => {
                 },
                 { role: 'EDITOR' },
                 { isActive: true },
+                {},
               ],
             },
+            orderBy: {
+              username: 'asc',
+            },
+            select: {
+              _count: {
+                select: {
+                  articles: true,
+                },
+              },
+              createdAt: true,
+              email: true,
+              id: true,
+              isActive: true,
+              role: true,
+              updatedAt: true,
+              username: true,
+            },
+            skip: 0,
+            take: 10,
           })
         );
       });

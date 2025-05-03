@@ -3,7 +3,11 @@ import { NextResponse } from 'next/server';
 
 import { getCurrentUser } from '@/lib/jwt';
 import { hashPassword } from '@/lib/password';
-import { canAssignRole, canCreateUsers } from '@/lib/permissions';
+import {
+  canAssignRole,
+  canCreateUsers,
+  roleHierarchy,
+} from '@/lib/permissions';
 import prisma from '@/lib/prisma';
 
 export async function GET(request: Request) {
@@ -21,6 +25,7 @@ export async function GET(request: Request) {
     const search = searchParams.get('search') ?? '';
     const role = searchParams.get('role') ?? undefined;
     const status = searchParams.get('status') ?? undefined;
+    const minRole = searchParams.get('minRole') ?? undefined;
 
     // Validate and sanitize pagination params
     const page = Math.max(1, parseInt(rawPage ?? '1') || 1);
@@ -50,6 +55,18 @@ export async function GET(request: Request) {
           : {},
         role ? { role: role as Role } : {},
         status ? { isActive: status === 'active' } : {},
+        minRole
+          ? {
+              role: {
+                in: Object.keys(roleHierarchy)
+                  .filter(
+                    r =>
+                      roleHierarchy[r as Role] >= roleHierarchy[minRole as Role]
+                  )
+                  .map(r => r as Role),
+              },
+            }
+          : {},
       ],
     };
 

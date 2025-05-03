@@ -23,7 +23,11 @@ import { useCategories } from '@/hooks/useCategories';
 import { useGames } from '@/hooks/useGames';
 import { useUsers } from '@/hooks/useUsers';
 import dayjs from '@/lib/dayjs';
-import { canSelectArticleAuthor, canEditArticle } from '@/lib/permissions';
+import {
+  canSelectArticleAuthor,
+  canEditArticle,
+  canAssignReviewer,
+} from '@/lib/permissions';
 
 import {
   ArticleMainContent,
@@ -43,12 +47,15 @@ export const ArticleForm = ({ initialData, mode }: IArticleFormProps) => {
   const { user, isLoading } = useAuth();
   const [title, setTitle] = useState(initialData?.title || '');
   const [content, setContent] = useState(initialData?.content || '');
-  const [categoryId, setCategoryId] = useState(initialData?.categoryId || '');
+  const [categoryId, setCategoryId] = useState(initialData?.category?.id || '');
   const [gameIds, setGameIds] = useState<string[]>(
     initialData?.games?.map(game => game.id) || []
   );
   const [status, setStatus] = useState<ArticleStatus>(
     initialData?.status || ArticleStatus.DRAFT
+  );
+  const [reviewerId, setReviewerId] = useState<string | null>(
+    initialData?.currentReviewerId || null
   );
   const [publishedAt, setPublishedAt] = useState<Dayjs | null>(
     initialData?.publishedAt ? dayjs(initialData.publishedAt) : dayjs()
@@ -57,13 +64,17 @@ export const ArticleForm = ({ initialData, mode }: IArticleFormProps) => {
   const [heroImage, setHeroImage] = useState<string | null>(
     initialData?.heroImage || null
   );
-  const [userId, setUserId] = useState(initialData?.user.id || '');
+  const [userId, setUserId] = useState('');
 
   useEffect(() => {
-    if (mode === 'create' && !userId) {
+    if (mode === 'create') {
+      // For new articles, use current user's ID
       setUserId(user?.id || '');
+    } else if (initialData?.user?.id) {
+      // For existing articles, use the article's author ID
+      setUserId(initialData.user.id);
     }
-  }, [mode, userId, user]);
+  }, [mode, user, initialData]);
 
   const [isMetadataOpen, setIsMetadataOpen] = useState(false);
   const [titleError, setTitleError] = useState('');
@@ -77,7 +88,10 @@ export const ArticleForm = ({ initialData, mode }: IArticleFormProps) => {
   const { categories } = useCategories();
   const isEditor = user?.role === Role.EDITOR;
   const { games } = useGames();
-  const { data: usersData } = useUsers();
+  const { data: usersData } = useUsers({
+    minRole: Role.EDITOR,
+    limit: 100,
+  });
   const { showSuccess, showError } = useNotifier();
 
   const validateForm = () => {
@@ -194,6 +208,7 @@ export const ArticleForm = ({ initialData, mode }: IArticleFormProps) => {
         updatedAt: updatedAt?.toISOString() || null,
         heroImage,
         userId,
+        currentReviewerId: reviewerId,
       };
 
       if (mode === 'create') {
@@ -385,10 +400,12 @@ export const ArticleForm = ({ initialData, mode }: IArticleFormProps) => {
 
           <ArticleMetadataPanel
             approvalHistory={initialData?.approvalHistory}
+            canAssignReviewer={canAssignReviewer(user?.role)}
             canSelectArticleAuthor={canSelectArticleAuthor(user?.role)}
             categories={categories || []}
             categoryError={categoryError}
             categoryId={categoryId}
+            currentReviewerId={reviewerId}
             gameIds={gameIds}
             games={games}
             heroImage={heroImage}
@@ -427,6 +444,7 @@ export const ArticleForm = ({ initialData, mode }: IArticleFormProps) => {
               }
             }}
             onPublishedAtChange={setPublishedAt}
+            onReviewerChange={setReviewerId}
             onStatusChange={handleStatusChange}
             onUpdatedAtChange={setUpdatedAt}
             onUserChange={setUserId}

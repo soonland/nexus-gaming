@@ -24,9 +24,11 @@ import type { IArticleMetadataPanelProps } from './types';
 export const ArticleMetadataPanel = ({
   approvalHistory,
   canSelectArticleAuthor,
+  canAssignReviewer,
   categories,
   categoryError,
   categoryId,
+  currentReviewerId,
   gameIds,
   games,
   heroImage,
@@ -43,6 +45,7 @@ export const ArticleMetadataPanel = ({
   onGamesChange,
   onImageChange,
   onPublishedAtChange,
+  onReviewerChange,
   onStatusChange,
   onUpdatedAtChange,
   onUserChange,
@@ -141,6 +144,49 @@ export const ArticleMetadataPanel = ({
           </FormControl>
 
           {/* 3. Auteur */}
+          <FormControl size='small'>
+            <InputLabel id='user-label'>Auteur</InputLabel>
+            <Select
+              disabled={!canSelectArticleAuthor}
+              label='Auteur'
+              labelId='user-label'
+              name='userId'
+              value={userId}
+              onChange={e => onUserChange(e.target.value)}
+            >
+              <MenuItem value=''>
+                <em>Sélectionner un auteur</em>
+              </MenuItem>
+              {users?.map(user => (
+                <MenuItem key={user.id} value={user.id}>
+                  {user.username}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          {/* 3b. Relecteur */}
+          {canAssignReviewer && (
+            <FormControl size='small'>
+              <InputLabel id='reviewer-label'>Relecteur</InputLabel>
+              <Select
+                label='Relecteur'
+                labelId='reviewer-label'
+                name='currentReviewerId'
+                value={currentReviewerId || ''}
+                onChange={e => onReviewerChange(e.target.value || null)}
+              >
+                <MenuItem value=''>
+                  <em>Aucun relecteur assigné</em>
+                </MenuItem>
+                {users?.map(user => (
+                  <MenuItem key={user.id} value={user.id}>
+                    {user.username}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          )}
           <FormControl size='small'>
             <InputLabel id='user-label'>Auteur</InputLabel>
             <Select

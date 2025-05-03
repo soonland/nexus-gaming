@@ -24,7 +24,7 @@ export const canBroadcastNotifications = (role?: Role): boolean => {
   return hasSufficientRole(role, Role.ADMIN);
 };
 
-const roleHierarchy: Record<Role, number> = {
+export const roleHierarchy: Record<Role, number> = {
   USER: 1,
   MODERATOR: 2,
   EDITOR: 3,
@@ -133,9 +133,11 @@ export const canDeleteArticles = (
     return true;
   }
 
-  // Un EDITOR peut supprimer ses propres articles
+  // Un EDITOR peut supprimer ses propres articles non publiés
   if (role === Role.EDITOR && article && userId) {
-    return article.userId === userId;
+    return (
+      article.userId === userId && article.status !== ArticleStatus.PUBLISHED
+    );
   }
 
   return false;

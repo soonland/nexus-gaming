@@ -26,6 +26,7 @@ export interface IArticleFormData {
   updatedAt?: string | null;
   heroImage?: string | null;
   userId?: string;
+  currentReviewerId?: string | null;
 }
 
 // ArticleForm now includes all fields from IArticleFormData
