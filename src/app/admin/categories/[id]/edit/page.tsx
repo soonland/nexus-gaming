@@ -20,6 +20,7 @@ const EditCategoryPage = () => {
               id: category.id,
               name: category.name,
               color: category.color,
+              isDefault: category.isDefault,
             }}
             mode='edit'
           />

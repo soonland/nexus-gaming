@@ -50,7 +50,15 @@ export const ArticleForm = ({ initialData, mode }: IArticleFormProps) => {
   const [slug, setSlug] = useState(initialData?.slug || '');
   const [slugError, setSlugError] = useState('');
   const [content, setContent] = useState(initialData?.content || '');
+  const { defaultCategory } = useCategories();
   const [categoryId, setCategoryId] = useState(initialData?.category?.id || '');
+
+  // When creating a new article, use the default category if available
+  useEffect(() => {
+    if (mode === 'create' && defaultCategory && !categoryId) {
+      setCategoryId(defaultCategory.id);
+    }
+  }, [mode, defaultCategory, categoryId]);
   const [gameIds, setGameIds] = useState<string[]>(
     initialData?.games?.map(game => game.id) || []
   );

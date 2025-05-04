@@ -12,6 +12,7 @@ export interface ICategoryData {
   id: string;
   name: string;
   color?: string | null;
+  isDefault?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -19,6 +20,7 @@ export interface ICategoryData {
 export interface ICategoryForm {
   name: string;
   color?: string | null;
+  isDefault?: boolean;
 }
 
 export type GameGenre =

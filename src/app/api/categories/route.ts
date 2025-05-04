@@ -6,6 +6,24 @@ import prisma from '@/lib/prisma';
 // Hex color format validation regex
 const HEX_COLOR_REGEX = /^#[0-9A-F]{6}$/i;
 
+// Ensure only one default category exists
+async function handleDefaultCategory(id: string, isDefault: boolean) {
+  if (isDefault) {
+    // Remove default from all other categories first
+    await prisma.category.updateMany({
+      where: {
+        NOT: {
+          id: id,
+        },
+        isDefault: true,
+      },
+      data: {
+        isDefault: false,
+      },
+    });
+  }
+}
+
 export async function GET() {
   try {
     const categories = await prisma.category.findMany({
@@ -46,7 +64,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { name, color } = body;
+    const { name, color, isDefault } = body;
 
     if (!name) {
       return NextResponse.json({ error: 'Name is required' }, { status: 400 });
@@ -60,12 +78,19 @@ export async function POST(request: Request) {
       );
     }
 
+    // Create category first to get its ID
     const category = await prisma.category.create({
       data: {
         name,
         color,
+        isDefault: isDefault || false,
       },
     });
+
+    // Handle default category logic if needed
+    if (isDefault) {
+      await handleDefaultCategory(category.id, true);
+    }
 
     return NextResponse.json(category, { status: 201 });
   } catch (error) {

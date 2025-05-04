@@ -1,6 +1,12 @@
 'use client';
 
-import { Box, Stack, TextField } from '@mui/material';
+import {
+  Box,
+  Checkbox,
+  FormControlLabel,
+  Stack,
+  TextField,
+} from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -13,6 +19,7 @@ interface ICategoryFormProps {
     id: string;
     name: string;
     color?: string | null;
+    isDefault?: boolean;
   };
   mode: 'create' | 'edit';
 }
@@ -21,6 +28,7 @@ export const CategoryForm = ({ initialData, mode }: ICategoryFormProps) => {
   const router = useRouter();
   const [name, setName] = useState(initialData?.name || '');
   const [color, setColor] = useState(initialData?.color || '#007FFF');
+  const [isDefault, setIsDefault] = useState(initialData?.isDefault || false);
   const [nameError, setNameError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { createCategory, updateCategory } = useCategories();
@@ -54,6 +62,7 @@ export const CategoryForm = ({ initialData, mode }: ICategoryFormProps) => {
       const data = {
         name,
         color,
+        isDefault,
       };
 
       if (mode === 'create') {
@@ -94,30 +103,41 @@ export const CategoryForm = ({ initialData, mode }: ICategoryFormProps) => {
             if (nameError) setNameError('');
           }}
         />
-        <Stack direction='row' spacing={2}>
-          <TextField
-            fullWidth
-            label='Couleur'
-            sx={{
-              '& .MuiInputBase-input': {
-                p: 1,
-                height: 40,
-              },
-            }}
-            type='color'
-            value={color}
-            onChange={e => setColor(e.target.value)}
-          />
-          <Box
-            sx={{
-              width: 48,
-              height: 48,
-              borderRadius: '50%',
-              bgcolor: color,
-              border: '2px solid',
-              borderColor: 'divider',
-              flexShrink: 0,
-            }}
+        <Stack spacing={2}>
+          <Stack direction='row' spacing={2}>
+            <TextField
+              fullWidth
+              label='Couleur'
+              sx={{
+                '& .MuiInputBase-input': {
+                  p: 1,
+                  height: 40,
+                },
+              }}
+              type='color'
+              value={color}
+              onChange={e => setColor(e.target.value)}
+            />
+            <Box
+              sx={{
+                width: 48,
+                height: 48,
+                borderRadius: '50%',
+                bgcolor: color,
+                border: '2px solid',
+                borderColor: 'divider',
+                flexShrink: 0,
+              }}
+            />
+          </Stack>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={isDefault}
+                onChange={e => setIsDefault(e.target.checked)}
+              />
+            }
+            label='Définir comme catégorie par défaut'
           />
         </Stack>
       </Stack>

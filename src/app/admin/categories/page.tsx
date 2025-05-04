@@ -1,6 +1,8 @@
 'use client';
 
+import { yellow } from '@mui/material/colors';
 import { useState } from 'react';
+import { FiStar } from 'react-icons/fi';
 
 import {
   AdminActionButtons,
@@ -12,7 +14,6 @@ import {
   AdminPageLayout,
   defaultActions,
 } from '@/components/admin';
-import { CategoryChip } from '@/components/common';
 import { useNotifier } from '@/components/common/Notifier';
 import { useCategories } from '@/hooks/useCategories';
 import dayjs from '@/lib/dayjs';
@@ -36,7 +37,13 @@ const AdminCategoriesPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortField, setSortField] = useState<CategorySortField>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-  const { categories = [], isLoading, error, deleteCategory } = useCategories();
+  const {
+    categories = [],
+    isLoading,
+    error,
+    deleteCategory,
+    setDefaultCategory,
+  } = useCategories();
   const { showSuccess, showError } = useNotifier();
 
   const handleSort = (field: CategorySortField) => {
@@ -78,9 +85,28 @@ const AdminCategoriesPage = () => {
     }
   };
 
+  const handleSetDefault = async (id: string) => {
+    try {
+      await setDefaultCategory(id);
+      showSuccess('Catégorie définie par défaut avec succès');
+    } catch (error) {
+      console.error('Error setting default category:', error);
+      showError('Erreur lors de la définition de la catégorie par défaut');
+    }
+  };
+
   const renderActions = (row: ICategoryData) => (
     <AdminActionButtons
       actions={[
+        {
+          label: row.isDefault
+            ? 'Catégorie par défaut'
+            : 'Définir comme catégorie par défaut',
+          icon: FiStar,
+          color: row.isDefault ? 'warning.main' : 'action.active',
+          onClick: () => handleSetDefault(row.id),
+          disabled: row.isDefault,
+        },
         defaultActions.edit(`/admin/categories/${row.id}/edit`),
         defaultActions.delete(() =>
           setDeleteDialog({
@@ -112,13 +138,34 @@ const AdminCategoriesPage = () => {
             {
               field: 'name',
               headerName: 'Nom',
+              sortable: true,
+            },
+            {
+              field: 'color',
+              headerName: 'Couleur',
               render: row => (
-                <CategoryChip
-                  bgColor={row.color || undefined}
-                  name={row.name}
+                <div
+                  style={{
+                    backgroundColor: row.color || 'transparent',
+                    width: '20px',
+                    height: '20px',
+                    borderRadius: '50%',
+                  }}
                 />
               ),
-              sortable: true,
+              sortable: false,
+            },
+            {
+              field: 'isDefault',
+              headerName: 'Par défaut',
+              width: '100px',
+              itemsAlign: 'center',
+              render: row =>
+                row.isDefault ? (
+                  <FiStar style={{ color: yellow[800], fill: yellow[800] }} />
+                ) : (
+                  ''
+                ),
             },
             {
               field: 'createdAt',
