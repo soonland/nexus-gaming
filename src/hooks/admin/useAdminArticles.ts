@@ -1,5 +1,6 @@
 import type { ArticleStatus } from '@prisma/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import type { AxiosError } from 'axios';
 import axios from 'axios';
 
 import type { IArticleWithRelations } from '@/app/admin/articles/_components/form/types';
@@ -29,6 +30,17 @@ const adminArticlesApi = {
   getOne: async (id: string) => {
     const { data } = await axios.get(`/api/admin/articles/${id}`);
     return data as IArticleWithRelations;
+  },
+
+  checkSlug: async (slug: string, currentId?: string) => {
+    const params = new URLSearchParams({
+      slug,
+      ...(currentId && { currentId }),
+    });
+    const { data } = await axios.get(
+      `/api/admin/articles/check-slug?${params.toString()}`
+    );
+    return data as { exists: boolean; suggestion: string };
   },
 
   getAll: async (params: IAdminArticleParams = {}) => {
@@ -171,6 +183,15 @@ export function useAdminArticles(params: IAdminArticleParams = {}) {
     },
   });
 
+  const checkSlug = useMutation<
+    { exists: boolean; suggestion: string },
+    AxiosError,
+    { slug: string; currentId?: string }
+  >({
+    mutationFn: ({ slug, currentId }) =>
+      adminArticlesApi.checkSlug(slug, currentId),
+  });
+
   return {
     articles: data?.articles ?? [],
     pagination: data?.pagination,
@@ -180,9 +201,11 @@ export function useAdminArticles(params: IAdminArticleParams = {}) {
     updateArticle,
     deleteArticle,
     updateArticleStatus,
+    checkSlug,
     isCreating: createArticle.isPending,
     isUpdating: updateArticle.isPending,
     isDeleting: deleteArticle.isPending,
     isUpdatingStatus: updateArticleStatus.isPending,
+    isCheckingSlug: checkSlug.isPending,
   };
 }

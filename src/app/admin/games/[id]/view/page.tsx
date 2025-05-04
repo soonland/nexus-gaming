@@ -78,6 +78,7 @@ const GameViewPage = ({ params }: IPageProps) => {
       <GameView
         game={{
           id: game.id,
+          slug: game.slug,
           title: game.title,
           description: game.description || undefined,
           coverImage: game.coverImage || undefined,

@@ -7,6 +7,7 @@ interface IUserQueryParams {
   search?: string;
   role?: Role;
   status?: string;
+  minRole?: Role; // Pour filtrer par niveau de rôle minimum
 }
 
 export interface IUserData {

@@ -4,19 +4,11 @@ import { NextResponse } from 'next/server';
 
 import { getCurrentUser } from '@/lib/jwt';
 import prisma from '@/lib/prisma';
+import { generateSlug } from '@/lib/slug';
 import type { ArticleForm } from '@/types';
 
 const ADMIN_ROLES = [Role.SENIOR_EDITOR, Role.ADMIN, Role.SYSADMIN] as const;
 type AdminRole = (typeof ADMIN_ROLES)[number];
-
-const generateSlug = (title: string): string => {
-  return title
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-};
 
 const isAdminRole = (role?: Role): role is AdminRole => {
   return !!role && ADMIN_ROLES.includes(role as AdminRole);
@@ -37,6 +29,8 @@ export async function GET(request: Request) {
     const search = searchParams.get('search') ?? '';
     const status = searchParams.get('status') ?? '';
     const includeDeleted = searchParams.get('includeDeleted') === 'true';
+    const exactSlug = searchParams.get('exactSlug') === 'true';
+    const excludeId = searchParams.get('excludeId');
 
     // Calculate pagination
     const skip = (page - 1) * limit;
@@ -50,14 +44,19 @@ export async function GET(request: Request) {
             NOT: { status: 'DELETED' as ArticleStatus },
           }
         : {}),
-      ...(search
+      ...(exactSlug && search
         ? {
-            OR: [
-              { title: { contains: search, mode: 'insensitive' } },
-              { content: { contains: search, mode: 'insensitive' } },
-            ],
+            slug: { equals: search },
+            ...(excludeId ? { NOT: { id: excludeId } } : {}),
           }
-        : {}),
+        : search
+          ? {
+              OR: [
+                { title: { contains: search, mode: 'insensitive' } },
+                { content: { contains: search, mode: 'insensitive' } },
+              ],
+            }
+          : {}),
       ...(status
         ? {
             status: status as ArticleStatus,
@@ -191,6 +190,7 @@ export async function POST(request: Request) {
     const data = (await request.json()) as ArticleForm;
     const {
       title,
+      slug,
       content,
       categoryId,
       status = 'DRAFT',
@@ -216,7 +216,7 @@ export async function POST(request: Request) {
         categoryId,
         userId,
         heroImage,
-        slug: generateSlug(title),
+        slug: slug || generateSlug(title),
         games: {
           connect: gameIds.map(id => ({ id })),
         },

@@ -56,7 +56,10 @@ export interface IArticleMetadataPanelProps {
     id: string;
     username: string;
   }>;
+  canAssignReviewer: boolean;
+  currentReviewerId: string | null | undefined;
   onCategoryChange: (value: string) => void;
+  onReviewerChange: (value: string | null) => void;
   onClose: () => void;
   onGamesChange: (gameIds: string[]) => void;
   onImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -88,9 +91,12 @@ export interface IArticleGamesSelectProps {
 
 export interface IArticleMainContentProps {
   title: string;
+  slug: string;
   content: string;
   titleError?: string;
   contentError?: string;
+  slugError?: string;
+  isCheckingSlug?: boolean;
   onTitleChange: (value: string) => void;
   onContentChange: (value: string) => void;
 }

@@ -12,7 +12,7 @@ import { ArticleStatus, Role } from '@prisma/client';
 import type { Dayjs } from 'dayjs';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { FiChevronsLeft as ChevronLeftIcon, FiSave } from 'react-icons/fi';
 
 import { AdminForm } from '@/components/admin/common';
@@ -23,7 +23,12 @@ import { useCategories } from '@/hooks/useCategories';
 import { useGames } from '@/hooks/useGames';
 import { useUsers } from '@/hooks/useUsers';
 import dayjs from '@/lib/dayjs';
-import { canSelectArticleAuthor, canEditArticle } from '@/lib/permissions';
+import {
+  canSelectArticleAuthor,
+  canEditArticle,
+  canAssignReviewer,
+} from '@/lib/permissions';
+import { generateSlug } from '@/lib/slug';
 
 import {
   ArticleMainContent,
@@ -42,13 +47,18 @@ export const ArticleForm = ({ initialData, mode }: IArticleFormProps) => {
   const router = useRouter();
   const { user, isLoading } = useAuth();
   const [title, setTitle] = useState(initialData?.title || '');
+  const [slug, setSlug] = useState(initialData?.slug || '');
+  const [slugError, setSlugError] = useState('');
   const [content, setContent] = useState(initialData?.content || '');
-  const [categoryId, setCategoryId] = useState(initialData?.categoryId || '');
+  const [categoryId, setCategoryId] = useState(initialData?.category?.id || '');
   const [gameIds, setGameIds] = useState<string[]>(
     initialData?.games?.map(game => game.id) || []
   );
   const [status, setStatus] = useState<ArticleStatus>(
     initialData?.status || ArticleStatus.DRAFT
+  );
+  const [reviewerId, setReviewerId] = useState<string | null>(
+    initialData?.currentReviewerId || null
   );
   const [publishedAt, setPublishedAt] = useState<Dayjs | null>(
     initialData?.publishedAt ? dayjs(initialData.publishedAt) : dayjs()
@@ -57,13 +67,17 @@ export const ArticleForm = ({ initialData, mode }: IArticleFormProps) => {
   const [heroImage, setHeroImage] = useState<string | null>(
     initialData?.heroImage || null
   );
-  const [userId, setUserId] = useState(initialData?.user.id || '');
+  const [userId, setUserId] = useState('');
 
   useEffect(() => {
-    if (mode === 'create' && !userId) {
+    if (mode === 'create') {
+      // For new articles, use current user's ID
       setUserId(user?.id || '');
+    } else if (initialData?.user?.id) {
+      // For existing articles, use the article's author ID
+      setUserId(initialData.user.id);
     }
-  }, [mode, userId, user]);
+  }, [mode, user, initialData]);
 
   const [isMetadataOpen, setIsMetadataOpen] = useState(false);
   const [titleError, setTitleError] = useState('');
@@ -72,12 +86,65 @@ export const ArticleForm = ({ initialData, mode }: IArticleFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
-  const { createArticle, updateArticle, updateArticleStatus } =
+  const { createArticle, updateArticle, updateArticleStatus, checkSlug } =
     useAdminArticles();
   const { categories } = useCategories();
   const isEditor = user?.role === Role.EDITOR;
+
+  // Initialize slug in edit mode
+  useEffect(() => {
+    if (mode === 'edit' && initialData?.slug) {
+      setSlug(initialData.slug);
+      // No need to validate existing slug
+    }
+  }, [mode, initialData?.slug]);
+
+  // Handle title changes for slug generation
+  const handleTitleChange = useCallback(
+    (value: string) => {
+      setTitle(value);
+
+      // Only update slug in create mode or if there's no existing slug
+      if (mode === 'create' || !initialData?.slug) {
+        if (value.trim().length < 3) {
+          setSlug('');
+          setSlugError('');
+          return;
+        }
+
+        const newSlug = generateSlug(value);
+        setSlug(newSlug);
+
+        // Check if slug is available
+        checkSlug.mutate(
+          { slug: newSlug, currentId: initialData?.id },
+          {
+            onSuccess: result => {
+              if (result.exists) {
+                setSlugError(
+                  `Ce slug existe déjà. Suggestion : ${result.suggestion}`
+                );
+                // Optionally set the suggested slug
+                setSlug(result.suggestion);
+              } else {
+                setSlugError('');
+              }
+            },
+            onError: () => {
+              setSlugError('Erreur de validation du slug');
+            },
+          }
+        );
+      }
+    },
+    [mode, initialData?.slug, initialData?.id, checkSlug]
+  );
+
   const { games } = useGames();
-  const { data: usersData } = useUsers();
+  const { data: usersData } = useUsers({
+    minRole: Role.EDITOR,
+    limit: 100,
+  });
   const { showSuccess, showError } = useNotifier();
 
   const validateForm = () => {
@@ -138,6 +205,7 @@ export const ArticleForm = ({ initialData, mode }: IArticleFormProps) => {
     try {
       const data: IArticleFormData = {
         title: title.trim(),
+        slug: slug.trim(),
         content: content.trim(),
         categoryId,
         gameIds,
@@ -186,6 +254,7 @@ export const ArticleForm = ({ initialData, mode }: IArticleFormProps) => {
     try {
       const data: IArticleFormData = {
         title: title.trim(),
+        slug: slug.trim(),
         content: content.trim(),
         categoryId,
         gameIds,
@@ -194,6 +263,7 @@ export const ArticleForm = ({ initialData, mode }: IArticleFormProps) => {
         updatedAt: updatedAt?.toISOString() || null,
         heroImage,
         userId,
+        currentReviewerId: reviewerId,
       };
 
       if (mode === 'create') {
@@ -315,10 +385,13 @@ export const ArticleForm = ({ initialData, mode }: IArticleFormProps) => {
         <ArticleMainContent
           content={content}
           contentError={contentError}
+          isCheckingSlug={checkSlug.isPending}
+          slug={slug}
+          slugError={slugError}
           title={title}
           titleError={titleError}
           onContentChange={setContent}
-          onTitleChange={setTitle}
+          onTitleChange={handleTitleChange}
         />
 
         <Backdrop
@@ -341,10 +414,9 @@ export const ArticleForm = ({ initialData, mode }: IArticleFormProps) => {
           <Box
             sx={{
               'alignItems': 'center',
-              'bgcolor': isMetadataOpen ? 'primary.main' : 'primary.light',
+              'bgcolor': 'primary.dark',
               'borderRadius': '0 0 8px 8px',
               'boxShadow': 2,
-              'color': 'white',
               'cursor': 'pointer',
               'display': 'flex',
               'height': '40px',
@@ -385,10 +457,12 @@ export const ArticleForm = ({ initialData, mode }: IArticleFormProps) => {
 
           <ArticleMetadataPanel
             approvalHistory={initialData?.approvalHistory}
+            canAssignReviewer={canAssignReviewer(user?.role)}
             canSelectArticleAuthor={canSelectArticleAuthor(user?.role)}
             categories={categories || []}
             categoryError={categoryError}
             categoryId={categoryId}
+            currentReviewerId={reviewerId}
             gameIds={gameIds}
             games={games}
             heroImage={heroImage}
@@ -427,6 +501,7 @@ export const ArticleForm = ({ initialData, mode }: IArticleFormProps) => {
               }
             }}
             onPublishedAtChange={setPublishedAt}
+            onReviewerChange={setReviewerId}
             onStatusChange={handleStatusChange}
             onUpdatedAtChange={setUpdatedAt}
             onUserChange={setUserId}

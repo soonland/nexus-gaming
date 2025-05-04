@@ -78,6 +78,7 @@ const GamePage = () => {
         {
           id: game.id,
           title: game.title,
+          slug: game.slug,
         },
       ];
 

@@ -135,6 +135,15 @@ export async function generateGame(
 /**
  * Génère un article de manière déterministe
  */
+// Possible previous statuses for deleted articles
+const possiblePreviousStatuses = [
+  ArticleStatus.DRAFT,
+  ArticleStatus.PENDING_APPROVAL,
+  ArticleStatus.NEEDS_CHANGES,
+  ArticleStatus.PUBLISHED,
+  ArticleStatus.ARCHIVED,
+];
+
 export async function generateArticle(
   game: IGeneratedGame,
   category: { id: string; name: string },
@@ -142,6 +151,16 @@ export async function generateArticle(
   articleIndex: number,
   status: ArticleStatus = ArticleStatus.PUBLISHED
 ) {
+  // 10% chance for article to be deleted
+  const shouldBeDeleted = articleIndex % 10 === 0;
+  let previousStatus: ArticleStatus = ArticleStatus.DRAFT;
+
+  if (shouldBeDeleted) {
+    previousStatus =
+      possiblePreviousStatuses[articleIndex % possiblePreviousStatuses.length];
+    status = ArticleStatus.DELETED;
+  }
+
   const isReview = category.name === 'Tests';
   const template = isReview
     ? articleTemplates.review
@@ -271,6 +290,13 @@ export async function generateArticle(
       status,
       publishedAt:
         status === ArticleStatus.PUBLISHED ? faker.date.recent() : null,
+      deletedAt: status === ArticleStatus.DELETED ? faker.date.recent() : null,
+      previousStatus:
+        status === ArticleStatus.DELETED
+          ? possiblePreviousStatuses[
+              articleIndex % possiblePreviousStatuses.length
+            ]
+          : null,
       user: { connect: { id: author.id } },
       category: { connect: { id: category.id } },
       games: {
@@ -283,7 +309,50 @@ export async function generateArticle(
   });
 
   // Créer l'historique d'approbation si nécessaire
-  if (status !== ArticleStatus.DRAFT) {
+  // Create history entries
+  if (status === ArticleStatus.DELETED) {
+    // For deleted articles, first create history for previous status if not DRAFT
+    if (previousStatus !== ArticleStatus.DRAFT) {
+      // Initial submission
+      await prisma.articleApprovalHistory.create({
+        data: {
+          articleId: article.id,
+          fromStatus: ArticleStatus.DRAFT,
+          toStatus: ArticleStatus.PENDING_APPROVAL,
+          action: 'SUBMITTED',
+          actionById: author.id,
+          comment: 'Article soumis pour approbation',
+        },
+      });
+
+      // If published, add approval step
+      if (previousStatus === ArticleStatus.PUBLISHED) {
+        await prisma.articleApprovalHistory.create({
+          data: {
+            articleId: article.id,
+            fromStatus: ArticleStatus.PENDING_APPROVAL,
+            toStatus: ArticleStatus.PUBLISHED,
+            action: 'APPROVED',
+            actionById: author.id,
+            comment: 'Article approuvé et publié',
+          },
+        });
+      }
+    }
+
+    // Then create the deletion entry
+    await prisma.articleApprovalHistory.create({
+      data: {
+        articleId: article.id,
+        fromStatus: previousStatus,
+        toStatus: ArticleStatus.DELETED,
+        action: 'DELETED',
+        actionById: author.id,
+        comment: 'Article supprimé',
+      },
+    });
+  } else if (status !== ArticleStatus.DRAFT) {
+    // For non-deleted articles
     await prisma.articleApprovalHistory.create({
       data: {
         articleId: article.id,
@@ -308,6 +377,5 @@ export async function generateArticle(
       });
     }
   }
-
   return article;
 }
