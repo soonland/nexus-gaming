@@ -33,6 +33,7 @@ interface IGameFormProps {
 export const GameForm = ({ initialData, mode }: IGameFormProps) => {
   const router = useRouter();
   const [title, setTitle] = useState(initialData?.title || '');
+  const [slug, setSlug] = useState(initialData?.slug || '');
   const [titleError, setTitleError] = useState('');
   const [description, setDescription] = useState(
     initialData?.description || ''
@@ -203,10 +204,14 @@ export const GameForm = ({ initialData, mode }: IGameFormProps) => {
         {/* Main Content */}
         <GameMainContent
           description={description}
+          slug={slug}
           title={title}
           titleError={titleError}
           onDescriptionChange={setDescription}
-          onTitleChange={setTitle}
+          onTitleChange={value => {
+            setTitle(value);
+            setSlug(value);
+          }}
         />
 
         {/* Metadata Panel */}
@@ -234,7 +239,7 @@ export const GameForm = ({ initialData, mode }: IGameFormProps) => {
               'display': 'flex',
               'alignItems': 'center',
               'justifyContent': 'center',
-              'bgcolor': isMetadataOpen ? 'primary.main' : 'primary.light',
+              'bgcolor': 'primary.dark',
               'color': 'white',
               'borderRadius': '0 0 8px 8px',
               'cursor': 'pointer',

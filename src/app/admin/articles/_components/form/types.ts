@@ -91,9 +91,12 @@ export interface IArticleGamesSelectProps {
 
 export interface IArticleMainContentProps {
   title: string;
+  slug: string;
   content: string;
   titleError?: string;
   contentError?: string;
+  slugError?: string;
+  isCheckingSlug?: boolean;
   onTitleChange: (value: string) => void;
   onContentChange: (value: string) => void;
 }

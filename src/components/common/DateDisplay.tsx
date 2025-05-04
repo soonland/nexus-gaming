@@ -37,7 +37,7 @@ export const DateDisplay = ({
       : formatters.relative(date);
 
   const content = (
-    <Stack alignItems='center' direction='row' spacing={1}>
+    <Stack alignItems='center' component='span' direction='row' spacing={1}>
       <FiCalendar />
       <Typography
         color={color}

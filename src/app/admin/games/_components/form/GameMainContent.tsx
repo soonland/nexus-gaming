@@ -6,6 +6,7 @@ import type { IGameMainContentProps } from './types';
 
 export const GameMainContent = ({
   title,
+  slug,
   description,
   titleError,
   onTitleChange,
@@ -31,16 +32,24 @@ export const GameMainContent = ({
           helperText={titleError}
           label='Titre'
           name='title'
+          size='small'
           value={title}
           onChange={e => onTitleChange(e.target.value)}
         />
-
+        <TextField
+          fullWidth
+          label='Slug'
+          name='slug'
+          size='small'
+          value={slug}
+        />
         <TextField
           fullWidth
           multiline
           label='Description'
           name='description'
           rows={8}
+          size='small'
           value={description}
           onChange={e => onDescriptionChange(e.target.value)}
         />

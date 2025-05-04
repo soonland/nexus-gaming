@@ -36,6 +36,7 @@ export type GameGenre =
 export interface IGameBasicData {
   id: string;
   title: string;
+  slug: string;
 }
 
 export interface IGameData extends IGameBasicData {
@@ -127,6 +128,7 @@ export interface IApprovalHistoryData {
 
 export type ArticleForm = {
   title: string;
+  slug: string;
   content: string;
   categoryId: string;
   gameIds?: string[];

@@ -16,6 +16,7 @@ export interface IGameFormData {
 export interface IGameWithRelations {
   id: string;
   title: string;
+  slug: string;
   description?: string | null;
   releaseDate?: string | null;
   coverImage?: string | null;
@@ -27,6 +28,7 @@ export interface IGameWithRelations {
 
 export interface IGameMainContentProps {
   title: string;
+  slug: string;
   description: string;
   titleError: string;
   onTitleChange: (value: string) => void;

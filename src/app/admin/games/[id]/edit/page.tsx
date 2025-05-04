@@ -38,6 +38,7 @@ const EditGamePage = () => {
         initialData={{
           id: game.id,
           title: game.title,
+          slug: game.slug,
           description: game.description,
           releaseDate: game.releaseDate,
           coverImage: game.coverImage,

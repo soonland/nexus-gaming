@@ -18,6 +18,7 @@ export type {
 
 export interface IArticleFormData {
   title: string;
+  slug: string;
   content: string;
   categoryId: string;
   gameIds: string[];

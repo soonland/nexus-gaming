@@ -27,6 +27,7 @@ export async function GET(
       select: {
         id: true,
         title: true,
+        slug: true,
         content: true,
         status: true,
         previousStatus: true,
@@ -171,6 +172,7 @@ export async function PATCH(
         select: {
           id: true,
           title: true,
+          slug: true,
           content: true,
           status: true,
           previousStatus: true,
@@ -241,29 +243,33 @@ export async function PATCH(
       // Regular article update
       const formData = data as IArticleFormData;
 
+      const updateData = {
+        title: { set: formData.title },
+        slug: { set: formData.slug },
+        content: { set: formData.content },
+        status: formData.status ? { set: formData.status } : undefined,
+        heroImage: { set: formData.heroImage },
+        publishedAt: formData.publishedAt
+          ? { set: new Date(formData.publishedAt) }
+          : { set: undefined },
+        updatedAt: formData.updatedAt
+          ? { set: new Date(formData.updatedAt) }
+          : { set: undefined },
+        categoryId: { set: formData.categoryId },
+        userId: { set: formData.userId },
+        currentReviewerId: { set: formData.currentReviewerId || null },
+        games: {
+          set: formData.gameIds.map((id: string) => ({ id })),
+        },
+      };
+
       const article = await prisma.article.update({
         where: { id },
-        data: {
-          title: formData.title,
-          content: formData.content,
-          status: formData.status || undefined,
-          heroImage: formData.heroImage,
-          publishedAt: formData.publishedAt
-            ? { set: new Date(formData.publishedAt) }
-            : { set: undefined },
-          updatedAt: formData.updatedAt
-            ? { set: new Date(formData.updatedAt) }
-            : { set: undefined },
-          categoryId: formData.categoryId,
-          userId: formData.userId,
-          currentReviewerId: formData.currentReviewerId || null,
-          games: {
-            set: formData.gameIds.map((id: string) => ({ id })),
-          },
-        },
+        data: updateData,
         select: {
           id: true,
           title: true,
+          slug: true,
           content: true,
           status: true,
           previousStatus: true,
@@ -331,8 +337,11 @@ export async function PATCH(
 
       return NextResponse.json(article);
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating article:', error);
+    if (error?.code) {
+      console.error('Prisma error code:', error.code);
+    }
     return NextResponse.json(
       { error: 'Error updating article' },
       { status: 500 }

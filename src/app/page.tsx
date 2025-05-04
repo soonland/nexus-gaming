@@ -90,6 +90,7 @@ const Home = () => {
       games: article.games.map(game => ({
         id: game.id,
         title: game.title,
+        slug: game.slug,
       })),
       createdAt: dayjs(article.createdAt).format(),
       updatedAt: dayjs(article.updatedAt).format(),

@@ -62,6 +62,7 @@ export const ArticleMetadataPanel = ({
         borderRadius: 0,
         display: 'flex',
         flexDirection: 'column',
+        color: 'text.secondary',
       }}
     >
       <Box
