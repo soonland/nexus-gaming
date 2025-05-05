@@ -42,7 +42,7 @@ const GamesPage = () => {
               <Grid key={i} size={{ xs: 12, sm: 6, md: 4 }}>
                 <Skeleton
                   height={350}
-                  sx={{ borderRadius: 1 }}
+                  sx={{ borderRadius: 1, mb: 4 }}
                   variant='rectangular'
                 />
               </Grid>

@@ -12,6 +12,7 @@ import Link from 'next/link';
 
 import { DateDisplay } from '@/components/common/DateDisplay';
 import { PlatformChip } from '@/components/common/PlatformChip';
+import { getCloudinaryUrl } from '@/lib/cloudinary/urls';
 import type { GameData } from '@/types';
 
 interface IGameCardProps {
@@ -45,7 +46,15 @@ export const GameCard = ({ game }: IGameCardProps) => {
         alt={game.title}
         component='img'
         height={200}
-        image={game.coverImage || '/images/placeholder-game.png'}
+        image={
+          game.coverImage
+            ? getCloudinaryUrl(game.coverImage, {
+                width: 400,
+                height: 200,
+                quality: 80,
+              })
+            : '/images/placeholder-game.png'
+        }
         sx={{ objectFit: 'cover' }}
         onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
           e.currentTarget.src = '/images/placeholder-game.png';

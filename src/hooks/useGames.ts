@@ -42,6 +42,11 @@ const gamesApi = {
   },
 
   update: async (id: string, data: GameForm) => {
+    const response = await axios.put(`/api/games/${id}`, data);
+    return response.data;
+  },
+
+  updatePartial: async (id: string, data: Partial<GameForm>) => {
     const response = await axios.patch(`/api/games/${id}`, data);
     return response.data;
   },
@@ -82,8 +87,25 @@ export function useCreateGame() {
 export function useUpdateGame() {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  const updateGame = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: GameForm }) => {
+      const response = await axios.put(`/api/games/${id}`, data);
+      return response.data;
+    },
+    onSuccess: (_, { id }) => {
+      queryClient.refetchQueries({ queryKey: ['games'] });
+      queryClient.refetchQueries({ queryKey: ['game', id] });
+    },
+  });
+
+  const updatePartialGame = useMutation({
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: Partial<GameForm>;
+    }) => {
       const response = await axios.patch(`/api/games/${id}`, data);
       return response.data;
     },
@@ -92,6 +114,11 @@ export function useUpdateGame() {
       queryClient.refetchQueries({ queryKey: ['game', id] });
     },
   });
+
+  return {
+    ...updateGame,
+    updatePartial: updatePartialGame,
+  };
 }
 
 export function useDeleteGame() {

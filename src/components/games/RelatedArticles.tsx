@@ -49,7 +49,7 @@ export const RelatedArticles = ({
     .filter((article): article is IArticleBasicData => article !== null);
 
   return (
-    <Box>
+    <Box pb={4}>
       <Stack alignItems='center' direction='row' spacing={1} sx={{ mb: 2 }}>
         {showIcon && <FiAlignJustify size={iconSize} />}
         <Typography variant='h5'>{title}</Typography>

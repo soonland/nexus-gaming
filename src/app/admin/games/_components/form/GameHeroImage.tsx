@@ -4,6 +4,8 @@ import { Box, CircularProgress, IconButton, Typography } from '@mui/material';
 import Image from 'next/image';
 import { FiCamera } from 'react-icons/fi';
 
+import { getCloudinaryUrl } from '@/lib/cloudinary/urls';
+
 import type { IGameHeroImageProps } from './types';
 
 export const GameHeroImage = ({
@@ -33,7 +35,11 @@ export const GameHeroImage = ({
             <Image
               fill
               alt='Game cover preview'
-              src={coverImage}
+              src={getCloudinaryUrl(coverImage, {
+                width: 400,
+                height: 200,
+                quality: 80,
+              })}
               style={{ objectFit: 'cover' }}
             />
           ) : (

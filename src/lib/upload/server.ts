@@ -32,13 +32,14 @@ export const uploadImageServer = async (
             console.error('Cloudinary upload error:', error);
             reject(error);
           } else {
-            resolve({
+            const response = {
               secure_url: result.secure_url,
               public_id: result.public_id,
               format: result.format,
               width: result.width,
               height: result.height,
-            });
+            };
+            resolve(response);
           }
         }
       )

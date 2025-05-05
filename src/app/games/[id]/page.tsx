@@ -68,6 +68,7 @@ const GamePage = () => {
         ? {
             id: article.category.id,
             name: article.category.name,
+            slug: article.category.slug,
             color: article.category.color,
             createdAt: dayjs(article.category.createdAt).format(),
             updatedAt: dayjs(article.category.updatedAt).format(),
@@ -133,7 +134,7 @@ const GamePage = () => {
     <Box>
       <Hero
         badges={badges}
-        image={game.coverImage || '/images/placeholder-game.png'}
+        image={game.coverImage || undefined}
         metadata={
           <GameMeta
             developer={game.developer.name}

@@ -88,6 +88,7 @@ export async function generateGame(
         platforms: {
           set: gamePlatforms.map(p => ({ id: p.id })),
         },
+        coverImage: null,
       },
       select: {
         slug: true,
@@ -116,7 +117,7 @@ export async function generateGame(
       platforms: {
         connect: gamePlatforms.map(p => ({ id: p.id })),
       },
-      coverImage: '/images/placeholder-game.png',
+      coverImage: null,
     },
     select: {
       slug: true,

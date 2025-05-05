@@ -26,6 +26,15 @@ export async function POST(request: Request) {
     const buffer = Buffer.from(bytes);
 
     const result = await uploadImageServer(buffer, folder || 'default');
+
+    if (!result.public_id) {
+      console.error('Missing public_id in uploadImageServer result');
+      return NextResponse.json(
+        { error: 'Invalid upload response' },
+        { status: 500 }
+      );
+    }
+
     return NextResponse.json(result);
   } catch (error) {
     console.error('Upload error:', error);

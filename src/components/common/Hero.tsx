@@ -12,6 +12,8 @@ import type { ChipProps } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material';
 import type React from 'react';
 
+import { getCloudinaryUrl } from '@/lib/cloudinary/urls';
+
 import { CategoryChip } from './CategoryChip';
 import { PlatformChip } from './PlatformChip';
 
@@ -86,7 +88,15 @@ export const Hero = ({
           <Box
             alt={title}
             component='img'
-            src={image || '/images/placeholder-game.png'}
+            src={
+              image && image !== ''
+                ? getCloudinaryUrl(image, {
+                    width: 1200,
+                    height: 600,
+                    quality: 85,
+                  })
+                : '/images/placeholder-game.png'
+            }
             sx={{
               position: 'absolute',
               width: '100%',

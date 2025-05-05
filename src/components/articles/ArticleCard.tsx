@@ -12,6 +12,7 @@ import {
 import Link from 'next/link';
 
 import { CategoryChip } from '@/components/common';
+import { getCloudinaryUrl } from '@/lib/cloudinary/urls';
 import type { IArticleBasicData } from '@/types/api';
 
 interface IArticleCardProps {
@@ -38,7 +39,11 @@ export const ArticleCard = ({ article }: IArticleCardProps) => {
         alt={article.title}
         component='img'
         height={200}
-        image={article.heroImage || '/images/placeholder-game.png'}
+        image={
+          article.heroImage
+            ? getCloudinaryUrl(article.heroImage, { width: 600, quality: 80 })
+            : '/images/placeholder-game.png'
+        }
         sx={{ objectFit: 'cover' }}
       />
       <CardContent sx={{ flexGrow: 1 }}>

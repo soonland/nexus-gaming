@@ -19,7 +19,10 @@ const EditCategoryPage = () => {
             initialData={{
               id: category.id,
               name: category.name,
+              description: category.description,
               color: category.color,
+              isDefault: category.isDefault,
+              parentId: category.parentId,
             }}
             mode='edit'
           />

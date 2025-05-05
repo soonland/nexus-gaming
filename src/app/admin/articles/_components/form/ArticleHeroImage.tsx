@@ -1,8 +1,16 @@
 'use client';
 
-import { Box, CircularProgress, IconButton, Typography } from '@mui/material';
+import {
+  Box,
+  CircularProgress,
+  IconButton,
+  Typography,
+  Tooltip,
+} from '@mui/material';
 import Image from 'next/image';
 import { FiCamera } from 'react-icons/fi';
+
+import { getCloudinaryUrl } from '@/lib/cloudinary/urls';
 
 import type { IArticleHeroImageProps } from './types';
 
@@ -30,12 +38,14 @@ export const ArticleHeroImage = ({
           }}
         >
           {heroImage ? (
-            <Image
-              fill
-              alt='Hero image preview'
-              src={heroImage}
-              style={{ objectFit: 'cover' }}
-            />
+            <Tooltip title='Image à la une'>
+              <Image
+                fill
+                alt='Hero image preview'
+                src={getCloudinaryUrl(heroImage, { width: 800, quality: 80 })}
+                style={{ objectFit: 'cover' }}
+              />
+            </Tooltip>
           ) : (
             <Box
               sx={{

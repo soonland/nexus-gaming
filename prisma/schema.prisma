@@ -68,12 +68,20 @@ model Company {
 }
 
 model Category {
-  id        String    @id @default(uuid())
-  name      String    @unique
-  color     String?   // Hex color code (e.g., #FF0000)
-  articles  Article[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id            String     @id @default(uuid())
+  name          String     @unique
+  slug          String     @unique
+  description   String?
+  color         String?    // Hex color code (e.g., #FF0000)
+  isDefault     Boolean    @default(false) // Indicate if this is the default category
+  parentId      String?
+  parent        Category?  @relation("SubCategories", fields: [parentId], references: [id])
+  subCategories Category[] @relation("SubCategories")
+  articles      Article[]
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([parentId])
 }
 
 enum GameGenre {
