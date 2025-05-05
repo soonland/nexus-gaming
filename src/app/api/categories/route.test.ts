@@ -46,7 +46,11 @@ describe('GET /api/categories', () => {
   const baseCategory = {
     id: 'cat-1',
     name: 'Test Category',
+    slug: 'test-category',
     color: '#FF0000',
+    description: 'Test description',
+    isDefault: false,
+    parentId: null,
     createdAt: fixedDate,
     updatedAt: fixedDate,
     _count: {
