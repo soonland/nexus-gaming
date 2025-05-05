@@ -20,6 +20,7 @@ interface IAction {
   onClick?: () => void;
   color?: string;
   disabled?: boolean;
+  tooltip?: string; // Tooltip alternatif pour les boutons désactivés
 }
 
 interface IAdminActionButtonsProps {
@@ -116,7 +117,12 @@ export const AdminActionButtons = ({
       {actions.map((action, index) => {
         const ButtonWrapper = action.href ? Link : 'span';
         return (
-          <Tooltip key={index} title={action.label}>
+          <Tooltip
+            key={index}
+            title={
+              action.disabled && action.tooltip ? action.tooltip : action.label
+            }
+          >
             <IconButton
               component={ButtonWrapper}
               disabled={action.disabled}

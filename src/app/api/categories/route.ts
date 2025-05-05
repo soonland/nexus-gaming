@@ -9,7 +9,6 @@ const HEX_COLOR_REGEX = /^#[0-9A-F]{6}$/i;
 // Ensure only one default category exists
 async function handleDefaultCategory(id: string, isDefault: boolean) {
   if (isDefault) {
-    // Remove default from all other categories first
     await prisma.category.updateMany({
       where: {
         NOT: {
@@ -26,8 +25,10 @@ async function handleDefaultCategory(id: string, isDefault: boolean) {
 
 export async function GET() {
   try {
+    // Récupérer toutes les catégories
     const categories = await prisma.category.findMany({
       include: {
+        parent: true,
         _count: {
           select: {
             articles: true,
@@ -39,7 +40,6 @@ export async function GET() {
       },
     });
 
-    // Transform the data to include the count directly
     const formattedCategories = categories.map(category => ({
       ...category,
       articleCount: category._count.articles,
@@ -64,30 +64,54 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { name, color, isDefault } = body;
+    const { name, description, color, isDefault, parentId } = body;
 
     if (!name) {
       return NextResponse.json({ error: 'Name is required' }, { status: 400 });
     }
 
-    // Validate color format if provided
-    if (color !== null && color !== undefined && !HEX_COLOR_REGEX.test(color)) {
+    if (color && !HEX_COLOR_REGEX.test(color)) {
       return NextResponse.json(
         { error: 'Invalid color format' },
         { status: 400 }
       );
     }
 
-    // Create category first to get its ID
+    if (parentId) {
+      const parentCategory = await prisma.category.findUnique({
+        where: { id: parentId },
+      });
+
+      if (!parentCategory) {
+        return NextResponse.json(
+          { error: 'Parent category not found' },
+          { status: 404 }
+        );
+      }
+
+      if (parentCategory.parentId) {
+        return NextResponse.json(
+          { error: 'Cannot create nested subcategories beyond one level' },
+          { status: 400 }
+        );
+      }
+    }
+
     const category = await prisma.category.create({
       data: {
         name,
+        slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        description,
         color,
         isDefault: isDefault || false,
+        parentId,
+      },
+      include: {
+        parent: true,
+        subCategories: true,
       },
     });
 
-    // Handle default category logic if needed
     if (isDefault) {
       await handleDefaultCategory(category.id, true);
     }
@@ -97,6 +121,95 @@ export async function POST(request: Request) {
     console.error('Error creating category:', error);
     return NextResponse.json(
       { error: 'Error creating category' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(request: Request) {
+  try {
+    const url = new URL(request.url);
+    const id = url.pathname.split('/').pop();
+
+    if (!id) {
+      return NextResponse.json(
+        { error: 'Category ID is required' },
+        { status: 400 }
+      );
+    }
+
+    const user = await getCurrentUser();
+
+    if (!user || (user.role !== 'ADMIN' && user.role !== 'SYSADMIN')) {
+      return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
+    }
+
+    const body = await request.json();
+    const { name, description, color, isDefault, parentId } = body;
+
+    if (color && !HEX_COLOR_REGEX.test(color)) {
+      return NextResponse.json(
+        { error: 'Invalid color format' },
+        { status: 400 }
+      );
+    }
+
+    if (parentId) {
+      if (parentId === id) {
+        return NextResponse.json(
+          { error: 'Category cannot be its own parent' },
+          { status: 400 }
+        );
+      }
+
+      const parentCategory = await prisma.category.findUnique({
+        where: { id: parentId },
+      });
+
+      if (!parentCategory) {
+        return NextResponse.json(
+          { error: 'Parent category not found' },
+          { status: 404 }
+        );
+      }
+
+      if (parentCategory.parentId) {
+        return NextResponse.json(
+          { error: 'Cannot create nested subcategories beyond one level' },
+          { status: 400 }
+        );
+      }
+    }
+
+    const updateData = {
+      ...(name && {
+        name,
+        slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+      }),
+      ...(description !== undefined && { description }),
+      ...(color !== undefined && { color }),
+      ...(parentId !== undefined && { parentId }),
+      ...(isDefault !== undefined && { isDefault }),
+    };
+
+    const category = await prisma.category.update({
+      where: { id },
+      data: updateData,
+      include: {
+        parent: true,
+        subCategories: true,
+      },
+    });
+
+    if (isDefault) {
+      await handleDefaultCategory(category.id, true);
+    }
+
+    return NextResponse.json(category);
+  } catch (error) {
+    console.error('Error updating category:', error);
+    return NextResponse.json(
+      { error: 'Error updating category' },
       { status: 500 }
     );
   }

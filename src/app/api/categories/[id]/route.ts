@@ -40,6 +40,14 @@ export async function GET(
 
     const category = await prisma.category.findUnique({
       where: { id },
+      include: {
+        parent: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
     });
 
     if (!category) {
@@ -72,7 +80,7 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const { name, color, isDefault } = body;
+    const { name, color, isDefault, parentId, description } = body;
 
     if (!id) {
       return NextResponse.json(
@@ -100,6 +108,16 @@ export async function PATCH(
         ...(name && { name }),
         ...(color !== undefined && { color }),
         ...(isDefault !== undefined && { isDefault }),
+        ...(parentId !== undefined && { parentId }),
+        ...(description !== undefined && { description }),
+      },
+      include: {
+        parent: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
       },
     });
 

@@ -102,6 +102,8 @@ export const ArticleMetadataPanel = ({
                 category: {
                   id: categoryId,
                   name: categories.find(c => c.id === categoryId)?.name || '',
+                  color: categories.find(c => c.id === categoryId)?.color || '',
+                  slug: categories.find(c => c.id === categoryId)?.slug || '',
                   createdAt: new Date().toISOString(),
                   updatedAt: new Date().toISOString(),
                 },

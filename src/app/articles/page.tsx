@@ -48,7 +48,7 @@ const ArticlesPage = () => {
               >
                 <Skeleton
                   height={350}
-                  sx={{ borderRadius: 1 }}
+                  sx={{ borderRadius: 1, mb: 4 }}
                   variant='rectangular'
                 />
               </Grid>

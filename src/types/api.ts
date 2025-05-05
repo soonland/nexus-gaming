@@ -11,16 +11,25 @@ export type ArticleStatus =
 export interface ICategoryData {
   id: string;
   name: string;
+  slug: string;
+  description?: string | null;
   color?: string | null;
   isDefault?: boolean;
+  parentId?: string | null;
+  parent?: {
+    id: string;
+    name: string;
+  } | null;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface ICategoryForm {
   name: string;
+  description?: string | null;
   color?: string | null;
   isDefault?: boolean;
+  parentId?: string | null;
 }
 
 export type GameGenre =

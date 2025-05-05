@@ -61,6 +61,11 @@ const adminArticlesApi = {
   },
 
   update: async (id: string, data: ArticleForm) => {
+    const response = await axios.put(`/api/admin/articles/${id}`, data);
+    return response.data as IArticleData;
+  },
+
+  updatePartial: async (id: string, data: Partial<ArticleForm>) => {
     const response = await axios.patch(`/api/admin/articles/${id}`, data);
     return response.data as IArticleData;
   },
@@ -134,6 +139,21 @@ export function useAdminArticles(params: IAdminArticleParams = {}) {
     mutationFn: ({ id, data }: { id: string; data: ArticleForm }) =>
       adminArticlesApi.update(id, data),
     onSuccess: (_, { id }) => {
+      queryClient.refetchQueries({
+        queryKey: currentQueryKey,
+        exact: true,
+      });
+      queryClient.refetchQueries({
+        queryKey: queryKeys.details(id),
+        exact: true,
+      });
+    },
+  });
+
+  const updateArticlePartial = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<ArticleForm> }) =>
+      adminArticlesApi.updatePartial(id, data),
+    onSuccess: (_, { id }) => {
       // Only refetch the current query
       queryClient.refetchQueries({
         queryKey: currentQueryKey,
@@ -203,9 +223,10 @@ export function useAdminArticles(params: IAdminArticleParams = {}) {
     updateArticleStatus,
     checkSlug,
     isCreating: createArticle.isPending,
-    isUpdating: updateArticle.isPending,
+    isUpdating: updateArticle.isPending || updateArticlePartial.isPending,
     isDeleting: deleteArticle.isPending,
     isUpdatingStatus: updateArticleStatus.isPending,
     isCheckingSlug: checkSlug.isPending,
+    updateArticlePartial,
   };
 }

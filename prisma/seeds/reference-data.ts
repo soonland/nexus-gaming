@@ -16,19 +16,19 @@ export async function seedReferenceData() {
     await prisma.category.upsert({
       where: { name: 'Actualités' },
       update: {},
-      create: { name: 'Actualités' },
+      create: { name: 'Actualités', slug: 'actualites' },
     });
 
     await prisma.category.upsert({
       where: { name: 'Tests' },
       update: {},
-      create: { name: 'Tests' },
+      create: { name: 'Tests', slug: 'tests' },
     });
 
     await prisma.category.upsert({
       where: { name: 'Previews' },
       update: {},
-      create: { name: 'Previews' },
+      create: { name: 'Previews', slug: 'previews' },
     });
 
     // Create platforms

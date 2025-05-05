@@ -94,8 +94,13 @@ export const ArticleForm = ({ initialData, mode }: IArticleFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
-  const { createArticle, updateArticle, updateArticleStatus, checkSlug } =
-    useAdminArticles();
+  const {
+    createArticle,
+    updateArticle,
+    updateArticlePartial,
+    updateArticleStatus,
+    checkSlug,
+  } = useAdminArticles();
   const { categories } = useCategories();
   const isEditor = user?.role === Role.EDITOR;
 
@@ -228,9 +233,21 @@ export const ArticleForm = ({ initialData, mode }: IArticleFormProps) => {
         await createArticle.mutateAsync(data);
         showSuccess('Article soumis pour approbation');
       } else if (initialData?.id) {
+        // PUT pour une sauvegarde complète
+        const fullData = {
+          ...data,
+          // S'assurer que les champs requis sont présents
+          title: data.title.trim(),
+          content: data.content.trim(),
+          categoryId: data.categoryId,
+          gameIds: data.gameIds || [],
+          status: data.status || ArticleStatus.DRAFT,
+          userId: data.userId || user?.id,
+        };
+
         await updateArticle.mutateAsync({
           id: initialData.id,
-          data,
+          data: fullData,
         });
         if (comment) {
           await updateArticleStatus.mutateAsync({
@@ -275,16 +292,35 @@ export const ArticleForm = ({ initialData, mode }: IArticleFormProps) => {
       };
 
       if (mode === 'create') {
-        await createArticle.mutateAsync(data);
+        const fullData = {
+          ...data,
+          title: data.title.trim(),
+          content: data.content.trim(),
+          categoryId: data.categoryId,
+          gameIds: data.gameIds || [],
+          status: data.status || ArticleStatus.DRAFT,
+          userId: data.userId || user?.id,
+        };
+        await createArticle.mutateAsync(fullData);
         showSuccess(
           isEditor
             ? 'Brouillon sauvegardé avec succès'
             : 'Article créé avec succès'
         );
       } else if (initialData?.id) {
+        // Mise à jour complète via PUT
+        const fullData = {
+          ...data,
+          title: data.title.trim(),
+          content: data.content.trim(),
+          categoryId: data.categoryId,
+          gameIds: data.gameIds || [],
+          status: data.status || ArticleStatus.DRAFT,
+          userId: data.userId || user?.id,
+        };
         await updateArticle.mutateAsync({
           id: initialData.id,
-          data,
+          data: fullData,
         });
         showSuccess(
           isEditor
@@ -493,13 +529,53 @@ export const ArticleForm = ({ initialData, mode }: IArticleFormProps) => {
                 if (file) {
                   const formData = new FormData();
                   formData.append('file', file);
+                  formData.append('folder', 'articles');
+
                   const response = await fetch('/api/upload', {
                     method: 'POST',
                     body: formData,
                   });
-                  const data = await response.json();
-                  setHeroImage(data.url);
-                  showSuccess('Image mise à jour avec succès');
+
+                  if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error('Upload error response:', errorData);
+                    throw new Error('Upload failed');
+                  }
+                  const uploadResult = await response.json();
+
+                  // Vérifie que la réponse contient bien un public_id
+                  if (!uploadResult.public_id) {
+                    throw new Error('No public_id in upload response');
+                  }
+
+                  // Mise à jour avec le nouveau public_id
+                  const newPublicId = uploadResult.public_id;
+                  const previousImage = heroImage;
+                  setHeroImage(newPublicId);
+
+                  if (mode === 'edit' && initialData?.id) {
+                    try {
+                      // Mise à jour uniquement de l'image avec PATCH
+                      const updated = await updateArticlePartial.mutateAsync({
+                        id: initialData.id,
+                        data: {
+                          heroImage: newPublicId,
+                          updatedAt: new Date().toISOString(),
+                        },
+                      });
+
+                      // Vérifier que l'image a bien été mise à jour
+                      if (updated.heroImage !== newPublicId) {
+                        throw new Error('Hero image not updated in response');
+                      }
+                      showSuccess('Image mise à jour avec succès');
+                    } catch (error) {
+                      // Rollback en cas d'erreur
+                      setHeroImage(previousImage);
+                      showError("Erreur lors de la mise à jour de l'article");
+                      throw error;
+                    }
+                  }
                 }
               } catch (error) {
                 console.error('Error uploading image:', error);

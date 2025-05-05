@@ -33,7 +33,7 @@ export const RelatedGames = ({
   if (games.length === 0) return null;
 
   return (
-    <Box px={4}>
+    <Box pb={4}>
       <Stack alignItems='center' direction='row' spacing={1} sx={{ mb: 2 }}>
         {showIcon && <FaGamepad size={iconSize} />}
         <Typography variant='h5'>{title}</Typography>
