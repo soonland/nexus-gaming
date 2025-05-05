@@ -123,7 +123,33 @@ export const GameForm = ({ initialData, mode }: IGameFormProps) => {
     setIsUploading(true);
     try {
       const result = await uploadImage(file, 'games');
-      setCoverImage(result.secure_url);
+      if (!result.public_id) {
+        throw new Error('No public_id in upload response');
+      }
+
+      const previousImage = coverImage;
+      setCoverImage(result.public_id);
+
+      if (mode === 'edit' && initialData?.id) {
+        try {
+          // Mise à jour partielle avec PATCH
+          const updated = await updateGame.updatePartial.mutateAsync({
+            id: initialData.id,
+            data: {
+              coverImage: result.public_id,
+            },
+          });
+
+          if (updated.coverImage !== result.public_id) {
+            throw new Error('Cover image not updated in response');
+          }
+          showSuccess('Image mise à jour avec succès');
+        } catch (error) {
+          // Rollback en cas d'erreur
+          setCoverImage(previousImage);
+          throw error;
+        }
+      }
       showSuccess('Image mise à jour avec succès');
     } catch (error) {
       console.error('Error uploading image:', error);
