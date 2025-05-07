@@ -12,12 +12,12 @@ const getApprovalAction = (
   fromStatus: ArticleStatus,
   toStatus: ArticleStatus
 ): ApprovalAction => {
+  if (fromStatus === 'DELETED') return 'RESTORED';
   if (toStatus === 'PENDING_APPROVAL') return 'SUBMITTED';
   if (toStatus === 'PUBLISHED') return 'APPROVED';
   if (toStatus === 'NEEDS_CHANGES') return 'CHANGES_NEEDED';
   if (toStatus === 'ARCHIVED') return 'ARCHIVED';
   if (toStatus === 'DELETED') return 'DELETED';
-  if (fromStatus === 'DELETED') return 'RESTORED';
   return 'SUBMITTED'; // Default for other transitions
 };
 
@@ -112,7 +112,7 @@ export async function PATCH(
         article.status as ArticleStatus,
         newStatus as ArticleStatus,
         user.role,
-        { userId: article.userId },
+        { userId: article.userId, status: article.status },
         user.id
       )
     ) {

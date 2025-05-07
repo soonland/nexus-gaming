@@ -151,9 +151,13 @@ export const canTransitionToStatus = (
   fromStatus: ArticleStatus,
   toStatus: ArticleStatus,
   role?: Role,
-  article?: { userId: string },
+  article?: { userId: string; status: ArticleStatus },
   userId?: string
 ): boolean => {
+  if (fromStatus === toStatus) {
+    // Pas de transition si le statut est le même
+    return true;
+  }
   // Les ADMIN peuvent faire n'importe quelle transition
   if (hasSufficientRole(role, Role.ADMIN)) {
     return true;
@@ -180,13 +184,22 @@ export const canTransitionToStatus = (
     return hasSufficientRole(role, Role.EDITOR);
   }
 
+  // Un EDITOR peut ramener son propre article en DRAFT
+  if (toStatus === 'DRAFT') {
+    return canEditArticle(
+      role,
+      article ? { status: fromStatus, userId: article.userId } : undefined,
+      userId
+    );
+  }
+
   // Les autres transitions nécessitent des permissions de review
   if (!canReviewArticles(role)) return false;
 
   const transitions: Record<ArticleStatus, ArticleStatus[]> = {
     DRAFT: ['PENDING_APPROVAL', 'PUBLISHED'],
     PENDING_APPROVAL: ['PUBLISHED', 'NEEDS_CHANGES'],
-    NEEDS_CHANGES: ['PENDING_APPROVAL'],
+    NEEDS_CHANGES: ['PENDING_APPROVAL', 'DRAFT'],
     PUBLISHED: ['ARCHIVED'],
     ARCHIVED: [],
     DELETED: [], // Pas de transition possible depuis DELETED (géré plus haut)
