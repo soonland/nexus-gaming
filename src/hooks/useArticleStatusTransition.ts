@@ -13,10 +13,13 @@ const updateArticleStatus = async (
   articleId: string,
   { status, comment }: IArticleStatusUpdate
 ) => {
-  const { data } = await axios.patch(`/api/articles/${articleId}/status`, {
-    status,
-    comment,
-  });
+  const { data } = await axios.patch(
+    `/api/admin/articles/${articleId}/status`,
+    {
+      status,
+      comment,
+    }
+  );
   return data as IArticleData;
 };
 

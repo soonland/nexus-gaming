@@ -64,8 +64,19 @@ describe('GET /api/categories', () => {
 
   it('should fetch all categories ordered by name', async () => {
     const categories = [
-      { ...baseCategory, name: 'Action', color: '#FF0000' },
-      { ...baseCategory, id: 'cat-2', name: 'Strategy', color: '#00FF00' },
+      {
+        ...baseCategory,
+        name: 'Action',
+        slug: 'action',
+        color: '#FF0000',
+      },
+      {
+        ...baseCategory,
+        id: 'cat-2',
+        name: 'Strategy',
+        slug: 'strategy',
+        color: '#00FF00',
+      },
     ];
 
     const findManyMock = vi.fn().mockResolvedValue(categories);
@@ -80,7 +91,11 @@ describe('GET /api/categories', () => {
       {
         id: 'cat-1',
         name: 'Action',
+        slug: 'action',
         color: '#FF0000',
+        description: 'Test description',
+        isDefault: false,
+        parentId: null,
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
         articleCount: 0,
@@ -91,7 +106,11 @@ describe('GET /api/categories', () => {
       {
         id: 'cat-2',
         name: 'Strategy',
+        slug: 'strategy',
         color: '#00FF00',
+        description: 'Test description',
+        isDefault: false,
+        parentId: null,
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
         articleCount: 0,
@@ -104,6 +123,7 @@ describe('GET /api/categories', () => {
     expect(new Date(data[0].updatedAt)).toBeInstanceOf(Date);
     expect(findManyMock).toHaveBeenCalledWith({
       include: {
+        parent: true,
         _count: {
           select: {
             articles: true,
@@ -179,13 +199,22 @@ describe('POST /api/categories', () => {
     const newCategory = {
       id: 'cat-1',
       name: 'Test Category',
+      slug: 'test-category',
       color: '#FF0000',
-      createdAt: fixedDate,
-      updatedAt: fixedDate,
+      isDefault: false,
+      createdAt: fixedDate.toISOString(),
+      updatedAt: fixedDate.toISOString(),
+      parent: null,
+      subCategories: [],
     };
 
     const getCurrentUserMock = vi.fn().mockResolvedValue(mockAdmin);
-    const createMock = vi.fn().mockResolvedValue(newCategory);
+    const mockResponse = {
+      ...newCategory,
+      createdAt: fixedDate,
+      updatedAt: fixedDate,
+    };
+    const createMock = vi.fn().mockResolvedValue(mockResponse);
 
     (getCurrentUser as any).mockImplementation(getCurrentUserMock);
     (prisma.category.create as any).mockImplementation(createMock);
@@ -195,17 +224,20 @@ describe('POST /api/categories', () => {
     const data = await response.json();
 
     expect(response.status).toBe(201);
-    expect(data).toEqual(
-      expect.objectContaining({
-        id: expect.any(String),
-        name: 'Test Category',
-        color: '#FF0000',
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
-      })
-    );
+    expect(data).toEqual(newCategory);
     expect(createMock).toHaveBeenCalledWith({
-      data: { name: 'Test Category', color: '#FF0000' },
+      data: {
+        name: 'Test Category',
+        slug: 'test-category',
+        color: '#FF0000',
+        isDefault: false,
+        description: undefined,
+        parentId: undefined,
+      },
+      include: {
+        parent: true,
+        subCategories: true,
+      },
     });
   });
 
@@ -213,13 +245,22 @@ describe('POST /api/categories', () => {
     const newCategory = {
       id: 'cat-1',
       name: 'Test Category',
+      slug: 'test-category',
       color: null,
-      createdAt: fixedDate,
-      updatedAt: fixedDate,
+      isDefault: false,
+      createdAt: fixedDate.toISOString(),
+      updatedAt: fixedDate.toISOString(),
+      parent: null,
+      subCategories: [],
     };
 
     const getCurrentUserMock = vi.fn().mockResolvedValue(mockAdmin);
-    const createMock = vi.fn().mockResolvedValue(newCategory);
+    const mockResponse = {
+      ...newCategory,
+      createdAt: fixedDate,
+      updatedAt: fixedDate,
+    };
+    const createMock = vi.fn().mockResolvedValue(mockResponse);
 
     (getCurrentUser as any).mockImplementation(getCurrentUserMock);
     (prisma.category.create as any).mockImplementation(createMock);
@@ -229,17 +270,20 @@ describe('POST /api/categories', () => {
     const data = await response.json();
 
     expect(response.status).toBe(201);
-    expect(data).toEqual(
-      expect.objectContaining({
-        id: expect.any(String),
-        name: 'Test Category',
-        color: null,
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
-      })
-    );
+    expect(data).toEqual(newCategory);
     expect(createMock).toHaveBeenCalledWith({
-      data: { name: 'Test Category' },
+      data: {
+        name: 'Test Category',
+        slug: 'test-category',
+        color: undefined,
+        isDefault: false,
+        description: undefined,
+        parentId: undefined,
+      },
+      include: {
+        parent: true,
+        subCategories: true,
+      },
     });
   });
 
@@ -326,9 +370,13 @@ describe('POST /api/categories', () => {
     const newCategory = {
       id: 'cat-1',
       name: 'Test Category',
+      slug: 'test-category',
       color: '#00FF00',
-      createdAt: fixedDate,
-      updatedAt: fixedDate,
+      isDefault: false,
+      createdAt: fixedDate.toISOString(),
+      updatedAt: fixedDate.toISOString(),
+      parent: null,
+      subCategories: [],
     };
 
     const mockSysAdmin = {
@@ -337,7 +385,12 @@ describe('POST /api/categories', () => {
     };
 
     const getCurrentUserMock = vi.fn().mockResolvedValue(mockSysAdmin);
-    const createMock = vi.fn().mockResolvedValue(newCategory);
+    const mockResponse = {
+      ...newCategory,
+      createdAt: fixedDate,
+      updatedAt: fixedDate,
+    };
+    const createMock = vi.fn().mockResolvedValue(mockResponse);
 
     (getCurrentUser as any).mockImplementation(getCurrentUserMock);
     (prisma.category.create as any).mockImplementation(createMock);
@@ -347,17 +400,20 @@ describe('POST /api/categories', () => {
     const data = await response.json();
 
     expect(response.status).toBe(201);
-    expect(data).toEqual(
-      expect.objectContaining({
-        id: expect.any(String),
-        name: 'Test Category',
-        color: '#00FF00',
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
-      })
-    );
+    expect(data).toEqual(newCategory);
     expect(createMock).toHaveBeenCalledWith({
-      data: { name: 'Test Category', color: '#00FF00' },
+      data: {
+        name: 'Test Category',
+        slug: 'test-category',
+        color: '#00FF00',
+        isDefault: false,
+        description: undefined,
+        parentId: undefined,
+      },
+      include: {
+        parent: true,
+        subCategories: true,
+      },
     });
   });
 

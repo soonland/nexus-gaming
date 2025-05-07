@@ -89,6 +89,10 @@ export async function PATCH(
       );
     }
 
+    if (name !== undefined && (!name || name.trim() === '')) {
+      return NextResponse.json({ error: 'Name is required' }, { status: 400 });
+    }
+
     // Validate color format if provided
     if (color !== null && color !== undefined && !HEX_COLOR_REGEX.test(color)) {
       return NextResponse.json(
@@ -105,7 +109,7 @@ export async function PATCH(
     const category = await prisma.category.update({
       where: { id },
       data: {
-        ...(name && { name }),
+        ...(name && name.trim() !== '' && { name: name.trim() }),
         ...(color !== undefined && { color }),
         ...(isDefault !== undefined && { isDefault }),
         ...(parentId !== undefined && { parentId }),

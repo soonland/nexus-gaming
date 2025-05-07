@@ -183,8 +183,10 @@ describe('PATCH /api/games/[id]', () => {
       data: expect.objectContaining({
         title: updateData.title,
         description: updateData.description,
+        developer: {
+          connect: { id: updateData.developerId },
+        },
         platforms: {
-          set: [],
           connect: updateData.platformIds.map(id => ({ id })),
         },
       }),
