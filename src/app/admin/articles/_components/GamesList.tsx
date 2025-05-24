@@ -2,10 +2,10 @@ import { Box, Chip, Stack } from '@mui/material';
 import Image from 'next/image';
 import Link from 'next/link';
 
-import type { GameData } from '@/types';
+import type { IGameData } from '@/types';
 
 interface IGamesListProps {
-  games: GameData[];
+  games: IGameData[];
 }
 
 export const GamesList = ({ games }: IGamesListProps) => (

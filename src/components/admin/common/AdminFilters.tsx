@@ -18,30 +18,32 @@ const createDebouncedSearch = (callback?: (value: string) => void) =>
     callback?.(value);
   }, 300);
 
-export interface IStatusOption {
-  value: ArticleStatus | 'all';
+export type StatusValue = 'all' | ArticleStatus | 'active' | 'inactive';
+
+export interface IStatusOption<T extends StatusValue = StatusValue> {
+  value: T;
   label: string;
 }
 
-interface IAdminFiltersProps {
+interface IAdminFiltersProps<T extends StatusValue = StatusValue> {
   onSearch?: (value: string) => void;
   searchPlaceholder?: string;
   extra?: React.ReactNode;
-  onStatusChange?: (status: ArticleStatus | 'all') => void;
+  onStatusChange?: (status: T) => void;
   showStatusFilter?: boolean;
-  selectedStatus?: ArticleStatus | 'all';
-  statusOptions?: IStatusOption[];
+  selectedStatus?: T;
+  statusOptions?: IStatusOption<T>[];
 }
 
-export const AdminFilters = ({
+export const AdminFilters = <T extends StatusValue = StatusValue>({
   onSearch,
   searchPlaceholder = 'Rechercher...',
   extra,
   onStatusChange,
   showStatusFilter,
-  selectedStatus = 'all',
+  selectedStatus = 'all' as T,
   statusOptions = [],
-}: IAdminFiltersProps) => {
+}: IAdminFiltersProps<T>) => {
   const debouncedSearch = useCallback(
     (value: string) => {
       createDebouncedSearch(onSearch)(value);
@@ -71,9 +73,7 @@ export const AdminFilters = ({
           size='small'
           sx={{ minWidth: 200 }}
           value={selectedStatus}
-          onChange={e =>
-            onStatusChange(e.target.value as ArticleStatus | 'all')
-          }
+          onChange={e => onStatusChange(e.target.value as T)}
         >
           {statusOptions.map(option => (
             <MenuItem key={option.value} value={option.value}>

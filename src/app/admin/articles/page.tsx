@@ -44,7 +44,7 @@ interface IDeleteDialogState {
   isBatchDelete: boolean;
 }
 
-const STATUS_OPTIONS: IStatusOption[] = [
+const STATUS_OPTIONS: IStatusOption<'all' | ArticleStatus>[] = [
   { value: 'all', label: 'Tous les statuts' },
   { value: ArticleStatus.DRAFT, label: 'Brouillon' },
   { value: ArticleStatus.PENDING_APPROVAL, label: 'En attente' },
@@ -66,7 +66,7 @@ const AdminArticlesPage = () => {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
-  const [selectedStatus, setSelectedStatus] = useState<ArticleStatus | 'all'>(
+  const [selectedStatus, setSelectedStatus] = useState<'all' | ArticleStatus>(
     'all'
   );
 
@@ -375,7 +375,7 @@ const AdminArticlesPage = () => {
       title='Gestion des articles'
     >
       <Stack direction='row' justifyContent='space-between' mb={2}>
-        <AdminFilters
+        <AdminFilters<'all' | ArticleStatus>
           showStatusFilter
           searchPlaceholder='Rechercher un article...'
           selectedStatus={selectedStatus}

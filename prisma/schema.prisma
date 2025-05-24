@@ -43,6 +43,7 @@ model User {
   avatarUrl         String?
   role              Role                      @default(USER)
   isActive          Boolean                   @default(true)
+  deactivationRequestedAt DateTime?
   articles          Article[]
   socialProfiles    UserSocialProfile[]
   lastPasswordChange DateTime                 @default(now())

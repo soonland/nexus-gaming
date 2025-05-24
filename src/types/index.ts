@@ -8,8 +8,8 @@ import type {
 } from '@prisma/client';
 
 export type {
-  GameForm,
-  IGameData as GameData,
+  IGameForm,
+  IGameData,
   IPlatformForm,
   IPlatformData,
   ICategoryData,

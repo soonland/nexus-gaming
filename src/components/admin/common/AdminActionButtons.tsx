@@ -13,7 +13,7 @@ import { useState } from 'react';
 import { FiEdit2, FiMoreVertical, FiTrash, FiEye } from 'react-icons/fi';
 import type { IconType } from 'react-icons/lib';
 
-interface IAction {
+export interface IAction {
   label: string;
   icon: IconType;
   href?: string;

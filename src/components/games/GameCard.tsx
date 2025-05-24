@@ -13,10 +13,10 @@ import Link from 'next/link';
 import { DateDisplay } from '@/components/common/DateDisplay';
 import { PlatformChip } from '@/components/common/PlatformChip';
 import { getCloudinaryUrl } from '@/lib/cloudinary/urls';
-import type { GameData } from '@/types';
+import type { IGameData } from '@/types';
 
 interface IGameCardProps {
-  game: Partial<GameData>;
+  game: Partial<IGameData>;
 }
 
 export const GameCard = ({ game }: IGameCardProps) => {

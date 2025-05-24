@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 
 import prisma from '@/lib/prisma';
 import { generateSlug } from '@/lib/slug';
-import type { GameForm } from '@/types';
+import type { IGameForm } from '@/types';
 
 export async function GET(request: Request) {
   try {
@@ -154,7 +154,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const data = (await request.json()) as GameForm;
+    const data = (await request.json()) as IGameForm;
 
     const game = await prisma.game.create({
       data: {
@@ -171,7 +171,7 @@ export async function POST(request: Request) {
           connect: { id: data.publisherId },
         },
         platforms: {
-          connect: data.platformIds.map(id => ({ id })),
+          connect: data.platformIds.map((id: string) => ({ id })),
         },
       },
       select: {
