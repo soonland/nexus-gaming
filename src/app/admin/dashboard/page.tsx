@@ -27,7 +27,11 @@ import { useAnnouncements } from '@/hooks/useAnnouncements';
 import { useArticles } from '@/hooks/useArticles';
 import { useAuth } from '@/hooks/useAuth';
 import { useGames } from '@/hooks/useGames';
-import { canManageAnnouncements, canReviewArticles } from '@/lib/permissions';
+import {
+  canManageAnnouncements,
+  canReviewArticles,
+  hasSufficientRole,
+} from '@/lib/permissions';
 
 const AdminCard = ({
   title,
@@ -125,38 +129,23 @@ const DashboardPage = () => {
       )}
 
       {/* Navigation Administrative */}
-      {canManage && (
-        <Box mb={6}>
-          <Typography gutterBottom color='text.primary' variant='h5'>
-            Navigation
+      <Box mb={6}>
+        <Typography gutterBottom color='text.primary' variant='h5'>
+          Navigation Administrative
+        </Typography>
+
+        {/* Accès EDITOR */}
+        {/* Gestion du contenu */}
+        <Box mb={4}>
+          <Typography color='text.secondary' sx={{ mb: 2 }} variant='subtitle1'>
+            Gestion du Contenu
           </Typography>
           <Grid container spacing={3}>
-            <Grid size={4}>
-              <AdminCard
-                href='/admin/announcements'
-                icon={FiBell}
-                title='Annonces'
-              />
-            </Grid>
-            <Grid size={4}>
-              <AdminCard
-                href='/admin/users'
-                icon={FiUsers}
-                title='Utilisateurs'
-              />
-            </Grid>
             <Grid size={4}>
               <AdminCard
                 href='/admin/articles'
                 icon={FiFileText}
                 title='Articles'
-              />
-            </Grid>
-            <Grid size={4}>
-              <AdminCard
-                href='/admin/categories'
-                icon={FiTag}
-                title='Catégories'
               />
             </Grid>
             <Grid size={4}>
@@ -176,9 +165,74 @@ const DashboardPage = () => {
                 title='Entreprises'
               />
             </Grid>
+            {hasSufficientRole(user?.role, 'SENIOR_EDITOR') && (
+              <Grid size={4}>
+                <AdminCard
+                  href='/admin/categories'
+                  icon={FiTag}
+                  title='Catégories'
+                />
+              </Grid>
+            )}
           </Grid>
         </Box>
-      )}
+
+        {/* Communication */}
+        {(hasSufficientRole(user?.role, 'SENIOR_EDITOR') ||
+          hasSufficientRole(user?.role, 'ADMIN')) && (
+          <Box mb={4}>
+            <Typography
+              color='text.secondary'
+              sx={{ mb: 2 }}
+              variant='subtitle1'
+            >
+              Communication
+            </Typography>
+            <Grid container spacing={3}>
+              {hasSufficientRole(user?.role, 'SENIOR_EDITOR') && (
+                <Grid size={4}>
+                  <AdminCard
+                    href='/admin/announcements'
+                    icon={FiBell}
+                    title='Annonces'
+                  />
+                </Grid>
+              )}
+              {hasSufficientRole(user?.role, 'ADMIN') && (
+                <Grid size={4}>
+                  <AdminCard
+                    href='/admin/notifications/broadcast'
+                    icon={FiBell}
+                    title='Notifications'
+                  />
+                </Grid>
+              )}
+            </Grid>
+          </Box>
+        )}
+
+        {/* Système */}
+        {hasSufficientRole(user?.role, 'SENIOR_EDITOR') && (
+          <Box>
+            <Typography
+              color='text.secondary'
+              sx={{ mb: 2 }}
+              variant='subtitle1'
+            >
+              Système
+            </Typography>
+            <Grid container spacing={3}>
+              <Grid size={4}>
+                <AdminCard
+                  href='/admin/users'
+                  icon={FiUsers}
+                  title='Utilisateurs'
+                />
+              </Grid>
+            </Grid>
+          </Box>
+        )}
+      </Box>
 
       {/* Statistiques */}
       {canManage && (

@@ -9,6 +9,53 @@ import { deleteImageServer } from '@/lib/upload/server';
 
 cloudinary.config(cloudinaryConfig);
 
+export async function DELETE() {
+  try {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: currentUser.id },
+      select: {
+        id: true,
+        avatarUrl: true,
+      },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    // Supprimer l'avatar dans Cloudinary s'il existe
+    if (user.avatarUrl) {
+      const publicId = getPublicIdFromUrl(user.avatarUrl);
+      if (publicId) {
+        try {
+          await deleteImageServer(publicId);
+        } catch (error) {
+          console.error('Error deleting avatar:', error);
+        }
+      }
+    }
+
+    // Mettre à jour l'utilisateur sans avatar
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { avatarUrl: null },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting avatar:', error);
+    return NextResponse.json(
+      { error: "Une erreur s'est produite" },
+      { status: 500 }
+    );
+  }
+}
+
 export async function POST(request: Request) {
   try {
     // Vérifier l'authentification
