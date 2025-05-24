@@ -82,6 +82,7 @@ export const PasswordForm = () => {
           <TextField
             fullWidth
             label='Mot de passe actuel'
+            size='small'
             type='password'
             value={formData.currentPassword}
             onChange={e =>
@@ -94,6 +95,7 @@ export const PasswordForm = () => {
           <TextField
             fullWidth
             label='Nouveau mot de passe'
+            size='small'
             type='password'
             value={formData.newPassword}
             onChange={e =>
@@ -117,6 +119,7 @@ export const PasswordForm = () => {
                 : undefined
             }
             label='Confirmer le mot de passe'
+            size='small'
             type='password'
             value={formData.confirmPassword}
             onChange={e =>

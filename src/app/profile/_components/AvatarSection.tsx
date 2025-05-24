@@ -28,7 +28,7 @@ export const AvatarSection = () => {
     try {
       await updateAvatar.mutateAsync(file);
       showSuccess('Avatar mis à jour avec succès');
-    } catch (error) {
+    } catch {
       showError("Erreur lors de la mise à jour de l'avatar");
     }
   };

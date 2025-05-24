@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { seedUsers } from './users';
 
 // Configuration des utilisateurs à générer

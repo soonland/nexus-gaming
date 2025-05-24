@@ -1,6 +1,5 @@
 import type { NotificationType, Role, SocialPlatform } from '@prisma/client';
 import { hash } from 'bcrypt';
-import slugify from 'slugify';
 
 import type { IUserTemplate } from './templates';
 
@@ -14,20 +13,14 @@ export function generateUsername(
   role: Role,
   index: number
 ): string {
-  const roleSlug = slugify(role, { lower: true, strict: true });
-  return `${prefix}_${roleSlug}${index + 1}`;
+  return `${prefix}${index + 1}`;
 }
 
 /**
  * Génère un email déterministe
  */
-export function generateEmail(
-  username: string,
-  domain: string,
-  role: Role
-): string {
-  const roleSlug = slugify(role, { lower: true, strict: true });
-  return `${username}@${roleSlug}.${domain}`;
+export function generateEmail(username: string, domain: string): string {
+  return `${username}@${domain}`;
 }
 
 /**
@@ -72,7 +65,7 @@ export async function generateUserData(
   index: number
 ) {
   const username = generateUsername(template.namePrefix, role, index);
-  const email = generateEmail(username, template.baseDomain, role);
+  const email = generateEmail(username, template.baseDomain);
   const hashedPassword = await hashPassword(template.basePassword);
 
   return {

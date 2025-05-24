@@ -17,7 +17,7 @@ export const deleteImageServer = async (publicId: string): Promise<void> => {
 
 export const uploadImageServer = async (
   file: Buffer,
-  folder: string = 'default'
+  folder = 'default'
 ): Promise<IUploadResult> => {
   return new Promise((resolve, reject) => {
     cloudinary.uploader

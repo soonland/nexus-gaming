@@ -90,6 +90,7 @@ const RegisterPage = () => {
                   required
                   error={!!validationErrors.email}
                   label='Email'
+                  size='small'
                   type='email'
                   value={formData.email}
                   onChange={e =>
@@ -107,6 +108,7 @@ const RegisterPage = () => {
                   required
                   error={!!validationErrors.username}
                   label="Nom d'utilisateur"
+                  size='small'
                   value={formData.username}
                   onChange={e =>
                     setFormData(prev => ({ ...prev, username: e.target.value }))
@@ -123,6 +125,7 @@ const RegisterPage = () => {
                   required
                   error={!!validationErrors.password}
                   label='Mot de passe'
+                  size='small'
                   type='password'
                   value={formData.password}
                   onChange={e =>
@@ -140,6 +143,7 @@ const RegisterPage = () => {
                   required
                   error={!!validationErrors.confirmPassword}
                   label='Confirmer le mot de passe'
+                  size='small'
                   type='password'
                   value={formData.confirmPassword}
                   onChange={e =>

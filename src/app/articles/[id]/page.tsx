@@ -57,7 +57,7 @@ const ArticlePage = () => {
 
   if (!article) return null;
 
-  const formattedGames: Array<Partial<GameData>> = article.games.map(game => ({
+  const formattedGames: Partial<GameData>[] = article.games.map(game => ({
     id: game.id,
     title: game.title,
     description: game.description || undefined,

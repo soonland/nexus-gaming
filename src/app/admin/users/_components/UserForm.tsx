@@ -155,6 +155,7 @@ export const UserForm = ({ initialData, mode }: IUserFormProps) => {
           helperText={usernameError}
           label="Nom d'utilisateur"
           name='username'
+          size='small'
           value={username}
           onChange={e => {
             setUsername(e.target.value);
@@ -168,6 +169,7 @@ export const UserForm = ({ initialData, mode }: IUserFormProps) => {
           helperText={emailError}
           label='Email'
           name='email'
+          size='small'
           type='email'
           value={email}
           onChange={e => {
@@ -186,6 +188,7 @@ export const UserForm = ({ initialData, mode }: IUserFormProps) => {
           label='Mot de passe'
           name='password'
           required={mode === 'create'}
+          size='small'
           type='password'
           value={password}
           onChange={e => {
@@ -193,7 +196,7 @@ export const UserForm = ({ initialData, mode }: IUserFormProps) => {
             if (passwordError) setPasswordError('');
           }}
         />
-        <FormControl fullWidth error={!!roleError}>
+        <FormControl fullWidth error={!!roleError} size='small'>
           <InputLabel id='role-label'>Rôle</InputLabel>
           <Select
             required
@@ -218,6 +221,7 @@ export const UserForm = ({ initialData, mode }: IUserFormProps) => {
           control={
             <Checkbox
               checked={isActive}
+              size='small'
               onChange={e => setIsActive(e.target.checked)}
             />
           }

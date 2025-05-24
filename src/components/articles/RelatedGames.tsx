@@ -9,7 +9,7 @@ import type { GameData } from '@/types';
 import { GameCardMiniature } from '../games/GameCardMiniature';
 
 interface IRelatedGamesProps {
-  games: Array<Partial<GameData>>;
+  games: Partial<GameData>[];
   title?: string;
   showIcon?: boolean;
   iconSize?: number;

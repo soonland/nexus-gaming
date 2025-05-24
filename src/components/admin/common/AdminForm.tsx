@@ -9,7 +9,7 @@ import { FormErrorSummary } from './FormErrorSummary';
 interface IAdminFormProps {
   children: React.ReactNode;
   onSubmit: (e: React.FormEvent) => void;
-  errors?: Array<{ field: string; message: string }>;
+  errors?: { field: string; message: string }[];
   isSubmitting?: boolean;
   isLoading?: boolean;
   cancelHref?: string;

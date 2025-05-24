@@ -20,7 +20,7 @@ import {
 import { type ReactNode } from 'react';
 import { FiChevronsLeft, FiChevronsRight, FiInbox } from 'react-icons/fi';
 
-type DataColumn<TData> = {
+interface IDataColumn<TData> {
   field: keyof TData;
   headerName: string;
   headerAlign?: 'left' | 'right' | 'center';
@@ -28,9 +28,9 @@ type DataColumn<TData> = {
   render?: (row: TData) => ReactNode;
   sortable?: boolean;
   width?: string;
-};
+}
 
-type ActionsColumn<TData> = {
+interface IActionsColumn<TData> {
   field: 'actions';
   headerName: string;
   headerAlign?: 'left' | 'right' | 'center';
@@ -38,15 +38,13 @@ type ActionsColumn<TData> = {
   render: (row: TData) => ReactNode;
   sortable?: false;
   width?: string;
-};
+}
 
 export interface IAdminDataTableProps<TData, TSortField extends keyof TData> {
   error?: string;
   isLoading?: boolean;
-  batchActions?:
-    | ReactNode
-    | ((selectedIds: Array<string | number>) => ReactNode);
-  columns: Array<DataColumn<TData> | ActionsColumn<TData>>;
+  batchActions?: ReactNode | ((selectedIds: (string | number)[]) => ReactNode);
+  columns: (IDataColumn<TData> | IActionsColumn<TData>)[];
   getRowId?: (row: TData) => string;
   onPageChange?: (page: number) => void;
   onPageSizeChange?: (size: number) => void;

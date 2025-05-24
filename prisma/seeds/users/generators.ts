@@ -86,7 +86,7 @@ export async function generateUser(
 export async function generateUserGroup(
   templateName: string,
   template: IUserTemplate,
-  count: number = 1
+  count = 1
 ) {
   const users = [];
   let userIndex = 0;

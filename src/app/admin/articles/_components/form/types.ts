@@ -52,10 +52,10 @@ export interface IArticleMetadataPanelProps {
   updatedAt: Dayjs | null;
   userId: string;
   userRole?: Role;
-  users?: Array<{
+  users?: {
     id: string;
     username: string;
-  }>;
+  }[];
   canAssignReviewer: boolean;
   currentReviewerId: string | null | undefined;
   onCategoryChange: (value: string) => void;

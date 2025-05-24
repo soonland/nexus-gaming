@@ -89,6 +89,15 @@ export const AdminMenu = () => {
         {/* SENIOR_EDITOR+ seulement */}
         {hasSufficientRole(user.role, SENIOR_EDITOR) && [
           <MenuItem
+            key='notifications'
+            onClick={() => handleNavigate('/admin/notifications/broadcast')}
+          >
+            <ListItemIcon>
+              <FiBell />
+            </ListItemIcon>
+            Notifications
+          </MenuItem>,
+          <MenuItem
             key='announcements'
             onClick={() => handleNavigate('/admin/announcements')}
           >

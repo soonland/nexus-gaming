@@ -68,6 +68,7 @@ export const BasicInfoForm = () => {
           <TextField
             fullWidth
             label="Nom d'utilisateur"
+            size='small'
             value={formData.username}
             onChange={e =>
               setFormData(prev => ({
@@ -79,6 +80,7 @@ export const BasicInfoForm = () => {
           <TextField
             fullWidth
             label='Email'
+            size='small'
             type='email'
             value={formData.email}
             onChange={e =>

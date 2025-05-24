@@ -106,6 +106,7 @@ export const QuickCompanyDialog = ({
             error={!!nameError}
             helperText={nameError}
             label='Nom'
+            size='small'
             value={name}
             onChange={e => {
               setName(e.target.value);
@@ -118,6 +119,7 @@ export const QuickCompanyDialog = ({
                 control={
                   <Checkbox
                     checked={isDeveloper}
+                    size='small'
                     onChange={e => {
                       setIsDeveloper(e.target.checked);
                       if (roleError) setRoleError('');
@@ -130,6 +132,7 @@ export const QuickCompanyDialog = ({
                 control={
                   <Checkbox
                     checked={isPublisher}
+                    size='small'
                     onChange={e => {
                       setIsPublisher(e.target.checked);
                       if (roleError) setRoleError('');

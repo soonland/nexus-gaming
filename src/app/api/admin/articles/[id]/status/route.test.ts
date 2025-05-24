@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { getCurrentUser } from '@/lib/jwt';
 import prisma from '@/lib/prisma';
-import type { AuthUser } from '@/types/auth';
+import type { IAuthUser } from '@/types/auth';
 
 import { PATCH } from './route';
 
@@ -75,7 +75,7 @@ const baseArticle = {
 };
 
 // Auth user mocks
-const mockSeniorEditor: AuthUser = {
+const mockSeniorEditor: IAuthUser = {
   id: 'senior-1',
   username: 'senioreditor',
   email: 'senior@test.com',
@@ -85,7 +85,7 @@ const mockSeniorEditor: AuthUser = {
   avatarUrl: null,
 };
 
-const mockEditor: AuthUser = {
+const mockEditor: IAuthUser = {
   id: 'editor-1',
   username: 'editor',
   email: 'editor@test.com',

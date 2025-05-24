@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { generateContent } from './content';
 
 // Export for use in seed files

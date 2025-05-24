@@ -45,7 +45,7 @@ export const ArticleStatusSelect = ({
 
   return (
     <>
-      <FormControl required>
+      <FormControl required size='small'>
         <InputLabel id='status-label'>Statut</InputLabel>
         <Select
           required

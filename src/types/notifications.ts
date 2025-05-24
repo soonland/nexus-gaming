@@ -1,4 +1,8 @@
-import type { NotificationType, SystemNotification } from '@prisma/client';
+import type {
+  NotificationType,
+  Role,
+  SystemNotification,
+} from '@prisma/client';
 
 export type { NotificationType };
 
@@ -40,6 +44,7 @@ export interface IBroadcastNotification {
   level: NotificationLevel;
   title: string;
   message: string;
+  roleMin: Role;
   expiresAt: string | null;
 }
 

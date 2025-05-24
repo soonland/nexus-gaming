@@ -19,7 +19,7 @@ export const userTemplates: Record<string, IUserTemplate> = {
   editorial: {
     roles: [Role.SENIOR_EDITOR, Role.EDITOR],
     baseDomain: 'nx-gaming.com',
-    basePassword: 'Test123!@#',
+    basePassword: 'Password123!',
     namePrefix: 'editor',
     defaultPreferences: {
       notifications: [
@@ -34,7 +34,7 @@ export const userTemplates: Record<string, IUserTemplate> = {
   moderation: {
     roles: [Role.MODERATOR],
     baseDomain: 'nx-gaming.com',
-    basePassword: 'Test123!@#',
+    basePassword: 'Password123!',
     namePrefix: 'mod',
     defaultPreferences: {
       notifications: [NotificationType.MENTION, NotificationType.SYSTEM_ALERT],
@@ -44,7 +44,7 @@ export const userTemplates: Record<string, IUserTemplate> = {
   admin: {
     roles: [Role.ADMIN, Role.SYSADMIN],
     baseDomain: 'nx-gaming.com',
-    basePassword: 'Test123!@#',
+    basePassword: 'Password123!',
     namePrefix: 'admin',
     defaultPreferences: {
       notifications: [
@@ -59,7 +59,7 @@ export const userTemplates: Record<string, IUserTemplate> = {
   regular: {
     roles: [Role.USER],
     baseDomain: 'nx-gaming.com',
-    basePassword: 'User123!@#',
+    basePassword: 'Password123!',
     namePrefix: 'user',
     defaultPreferences: {
       notifications: [NotificationType.MENTION, NotificationType.SYSTEM_ALERT],

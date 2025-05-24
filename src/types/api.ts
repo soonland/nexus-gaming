@@ -137,7 +137,7 @@ export interface IApprovalHistoryData {
   createdAt: string;
 }
 
-export type ArticleForm = {
+export interface IArticleForm {
   title: string;
   slug: string;
   content: string;
@@ -148,7 +148,7 @@ export type ArticleForm = {
   updatedAt?: string | null;
   heroImage?: string | null;
   userId?: string;
-};
+}
 
 export type ArticleStatusUpdate = {
   status: ArticleStatus;
@@ -166,7 +166,7 @@ export type ArticleStatusUpdate = {
     }
 );
 
-export type GameForm = {
+export interface IGameForm {
   title: string;
   description?: string | null;
   releaseDate?: string | null;
@@ -175,4 +175,4 @@ export type GameForm = {
   platformIds: string[];
   developerId: string;
   publisherId: string;
-};
+}

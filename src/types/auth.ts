@@ -1,7 +1,7 @@
 import type { Role } from '@prisma/client';
 import type { JWTPayload as JoseJWTPayload } from 'jose';
 
-export type AuthUser = {
+export interface IAuthUser {
   id: string;
   email: string;
   username: string;
@@ -10,7 +10,7 @@ export type AuthUser = {
   lastPasswordChange: string;
   lastLogin?: string;
   avatarUrl?: string | null;
-};
+}
 
 export interface ILoginCredentials {
   email: string;
@@ -18,7 +18,7 @@ export interface ILoginCredentials {
 }
 
 export interface IAuthResponse {
-  user: AuthUser;
+  user: IAuthUser;
   token: string;
 }
 

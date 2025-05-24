@@ -91,7 +91,7 @@ export const SocialProfilesSection = ({
         return newState;
       });
       showSuccess('Profils sociaux mis à jour avec succès');
-    } catch (error) {
+    } catch {
       showError('Erreur lors de la mise à jour des profils sociaux');
     }
   };

@@ -60,7 +60,7 @@ const LoginContent = () => {
         message: 'Connexion réussie',
         severity: 'success',
       });
-    } catch (error) {
+    } catch {
       setToast({
         open: true,
         message: 'Email ou mot de passe incorrect',
@@ -105,6 +105,7 @@ const LoginContent = () => {
                     label='Email'
                     name='email'
                     placeholder='votre@email.com'
+                    size='small'
                     type='email'
                     variant='outlined'
                   />
@@ -116,6 +117,7 @@ const LoginContent = () => {
                     label='Mot de passe'
                     name='password'
                     placeholder='Votre mot de passe'
+                    size='small'
                     type='password'
                     variant='outlined'
                   />
