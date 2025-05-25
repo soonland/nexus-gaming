@@ -16,7 +16,7 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
         display: 'flex',
         flexDirection: 'column',
         bgcolor: 'background.default',
-        transition: 'background-color 0.3s',
+        transition: 'background-color 0.3s, padding 0.3s',
       }}
     >
       <Navbar />
@@ -31,7 +31,9 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
           position: 'fixed',
           top: '64px',
           width: '100%',
-          zIndex: 1,
+          zIndex: theme => theme.zIndex.appBar - 1,
+          WebkitBackdropFilter: 'blur(8px)',
+          backdropFilter: 'blur(8px)',
         }}
       >
         <Container maxWidth='lg' sx={{ py: 0.5 }}>
@@ -40,12 +42,12 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
       </Box>
       <Box
         component='main'
-        sx={{
-          pt: '120px',
+        sx={theme => ({
+          pt: theme.spacing(15),
           flex: 1,
           bgcolor: 'background.default',
-          transition: 'background-color 0.3s, opacity 0.15s',
-        }}
+          transition: 'background-color 0.3s, opacity 0.15s, padding-top 0.3s',
+        })}
       >
         {children}
       </Box>
