@@ -1,6 +1,6 @@
 'use client';
 
-import { Alert, Box, Stack } from '@mui/material';
+import { Alert, Box, Container, Stack } from '@mui/material';
 
 import { useAnnouncements } from '@/hooks/useAnnouncements';
 
@@ -16,28 +16,30 @@ export const PublicAnnouncements = () => {
   if (announcements.length === 0) return null;
 
   return (
-    <Box>
-      <Stack spacing={1}>
-        {announcements.map(announcement => {
-          const severity = severityMap[announcement.type];
+    <Container maxWidth='lg' sx={{ py: 0.5 }}>
+      <Box>
+        <Stack spacing={1}>
+          {announcements.map(announcement => {
+            const severity = severityMap[announcement.type];
 
-          return (
-            <Alert
-              key={announcement.id}
-              severity={severity}
-              sx={{
-                '& .MuiAlert-icon': {
-                  alignItems: 'center',
-                },
-                'position': 'relative',
-              }}
-              variant='filled'
-            >
-              {announcement.message}
-            </Alert>
-          );
-        })}
-      </Stack>
-    </Box>
+            return (
+              <Alert
+                key={announcement.id}
+                severity={severity}
+                sx={{
+                  '& .MuiAlert-icon': {
+                    alignItems: 'center',
+                  },
+                  'position': 'relative',
+                }}
+                variant='filled'
+              >
+                {announcement.message}
+              </Alert>
+            );
+          })}
+        </Stack>
+      </Box>
+    </Container>
   );
 };
