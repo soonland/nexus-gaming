@@ -3,6 +3,7 @@
 import { Button, Stack } from '@mui/material';
 import { ArticleStatus } from '@prisma/client';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { FiCheck, FiEyeOff, FiTrash2 } from 'react-icons/fi';
 
@@ -66,8 +67,9 @@ const AdminArticlesPage = () => {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const searchParams = useSearchParams();
   const [selectedStatus, setSelectedStatus] = useState<'all' | ArticleStatus>(
-    'all'
+    (searchParams.get('status') as ArticleStatus) || 'all'
   );
 
   const {

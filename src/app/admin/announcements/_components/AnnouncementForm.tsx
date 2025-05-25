@@ -134,53 +134,58 @@ export const AnnouncementForm = ({
           label='Message'
           name='message'
           rows={4}
+          size='small'
           value={message}
           onChange={e => {
             setMessage(e.target.value);
             if (messageError) setMessageError('');
           }}
         />
-        <FormControl>
-          <InputLabel id='type-label'>Type</InputLabel>
-          <Select
-            required
-            label='Type'
-            labelId='type-label'
-            name='type'
-            value={type}
-            onChange={e => setType(e.target.value as AnnouncementType)}
-          >
-            {ANNOUNCEMENT_TYPES.map(option => (
-              <MenuItem key={option.value} value={option.value}>
-                {option.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <FormControl>
-          <InputLabel id='status-label'>État</InputLabel>
-          <Select
-            required
-            label='État'
-            labelId='status-label'
-            name='isActive'
-            value={isActive}
-            onChange={e => setIsActive(e.target.value as ActiveStatus)}
-          >
-            {STATUS_OPTIONS.map(option => (
-              <MenuItem key={option.value} value={option.value}>
-                {option.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <FormControl>
-          <DateTimePicker
-            label="Date d'expiration"
-            value={expiresAt}
-            onChange={date => setExpiresAt(date)}
-          />
-        </FormControl>
+        <Stack direction='row' spacing={2}>
+          <FormControl fullWidth size='small'>
+            <InputLabel id='type-label'>Type</InputLabel>
+            <Select
+              required
+              label='Type'
+              labelId='type-label'
+              name='type'
+              value={type}
+              onChange={e => setType(e.target.value as AnnouncementType)}
+            >
+              {ANNOUNCEMENT_TYPES.map(option => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth size='small'>
+            <InputLabel id='status-label'>État</InputLabel>
+            <Select
+              required
+              label='État'
+              labelId='status-label'
+              name='isActive'
+              value={isActive}
+              onChange={e => setIsActive(e.target.value as ActiveStatus)}
+            >
+              {STATUS_OPTIONS.map(option => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth size='small'>
+            <DateTimePicker
+              format='YYYY-MM-DD HH:mm:ss'
+              label="Date d'expiration"
+              slotProps={{ textField: { size: 'small' } }}
+              value={expiresAt}
+              onChange={date => setExpiresAt(date)}
+            />
+          </FormControl>
+        </Stack>
       </Stack>
     </AdminForm>
   );

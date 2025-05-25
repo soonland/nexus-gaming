@@ -1,7 +1,9 @@
 'use client';
 
 import {
+  Alert,
   Box,
+  Button,
   Card,
   CardContent,
   Container,
@@ -10,17 +12,18 @@ import {
   Typography,
 } from '@mui/material';
 import Link from 'next/link';
+import { useState } from 'react';
 import {
-  FiUsers,
-  FiFileText,
-  FiBox,
-  FiTag,
-  FiMonitor,
-  FiBriefcase,
   FiBell,
+  FiBox,
+  FiBriefcase,
+  FiFileText,
+  FiMonitor,
+  FiTag,
+  FiUsers,
 } from 'react-icons/fi';
 
-import { AnnouncementPanel } from '@/app/admin/announcements/_components/AnnouncementPanel';
+import { AnnouncementDialog } from '@/app/admin/announcements/_components/AnnouncementDialog';
 import { AnimatedCounter, IconAnimation } from '@/components/common';
 import { usePendingArticlesCount } from '@/hooks/admin/usePendingArticlesCount';
 import { useAnnouncements } from '@/hooks/useAnnouncements';
@@ -80,52 +83,89 @@ const AdminCard = ({
 
 const DashboardPage = () => {
   const { announcements = [] } = useAnnouncements();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const activeAnnouncements = announcements.filter(announcement => {
+    if ('isActive' in announcement) {
+      return (
+        announcement.isActive === 'active' &&
+        (announcement.expiresAt
+          ? new Date(announcement.expiresAt) > new Date()
+          : true)
+      );
+    }
+    return announcement.expiresAt
+      ? new Date(announcement.expiresAt) > new Date()
+      : true;
+  });
   const { articles: articlesData } = useArticles();
   const { games: gamesData } = useGames();
   const { user } = useAuth();
   const { count: pendingCount } = usePendingArticlesCount();
   const canManage = user ? canManageAnnouncements(user.role) : false;
 
+  // Construit les alertes à afficher
+  const alerts = [];
+  if (activeAnnouncements.length > 0) {
+    alerts.push(
+      <Alert
+        key='announcements'
+        action={
+          <Button
+            color='inherit'
+            size='small'
+            onClick={() => setIsDialogOpen(true)}
+          >
+            Consulter
+          </Button>
+        }
+        icon={<FiBell size={24} />}
+      >
+        {activeAnnouncements.length > 1
+          ? `${activeAnnouncements.length} annonces disponibles`
+          : 'Une annonce disponible'}
+      </Alert>
+    );
+  }
+
+  if (canReviewArticles(user?.role) && pendingCount > 0) {
+    alerts.push(
+      <Alert
+        key='pending-articles'
+        action={
+          <Button
+            color='inherit'
+            size='small'
+            onClick={() => {
+              window.location.href = '/admin/articles?status=PENDING_APPROVAL';
+            }}
+          >
+            Vérifier
+          </Button>
+        }
+        icon={<FiFileText size={24} />}
+        severity='warning'
+      >
+        {pendingCount > 1
+          ? `${pendingCount} articles en attente d'approbation`
+          : "Un article en attente d'approbation"}
+      </Alert>
+    );
+  }
+
   return (
     <Container maxWidth='lg' sx={{ py: 4 }}>
-      <Box mb={6}>
-        <AnnouncementPanel announcements={announcements} />
-      </Box>
-
-      {/* Articles en attente */}
-      {canReviewArticles(user?.role) && (
+      {alerts.length > 0 && (
         <Box mb={6}>
-          <Card sx={{ bgcolor: 'primary.light' }}>
-            <CardContent>
-              <Stack alignItems='center' direction='row' spacing={2}>
-                <Box
-                  sx={{
-                    p: 2,
-                    borderRadius: '50%',
-                    bgcolor: 'primary.main',
-                    color: 'primary.contrastText',
-                  }}
-                >
-                  <IconAnimation>
-                    <FiFileText size={24} />
-                  </IconAnimation>
-                </Box>
-                <Box>
-                  <Typography
-                    gutterBottom
-                    color='primary.contrastText'
-                    variant='h6'
-                  >
-                    Articles en attente d'approbation
-                  </Typography>
-                  <Typography color='primary.contrastText' variant='h3'>
-                    <AnimatedCounter end={pendingCount} />
-                  </Typography>
-                </Box>
-              </Stack>
-            </CardContent>
-          </Card>
+          <Stack spacing={0}>{alerts}</Stack>
         </Box>
+      )}
+
+      {activeAnnouncements.length > 0 && (
+        <AnnouncementDialog
+          announcements={announcements}
+          isOpen={isDialogOpen}
+          onClose={() => setIsDialogOpen(false)}
+        />
       )}
 
       {/* Navigation Administrative */}
@@ -134,7 +174,6 @@ const DashboardPage = () => {
           Navigation Administrative
         </Typography>
 
-        {/* Accès EDITOR */}
         {/* Gestion du contenu */}
         <Box mb={4}>
           <Typography color='text.secondary' sx={{ mb: 2 }} variant='subtitle1'>

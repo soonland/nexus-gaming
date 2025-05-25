@@ -7,6 +7,7 @@ interface IArticleParams {
   page?: number;
   limit?: number;
   search?: string;
+  status?: 'DRAFT' | 'PENDING_APPROVAL' | 'PUBLISHED' | 'REJECTED';
 }
 
 interface IPaginatedArticlesResponse {

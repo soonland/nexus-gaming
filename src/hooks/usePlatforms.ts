@@ -15,15 +15,36 @@ interface IPlatformsResponse {
   };
 }
 
-export function usePlatforms({ page, limit }: { page: number; limit: number }) {
+interface IPlatformsParams {
+  page: number;
+  limit: number;
+  search?: string;
+  sortField?: string;
+  sortOrder?: 'asc' | 'desc';
+}
+
+export function usePlatforms({
+  page,
+  limit,
+  search,
+  sortField,
+  sortOrder,
+}: IPlatformsParams) {
   const queryClient = useQueryClient();
 
   const { data, isLoading, error } = useQuery<IPlatformsResponse, AxiosError>({
-    queryKey: ['platforms', { page, limit }],
+    queryKey: ['platforms', { page, limit, search, sortField, sortOrder }],
     queryFn: async () => {
-      const response = await axios.get(
-        `/api/platforms?page=${page}&limit=${limit}`
-      );
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: String(limit),
+      });
+
+      if (search) params.append('search', search);
+      if (sortField) params.append('sortField', sortField);
+      if (sortOrder) params.append('sortOrder', sortOrder);
+
+      const response = await axios.get(`/api/platforms?${params.toString()}`);
       return response.data;
     },
   });

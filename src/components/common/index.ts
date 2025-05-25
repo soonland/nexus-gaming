@@ -8,3 +8,4 @@ export * from './LoadingOverlay';
 export * from './NotificationBell';
 export * from './Notifier';
 export * from './SideColorBadge';
+export * from './Badge';

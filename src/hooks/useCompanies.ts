@@ -18,6 +18,8 @@ interface ICompaniesParams {
   limit?: number;
   search?: string;
   role?: 'developer' | 'publisher';
+  sortField?: string;
+  sortOrder?: 'asc' | 'desc';
 }
 
 interface ICompanyFormData {
