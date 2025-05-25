@@ -1,4 +1,4 @@
-import type { AnnouncementType } from '@prisma/client';
+import type { AnnouncementType, AnnouncementVisibility } from '@prisma/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 
@@ -9,6 +9,7 @@ export interface IAdminAnnouncement {
   message: string;
   type: AnnouncementType;
   isActive: ActiveStatus;
+  visibility: AnnouncementVisibility;
   expiresAt: string | null;
   createdAt: string;
   createdBy: {
@@ -22,6 +23,7 @@ interface ICreateAnnouncementData {
   message: string;
   type: AnnouncementType;
   isActive?: ActiveStatus;
+  visibility?: AnnouncementVisibility;
   expiresAt?: Date | null;
 }
 
@@ -31,6 +33,7 @@ interface IUpdateAnnouncementData {
   type: AnnouncementType;
   expiresAt?: Date | null;
   isActive: ActiveStatus;
+  visibility: AnnouncementVisibility;
 }
 
 export function useAdminAnnouncement(id?: string) {

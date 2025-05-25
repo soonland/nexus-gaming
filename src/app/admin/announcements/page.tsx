@@ -26,7 +26,7 @@ import {
 
 type AnnouncementSortField = keyof Pick<
   IAdminAnnouncement,
-  'message' | 'createdAt' | 'expiresAt' | 'type' | 'isActive'
+  'message' | 'createdAt' | 'expiresAt' | 'type' | 'isActive' | 'visibility'
 >;
 
 interface IDeleteDialogState {
@@ -309,6 +309,24 @@ const AdminAnnouncementsPage = () => {
               },
               sortable: true,
               width: '250px',
+            },
+            {
+              field: 'visibility',
+              headerName: 'Visibilité',
+              render: row => (
+                <ColorDot
+                  color={
+                    row.visibility === 'PUBLIC'
+                      ? 'success.main'
+                      : 'text.secondary'
+                  }
+                  label={
+                    row.visibility === 'PUBLIC' ? 'Public' : 'Admin uniquement'
+                  }
+                />
+              ),
+              sortable: true,
+              width: '150px',
             },
             {
               field: 'expiresAt',

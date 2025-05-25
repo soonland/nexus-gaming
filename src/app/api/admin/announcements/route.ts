@@ -1,4 +1,4 @@
-import { AnnouncementType } from '@prisma/client';
+import { AnnouncementType, AnnouncementVisibility } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
 import { getCurrentUser } from '@/lib/jwt';
@@ -19,6 +19,7 @@ export async function GET() {
         message: true,
         type: true,
         isActive: true,
+        visibility: true,
         expiresAt: true,
         createdAt: true,
         createdBy: {
@@ -51,11 +52,24 @@ export async function POST(request: Request) {
     }
 
     const data = await request.json();
-    const { message, type, expiresAt, isActive = 'active' } = data;
+    const {
+      message,
+      type,
+      expiresAt,
+      isActive = 'active',
+      visibility = 'ADMIN_ONLY',
+    } = data;
 
     if (!message || !type || !Object.values(AnnouncementType).includes(type)) {
       return NextResponse.json(
         { error: 'Message and valid type are required' },
+        { status: 400 }
+      );
+    }
+
+    if (!Object.values(AnnouncementVisibility).includes(visibility)) {
+      return NextResponse.json(
+        { error: 'Visibility must be "ADMIN_ONLY" or "PUBLIC"' },
         { status: 400 }
       );
     }
@@ -72,6 +86,7 @@ export async function POST(request: Request) {
         message,
         type,
         isActive,
+        visibility,
         expiresAt: expiresAt ? new Date(expiresAt) : null,
         createdById: user.id,
       },
@@ -80,6 +95,7 @@ export async function POST(request: Request) {
         message: true,
         type: true,
         isActive: true,
+        visibility: true,
         expiresAt: true,
         createdAt: true,
         createdBy: {
@@ -109,11 +125,18 @@ export async function PUT(request: Request) {
     }
 
     const data = await request.json();
-    const { id, message, type, expiresAt, isActive } = data;
+    const { id, message, type, expiresAt, isActive, visibility } = data;
 
     if (!message || !type || !Object.values(AnnouncementType).includes(type)) {
       return NextResponse.json(
         { error: 'Message and valid type are required' },
+        { status: 400 }
+      );
+    }
+
+    if (!Object.values(AnnouncementVisibility).includes(visibility)) {
+      return NextResponse.json(
+        { error: 'Visibility must be "ADMIN_ONLY" or "PUBLIC"' },
         { status: 400 }
       );
     }
@@ -131,6 +154,7 @@ export async function PUT(request: Request) {
         message,
         type,
         isActive,
+        visibility,
         expiresAt: expiresAt ? new Date(expiresAt) : null,
       },
       select: {
@@ -138,6 +162,7 @@ export async function PUT(request: Request) {
         message: true,
         type: true,
         isActive: true,
+        visibility: true,
         expiresAt: true,
         createdAt: true,
         createdBy: {

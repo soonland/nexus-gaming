@@ -199,14 +199,20 @@ enum AnnouncementType {
   URGENT
 }
 
+enum AnnouncementVisibility {
+  ADMIN_ONLY
+  PUBLIC
+}
+
 model AdminAnnouncement {
-  id          String    @id @default(uuid())
+  id          String                @id @default(uuid())
   message     String
   type        AnnouncementType
-  isActive    String   @default("active")
+  isActive    String               @default("active")
+  visibility  AnnouncementVisibility @default(ADMIN_ONLY)
   expiresAt   DateTime?
-  createdAt   DateTime  @default(now())
-  createdBy   User      @relation(fields: [createdById], references: [id])
+  createdAt   DateTime             @default(now())
+  createdBy   User                 @relation(fields: [createdById], references: [id])
   createdById String
 
   @@index([createdById])
