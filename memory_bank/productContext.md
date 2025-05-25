@@ -1,140 +1,61 @@
-# Fonctionnalités du Produit
+# Product Context
 
-## Gestion des Articles
+## User Management
 
-### Création et Édition
+### Account Deactivation
 
-- Éditeur de texte riche
-- Sauvegarde automatique des brouillons
-- Upload d'images avec preview
-- Gestion des catégories et tags
-- Système de validation avant publication
-- Historique des versions
+Two distinct flows for account deactivation have been implemented:
 
-### Workflow de Publication
+1. Self-Service Deactivation
 
-- États: brouillon, en relecture, publié
-- Système de commentaires pour la relecture
-- Notifications de changements d'état
-- Planification de publication
-- Gestion des rôles et permissions
+- Users can deactivate their own accounts
+- 7-day grace period before deactivation takes effect
+- Can be cancelled during grace period
+- Visual indicators show countdown to deactivation
 
-## Gestion des Utilisateurs
+2. Administrative Deactivation
 
-### Profils Utilisateurs
+- Administrators can deactivate accounts immediately
+- No grace period for admin actions
+- Protected against deactivating all system administrators
+- Role hierarchy enforced for permissions
 
-- Informations de base (nom, email)
-- Avatar personnalisé
-- Biographie et liens sociaux
-- Statistiques d'activité
-- Préférences de notifications
+### Role Hierarchy & Permissions
 
-### Authentification
+- Strict role hierarchy (USER < MODERATOR < EDITOR < SENIOR_EDITOR < ADMIN <
+  SYSADMIN)
+- Actions only available to strictly higher roles
+- Special protections for ADMIN and SYSADMIN accounts
+- Batch operations respect role hierarchy
 
-- Connexion email/mot de passe
-- Gestion du mot de passe
-  - Changement de mot de passe
-  - Politique de sécurité
-  - Notifications d'expiration
-- Sessions multiples
-- Déconnexion sécurisée
+## User Interface Components
 
-### Rôles et Permissions
+### Status Indicators
 
-- Admin: gestion complète
-- Éditeur: publication et relecture
-- Auteur: création d'articles
-- Utilisateur: lecture et commentaires
+- Active accounts: Green status
+- Pending deactivation: Orange status with countdown
+- Inactive accounts: Red status
+- Color-coded role badges
 
-## Système de Notifications
+### Account Management
 
-### Types de Notifications
+- Individual and batch actions
+- Role-appropriate action visibility
+- Confirmation dialogs with context-aware messages
+- Clear status indicators and warnings
 
-- Système
-  - Changements de mot de passe
-  - Mises à jour importantes
-  - Maintenance planifiée
-- Articles
-  - Nouvelles publications
-  - Commentaires
-  - Changements d'état
-  - Demandes de relecture
-- Utilisateurs
-  - Mentions
-  - Réponses aux commentaires
-  - Actions administratives
+## Security Considerations
 
-### Gestion des Notifications
+### Permission System
 
-- Marquage comme lu/non lu
-- Actions groupées
-- Filtres par type/priorité
-- Préférences de réception
-- Historique
+- Role-based access control
+- Strict hierarchy enforcement
+- Protected system administrator accounts
+- Batch operation safeguards
 
-### Interface Utilisateur
+### Grace Period
 
-- Indicateur visuel de notifications
-- Niveaux de priorité avec couleurs
-- Aperçu rapide dans la navbar
-- Liste détaillée avec actions
-- État de chargement par action
-
-## Administration
-
-### Tableau de Bord
-
-- Statistiques en temps réel
-- Articles en attente
-- Activité récente
-- État du système
-
-### Gestion de Contenu
-
-- Articles
-- Catégories
-- Tags
-- Médias
-- Pages statiques
-
-### Modération
-
-- Commentaires
-- Utilisateurs
-- Contenu signalé
-- Logs d'activité
-- Actions en masse
-
-## Fonctionnalités Techniques
-
-### Performance
-
-- Chargement optimisé
-- Mise en cache
-- Lazy loading
-- Optimisation des images
-- Pagination/infinite scroll
-
-### Accessibilité
-
-- Navigation au clavier
-- Support lecteur d'écran
-- Contrastes adaptés
-- Messages d'erreur clairs
-- États de focus visibles
-
-### Responsive Design
-
-- Mobile first
-- Breakpoints cohérents
-- Navigation adaptative
-- Images responsives
-- Touch friendly
-
-### Sécurité
-
-- Protection CSRF
-- Validation des entrées
-- Sanitization du contenu
-- Rate limiting
-- Audit trail
+- 7 days for self-deactivation
+- Immediate effect for administrative actions
+- Cancellation capability during grace period
+- Clear status tracking and notifications

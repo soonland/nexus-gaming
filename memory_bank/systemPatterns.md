@@ -1,179 +1,131 @@
 # System Patterns
 
-## UI Components
+## Permission Management
 
-### Loading States
+### Role-Based Access Control
 
-- Individual loading states for actions (e.g., notification mark as read)
-- Loading spinners inside buttons to maintain layout
-- Disabled states during loading
-- Loading state resets after action completion
-- Global loading overlay for page transitions
-- Skeleton loaders for content
+- Hierarchical role system
+- Strict role comparison using operators ('>', '>=', etc.)
+- Permission validation at multiple levels:
+  1. UI component visibility
+  2. Client-side action validation
+  3. Server-side enforcement
 
-### Form Patterns
+### Status Management Pattern
 
-- Field-level validation
-- Submission handling
-- Error messages
-- Loading states
-- Success feedback
-- Auto-save handling
+- Clear status transitions
+- Grace period implementation
+- Cancellation capability
+- Visual status indicators
 
-### Notifications
+## Component Patterns
 
-- Severity levels with corresponding colors: info, warning, urgent, error
-- Visual indicators for unread status
-- Read/unread state changes with visual feedback
-- Batch actions with individual spinners
-- Tooltips for action buttons
-- Event propagation control for nested clickables
-
-### Layout
-
-- Responsive design patterns
-- Container management
-- Grid system usage
-- Spacing consistency
-- Breakpoint handling
-- Navigation patterns
-
-## Data Management
-
-### React Query Integration
-
-- Optimistic updates for better UX
-- Cache invalidation after mutations
-- Loading states tracking with isPending
-- Response typing with Prisma types
-- Error state handling
-- Prefetching strategies
-- Infinite loading
-
-### API Response Format
+### Generic Filters
 
 ```typescript
-interface ApiResponse<T> {
-  data: T;
-  error?: string;
+interface IStatusOption<T> {
+  value: T;
+  label: string;
+}
+
+<AdminFilters<T extends string>>
+```
+
+### Action Buttons
+
+- Conditional rendering based on permissions
+- Context-aware actions
+- Batch operation support
+- Consistent styling and layout
+
+## API Response Patterns
+
+### Success Responses
+
+```typescript
+interface ISuccessResponse<T> {
+  success: true;
+  message: string;
+  data?: T;
+}
+
+// Example: Deactivation Response
+{
+  success: true,
+  message: "Deactivation scheduled",
+  deactivationEffectiveDate: "2025-05-31T..."
 }
 ```
 
-### State Management
+### Error Handling
 
-- Context usage guidelines
-- Local vs global state
-- Form state handling
-- UI state persistence
-- Route state management
+```typescript
+interface IErrorResponse {
+  success: false;
+  error: string;
+}
+```
 
-### Mutation Patterns
+## State Management
 
-- Reset mutation state after completion
-- Handle success/error states
-- Proper typing for request/response
-- Load masks during operation
-- Optimistic updates
-- Rollback handling
+### Optimistic Updates
+
+- Immediate UI feedback
+- Graceful error handling
+- State reversion on failure
+
+### Batch Operations
+
+- Role-based filtering
+- All-or-nothing transactions
+- Progress feedback
 
 ## Security Patterns
 
-### API Routes
+### Multi-Level Validation
 
-- User authentication check
-- Resource ownership validation
-- Input validation
-- Error handling with appropriate status codes
-- Rate limiting
-- Request sanitization
+1. UI Level
 
-### Authorization
+   - Action visibility control
+   - Permission pre-checks
+   - Input validation
 
-- Role-based access
-- Resource permissions
-- Route protection
-- API endpoint security
-- Token management
+2. API Level
 
-## Database Patterns
+   - Authentication check
+   - Permission validation
+   - Business rule enforcement
 
-### Prisma Queries
+3. Database Level
+   - Constraints
+   - Cascading updates
+   - Data integrity
 
-- Sorting by multiple fields
-- Filtering with dynamic conditions
-- Data selection optimization
-- Proper type safety
-- Relation handling
-- Pagination strategies
-- Transaction management
-- Preference-based filtering
-- Complex AND/OR conditions
+### Protected Operations
 
-### Data Integrity
+- System stability safeguards
+- Critical user protection
+- Concurrent modification handling
 
-- Validation rules
-- Constraint handling
-- Cascade operations
-- Soft deletes
-- Audit trails
-- Backup strategies
+## User Experience Patterns
 
-## Error Handling
+### Status Visualization
 
-### Client-Side
+- Color coding
+- Icon usage
+- Clear labeling
+- Progress indicators
 
-- API error handling
-- Form validation errors
-- Network error recovery
-- Mutation error handling
-- Toast notifications
-- Error boundaries
+### Confirmation Flows
 
-### Server-Side
+- Context-aware messages
+- Clear consequences
+- Cancellation options
+- Batch operation warnings
 
-- HTTP status codes
-- Error messages
-- Validation errors
-- Database errors
-- Authentication errors
-- Rate limit errors
+### Error Handling
 
-## Testing Patterns
-
-### API Route Testing
-
-- Mocks avec arrow functions pour éviter les problèmes de binding
-- Organisation des mocks au niveau test avec `let`
-- Tests des requêtes Prisma complexes :
-  ```typescript
-  expect(findMany).toHaveBeenCalledWith({
-    where: {
-      type: { in: enabledTypes },
-      AND: [{ OR: [conditions] }],
-    },
-    orderBy: [{ field: 'asc' }],
-  });
-  ```
-- Validation des filtres utilisateur (préférences, permissions)
-- Test des cas limites (filtres vides, désactivés)
-- Vérification des résultats exacts de l'API
-- Mock data réutilisable et typée
-- Assertions précises sur les réponses
-- Tests d'authentification et permissions
-- Gestion des erreurs et validations
-
-### Integration Testing
-
-- API route testing
-- Database testing
-- Authentication flow
-- End-to-end flows
-- Error scenarios
-
-### Unit Testing
-
-- Component testing
-- Hook testing
-- Utility testing
-- Mock patterns
-- Test organization
+- Clear error messages
+- Recovery options
+- User guidance
+- State preservation

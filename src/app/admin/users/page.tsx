@@ -17,21 +17,18 @@ import {
   AdminPageLayout,
   defaultActions,
 } from '@/components/admin';
-import type {
-  IStatusOption,
-  StatusValue,
-} from '@/components/admin/common/AdminFilters';
+import type { IStatusOption } from '@/components/admin/common/AdminFilters';
 import { ColorDot, useNotifier } from '@/components/common';
 import { useAdminUsers, type IUserData } from '@/hooks/admin/useAdminUsers';
 import { useAuth } from '@/hooks/useAuth';
 import { hasSufficientRole } from '@/lib/permissions';
 
 type UserSortField = 'username' | 'email' | 'role' | 'createdAt' | 'updatedAt';
-
+type UserStatusValue = 'all' | 'active' | 'inactive';
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 const DEFAULT_PAGE_SIZE = PAGE_SIZE_OPTIONS[0];
 
-const STATUS_OPTIONS: IStatusOption[] = [
+const STATUS_OPTIONS: IStatusOption<'all' | 'active' | 'inactive'>[] = [
   { value: 'all', label: 'Tous les statuts' },
   { value: 'active', label: 'Actif' },
   { value: 'inactive', label: 'Inactif' },
@@ -72,7 +69,9 @@ const AdminUsersPage = () => {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
-  const [selectedStatus, setSelectedStatus] = useState<StatusValue>('all');
+  const [selectedStatus, setSelectedStatus] = useState<
+    'all' | 'active' | 'inactive'
+  >('all');
 
   const {
     users,
@@ -102,7 +101,7 @@ const AdminUsersPage = () => {
     setPage(1);
   };
 
-  const handleStatusChange = (status: StatusValue) => {
+  const handleStatusChange = (status: UserStatusValue) => {
     setSelectedStatus(status);
   };
 
@@ -139,7 +138,7 @@ const AdminUsersPage = () => {
             toggleUserStatus.mutateAsync({ id, isActive: false })
           )
         );
-        showSuccess('Désactivation des utilisateurs initiée');
+        showSuccess('Utilisateurs désactivés avec succès');
         setSelectedIds([]);
       } else if (deactivateDialog.userId) {
         const response = await toggleUserStatus.mutateAsync({
@@ -148,7 +147,9 @@ const AdminUsersPage = () => {
         });
         if (response.deactivationEffectiveDate) {
           showSuccess(
-            `Compte sera désactivé le ${dayjs(response.deactivationEffectiveDate).format('LL')}`
+            `Compte sera désactivé le ${dayjs(
+              response.deactivationEffectiveDate
+            ).format('LL')}`
           );
         } else {
           showSuccess('Compte désactivé avec succès');
@@ -180,7 +181,7 @@ const AdminUsersPage = () => {
   const renderActions = (row: IUserData) => {
     const actions = [];
 
-    if (hasSufficientRole(user?.role, row.role)) {
+    if (hasSufficientRole(user?.role, row.role, '>')) {
       // Si le compte est en cours de désactivation, montrer le bouton d'annulation
       if (row.deactivationRequestedAt && row.isActive) {
         actions.push({
@@ -224,7 +225,7 @@ const AdminUsersPage = () => {
       actions.push(
         defaultActions.edit(
           `/admin/users/${row.id}/edit`,
-          !hasSufficientRole(user?.role, row.role)
+          !hasSufficientRole(user?.role, row.role, '>')
         ),
         defaultActions.delete(
           () =>
@@ -233,7 +234,7 @@ const AdminUsersPage = () => {
               userId: row.id,
               isBatchDelete: false,
             }),
-          !hasSufficientRole(user?.role, row.role)
+          !hasSufficientRole(user?.role, row.role, '>')
         )
       );
     }
@@ -256,6 +257,7 @@ const AdminUsersPage = () => {
         </Stack>
       );
     }
+
     return (
       <ColorDot
         color={row.isActive ? '#4CAF50' : '#F44336'}
@@ -264,69 +266,83 @@ const AdminUsersPage = () => {
     );
   };
 
-  const renderBatchActions = () => (
-    <Stack direction='row' spacing={2}>
-      <Button
-        color='success'
-        disabled={
-          selectedIds.length === 0 ||
-          !selectedIds.some(id => {
-            const user = users.find(u => u.id === id);
-            return user && !user.isActive;
-          })
-        }
-        size='small'
-        startIcon={<FiCheck />}
-        variant='outlined'
-        onClick={() =>
-          Promise.all(
-            selectedIds.map(id =>
-              toggleUserStatus.mutateAsync({ id, isActive: true })
+  const renderBatchActions = () => {
+    // Ne montrer les actions par lot que pour les utilisateurs de niveau inférieur
+    const eligibleIds = selectedIds.filter(id => {
+      const targetUser = users.find(u => u.id === id);
+      return (
+        targetUser &&
+        user?.role &&
+        hasSufficientRole(user.role, targetUser.role, '>')
+      );
+    });
+
+    if (eligibleIds.length === 0) {
+      return null;
+    }
+
+    return (
+      <Stack direction='row' spacing={2}>
+        <Button
+          color='success'
+          disabled={
+            !eligibleIds.some(id => {
+              const targetUser = users.find(u => u.id === id);
+              return targetUser && !targetUser.isActive;
+            })
+          }
+          size='small'
+          startIcon={<FiCheck />}
+          variant='outlined'
+          onClick={() =>
+            Promise.all(
+              eligibleIds.map(id =>
+                toggleUserStatus.mutateAsync({ id, isActive: true })
+              )
             )
-          )
-        }
-      >
-        Activer
-      </Button>
-      <Button
-        color='error'
-        disabled={
-          selectedIds.length === 0 ||
-          !selectedIds.some(id => {
-            const user = users.find(u => u.id === id);
-            return user && user.isActive;
-          })
-        }
-        size='small'
-        startIcon={<FiX />}
-        variant='outlined'
-        onClick={() =>
-          setDeactivateDialog({
-            isOpen: true,
-            userId: null,
-            isBatchDeactivate: true,
-          })
-        }
-      >
-        Désactiver
-      </Button>
-      <Button
-        color='error'
-        disabled={selectedIds.length === 0}
-        size='small'
-        variant='outlined'
-        onClick={() =>
-          setDeleteDialog({
-            isOpen: true,
-            userId: null,
-            isBatchDelete: true,
-          })
-        }
-      >
-        Supprimer
-      </Button>
-    </Stack>
-  );
+          }
+        >
+          Activer
+        </Button>
+        <Button
+          color='error'
+          disabled={
+            !eligibleIds.some(id => {
+              const targetUser = users.find(u => u.id === id);
+              return targetUser && targetUser.isActive;
+            })
+          }
+          size='small'
+          startIcon={<FiX />}
+          variant='outlined'
+          onClick={() =>
+            setDeactivateDialog({
+              isOpen: true,
+              userId: null,
+              isBatchDeactivate: true,
+            })
+          }
+        >
+          Désactiver
+        </Button>
+        <Button
+          color='error'
+          disabled={eligibleIds.length === 0}
+          size='small'
+          variant='outlined'
+          onClick={() =>
+            setDeleteDialog({
+              isOpen: true,
+              userId: null,
+              isBatchDelete: true,
+            })
+          }
+        >
+          Supprimer
+        </Button>
+      </Stack>
+    );
+  };
 
   return (
     <AdminPageLayout
@@ -339,7 +355,7 @@ const AdminUsersPage = () => {
       title='Gestion des utilisateurs'
     >
       <Stack direction='row' justifyContent='space-between' mb={2}>
-        <AdminFilters
+        <AdminFilters<'all' | 'active' | 'inactive'>
           showStatusFilter
           searchPlaceholder='Rechercher un utilisateur...'
           selectedStatus={selectedStatus}
@@ -452,8 +468,8 @@ const AdminUsersPage = () => {
         isOpen={deactivateDialog.isOpen}
         message={
           deactivateDialog.isBatchDeactivate
-            ? `Êtes-vous sûr de vouloir désactiver les ${selectedIds.length} utilisateurs sélectionnés ? Cette action prendra effet après une période de 7 jours.`
-            : 'Êtes-vous sûr de vouloir désactiver cet utilisateur ? Cette action prendra effet après une période de 7 jours.'
+            ? `Êtes-vous sûr de vouloir désactiver les ${selectedIds.length} utilisateurs sélectionnés ? Cette action sera immédiate.`
+            : 'Êtes-vous sûr de vouloir désactiver cet utilisateur ? Cette action sera immédiate.'
         }
         title='Désactiver des utilisateurs'
         onClose={() =>

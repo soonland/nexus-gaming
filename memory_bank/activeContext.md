@@ -1,199 +1,98 @@
-# Active Context: Nexus Gaming News
+# Active Development Context
 
-## Current Development Focus
+## Current Focus: User Account Management
 
-### Implementation Status
+### User Deactivation System
 
-1. **Core Infrastructure**
+Currently implementing a dual-mode account deactivation system with:
 
-   - Next.js application setup ✓
-   - Database schema defined ✓
-   - Authentication system implemented ✓
-   - File upload integration (Cloudinary) ✓
+- Self-service deactivation with grace period
+- Administrative immediate deactivation
+- Role-based permissions
+- Batch operations support
 
-2. **UI Improvements**
+### Key Files in Development
 
-   - Enhanced announcement display:
-     - Semi-transparent color backgrounds with theme-aware opacity:
-       - Dark theme: 0.3 opacity for better visibility
-       - Light theme: 0.03 opacity for subtlety
-     - Responsive elevation using box shadows:
-       - Dark theme: level 4 for depth
-       - Light theme: level 1 for subtle lift
-     - Default collapsed state for cleaner initial view
-     - Interaction enhancements:
-       - Smooth hover effects with transform
-       - Pulsing animation for new content indicator
-       - Consistent animation timing
-     - Typography refinements:
-       - Enhanced contrast in dark mode
-       - Clear visual hierarchy
-       - Proper spacing and alignment
-     - Theme integration:
-       - Automatic dark mode adaptation
-       - Color system compliance
-       - Consistent with MUI patterns
-   - Animated counters in dashboard ✓
-   - Icon hover animations ✓
+1. Pages & Components:
 
-3. **Admin Features**
+   - `src/app/admin/users/page.tsx`
+   - `src/components/admin/common/AdminDeactivateDialog.tsx`
+   - `src/components/admin/common/AdminFilters.tsx`
 
-   - User management ✓
-   - Article management ✓
-   - Game management ✓
-   - Platform management ✓
-   - Category management ✓
-   - Company management ✓
-   - Announcement system ✓
+2. API Routes:
 
-4. **Content Features**
+   - `src/app/api/admin/users/[id]/status/route.ts`
+   - `src/app/api/admin/users/[id]/cancel-deactivation/route.ts`
 
-   - Article creation/editing
-   - Media upload handling
-   - Game information management
-   - Platform tracking
-   - Category organization
+3. Database:
 
-5. **User Features**
-   - Authentication ✓
-   - Profile management ✓
-   - Social profile integration ✓
-   - Avatar customization ✓
+   - `prisma/migrations/20250524152600_add_deactivation_requested_at/migration.sql`
 
-## Active Decisions
+4. Hooks & Utils:
+   - `src/hooks/admin/useAdminUsers.ts`
+   - `src/lib/permissions.ts`
 
-### Architecture
+### Active Patterns
 
-- Using Next.js App Router for modern routing capabilities
-- Implementing role-based access control
-- Centralizing state management with React Query
-- Utilizing Material-UI for consistent design
+- Role-based access control
+- Grace period implementation
+- Generic status filtering
+- Batch operation handling
 
-### Database
+### Design Decisions
 
-- PostgreSQL for robust relational data
-- Prisma ORM for type-safe queries
-- Structured migrations for schema changes
-- Efficient relationship management
+1. Permission Model:
 
-### Content Management
+   - Strict role hierarchy
+   - Operator-based role comparison
+   - Protected admin accounts
 
-- Structured article workflow
-- Categorized content organization
-- Game-centric content relationships
-- Media optimization strategy
+2. Status Management:
 
-### User Experience
+   - Clear state transitions
+   - Visual status indicators
+   - Cancellation capability
+   - Batch operation support
 
-- Clean, responsive interface
-- Progressive loading patterns
-- Optimized image delivery
-- Efficient state updates
+3. Error Handling:
+   - Permission validation
+   - Concurrent modification
+   - Optimistic updates
+   - User feedback
 
-## Recent Learnings
+### Current Priorities
 
-### Technical Insights
+1. Feature Completeness:
 
-1. Database schema evolution
-2. Content relationship management
-3. Authentication flow optimization
-4. Media handling patterns
+   - ✅ Basic deactivation flows
+   - ✅ Permission system
+   - ✅ UI components
+   - [ ] Testing coverage
 
-### Implementation Patterns
+2. Code Quality:
 
-1. Efficient API route handling
-2. Component reusability
-3. State management strategies
-4. Performance optimization
+   - ✅ Type safety
+   - ✅ Permission checks
+   - ✅ Error handling
+   - [ ] Documentation
 
-## Current Standards
+3. User Experience:
+   - ✅ Clear status display
+   - ✅ Intuitive actions
+   - ✅ Batch operations
+   - [ ] Email notifications
 
-### Code Organization
+### Next Steps
 
-```
-src/
-├── app/             # Next.js pages
-├── components/      # Reusable UI
-├── hooks/          # Custom logic
-├── lib/            # Utilities
-├── providers/      # Context
-└── types/          # TypeScript
-```
+1. Testing
 
-### Component Patterns
+   - Add unit tests
+   - Integration testing
+   - Permission test cases
+   - Batch operation tests
 
-1. Functional components
-2. Custom hooks for logic
-3. Material-UI integration
-4. Responsive design
-
-### UI Standards
-
-1. Typography:
-   - Headings: letterSpacing -0.01em, fontWeight 500
-   - Body text: lineHeight 1.6, letterSpacing 0.01em
-2. Colors:
-   - Use MUI theme colors (text.primary, text.secondary)
-   - Semi-transparent backgrounds defined using rgba in style files
-3. Animations:
-   - Smooth transitions with cubic-bezier timing
-   - Consistent animation durations (300ms)
-4. Spacing:
-   - Consistent padding using MUI spacing system
-   - Gap-based flexbox layouts
-
-### Data Management
-
-1. React Query for server state
-2. Prisma for database access
-3. JWT for authentication
-4. Context for global state
-
-## Known Challenges
-
-### Performance
-
-- Image optimization needs
-- Query optimization opportunities
-- Bundle size management
-- Caching implementation
-
-### UX Improvements
-
-- Loading states refinement
-- Error handling enhancement
-- Mobile responsiveness
-- Form validation patterns
-
-### Technical Debt
-
-- API response standardization
-- Test coverage expansion
-- Documentation updates
-- Code duplication reduction
-
-## Next Steps
-
-### Immediate Focus
-
-1. Content management refinement
-2. Search functionality implementation
-3. Performance optimization
-4. User engagement features
-
-### Upcoming Features
-
-1. Advanced search capabilities
-2. Social sharing integration
-3. Comment system implementation
-4. Analytics integration
-
-### Technical Improvements
-
-1. Caching strategy implementation
-2. Test coverage expansion
-3. CI/CD pipeline optimization
-4. Documentation enhancement
-
-This active context document is regularly updated to reflect current development
-focus and decisions.
+2. Documentation
+   - API documentation
+   - Permission matrix
+   - Migration guide
+   - User guide

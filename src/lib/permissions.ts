@@ -38,6 +38,7 @@ export const hasSufficientRole = (
   requiredRole?: Role,
   operator: '>' | '<' | '=' | '>=' | '<=' = '>='
 ): boolean => {
+  if (userRole === Role.SYSADMIN) return true;
   if (!userRole || !requiredRole) return false;
   const userLevel = roleHierarchy[userRole];
   const requiredLevel = roleHierarchy[requiredRole];
