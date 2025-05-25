@@ -131,7 +131,7 @@ export const CategoryForm = ({ initialData, mode }: ICategoryFormProps) => {
           value={description}
           onChange={e => setDescription(e.target.value)}
         />
-        <FormControl fullWidth>
+        <FormControl fullWidth size='small'>
           <InputLabel>Catégorie parente</InputLabel>
           <Select
             label='Catégorie parente'

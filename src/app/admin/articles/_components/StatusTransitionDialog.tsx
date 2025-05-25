@@ -108,6 +108,7 @@ export const StatusTransitionDialog: React.FC<IStatusTransitionDialogProps> = ({
             label='Commentaire'
             required={isCommentRequired(targetStatus)}
             rows={4}
+            size='small'
             value={comment}
             onChange={e => setComment(e.target.value)}
           />

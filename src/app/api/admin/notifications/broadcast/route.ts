@@ -1,4 +1,4 @@
-import type { NotificationType } from '@prisma/client';
+import type { NotificationType, Role } from '@prisma/client';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
@@ -11,8 +11,30 @@ const broadcastSchema = z.object({
   level: z.enum(['info', 'warning', 'urgent', 'error']),
   title: z.string().min(1).max(100),
   message: z.string().min(1).max(500),
+  roleMin: z.enum([
+    'USER',
+    'MODERATOR',
+    'EDITOR',
+    'SENIOR_EDITOR',
+    'ADMIN',
+    'SYSADMIN',
+  ]),
   expiresAt: z.string().datetime().nullable(),
 });
+
+// Fonction utilitaire pour obtenir tous les rôles supérieurs ou égaux au rôle minimum
+function getRolesFromMin(minRole: Role): Role[] {
+  const roleHierarchy: Role[] = [
+    'USER',
+    'MODERATOR',
+    'EDITOR',
+    'SENIOR_EDITOR',
+    'ADMIN',
+    'SYSADMIN',
+  ];
+  const minIndex = roleHierarchy.indexOf(minRole);
+  return roleHierarchy.slice(minIndex);
+}
 
 export async function POST(request: Request) {
   try {
@@ -26,7 +48,12 @@ export async function POST(request: Request) {
 
     // Get all active users
     const users = await prisma.user.findMany({
-      where: { isActive: true },
+      where: {
+        isActive: true,
+        role: {
+          in: getRolesFromMin(validatedData.roleMin),
+        },
+      },
       select: { id: true },
     });
 

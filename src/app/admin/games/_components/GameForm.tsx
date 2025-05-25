@@ -16,7 +16,7 @@ import { useCreateGame, useUpdateGame } from '@/hooks/useGames';
 import { usePlatforms } from '@/hooks/usePlatforms';
 import dayjs from '@/lib/dayjs';
 import { uploadImage } from '@/lib/upload/client';
-import type { GameForm as IGameForm, GameGenre } from '@/types/api';
+import type { IGameForm, GameGenre } from '@/types/api';
 
 import {
   GameMainContent,

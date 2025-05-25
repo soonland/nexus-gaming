@@ -1,11 +1,12 @@
 import { Button, Stack, useMediaQuery, useTheme } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { FiHome } from 'react-icons/fi';
+import { MdDashboard } from 'react-icons/md';
 
 import { NotificationBell } from '@/components/common/NotificationBell';
 import { useAuth } from '@/hooks/useAuth';
+import { canAccessDashboard } from '@/lib/permissions';
 
-import { AdminMenu } from './AdminMenu';
 import { MobileMenu } from './MobileMenu';
 import { UserAvatar } from './UserAvatar';
 
@@ -50,7 +51,15 @@ export const NavbarContent = () => {
       {/* Partie droite : auth ou menu utilisateur */}
       {user ? (
         <Stack alignItems='center' direction='row' spacing={2}>
-          <AdminMenu />
+          {canAccessDashboard(user.role) && (
+            <Button
+              startIcon={<MdDashboard size={20} />}
+              variant='text'
+              onClick={() => router.push('/admin/dashboard')}
+            >
+              Dashboard
+            </Button>
+          )}
           <NotificationBell />
           <UserAvatar />
         </Stack>

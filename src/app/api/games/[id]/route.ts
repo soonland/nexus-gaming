@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 
 import prisma from '@/lib/prisma';
 import { generateSlug } from '@/lib/slug';
-import type { GameForm } from '@/types';
+import type { IGameForm } from '@/types';
 
 export async function GET(
   request: NextRequest,
@@ -142,7 +142,7 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
-    const data = (await request.json()) as GameForm;
+    const data = (await request.json()) as IGameForm;
 
     // Validation des champs requis
     if (!data.title || !data.developerId || !data.publisherId) {

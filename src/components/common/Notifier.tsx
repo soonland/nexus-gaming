@@ -16,11 +16,11 @@ interface INotifierProviderProps {
 
 export const NotifierProvider = ({ children }: INotifierProviderProps) => {
   const [notifications, setNotifications] = useState<
-    Array<{
+    {
       message: string;
       severity: 'success' | 'error';
       id: number;
-    }>
+    }[]
   >([]);
   const [currentNotification, setCurrentNotification] = useState<{
     message: string;

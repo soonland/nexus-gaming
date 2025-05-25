@@ -15,6 +15,7 @@ export async function GET() {
     const announcements = await prisma.adminAnnouncement.findMany({
       where: {
         isActive: 'active',
+        visibility: 'PUBLIC',
         OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
       },
       select: {

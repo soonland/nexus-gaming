@@ -26,7 +26,7 @@ import {
 
 type AnnouncementSortField = keyof Pick<
   IAdminAnnouncement,
-  'message' | 'createdAt' | 'expiresAt' | 'type' | 'isActive'
+  'message' | 'createdAt' | 'expiresAt' | 'type' | 'isActive' | 'visibility'
 >;
 
 interface IDeleteDialogState {
@@ -220,6 +220,7 @@ const AdminAnnouncementsPage = () => {
     <Stack direction='row' spacing={2}>
       <Button
         color='success'
+        disabled={selectedIds.length === 0}
         size='small'
         startIcon={<FiEye />}
         variant='outlined'
@@ -229,6 +230,7 @@ const AdminAnnouncementsPage = () => {
       </Button>
       <Button
         color='warning'
+        disabled={selectedIds.length === 0}
         size='small'
         startIcon={<FiEyeOff />}
         variant='outlined'
@@ -237,6 +239,7 @@ const AdminAnnouncementsPage = () => {
         Désactiver
       </Button>
       <Button
+        disabled={selectedIds.length === 0}
         size='small'
         startIcon={<FiClock />}
         variant='outlined'
@@ -246,6 +249,7 @@ const AdminAnnouncementsPage = () => {
       </Button>
       <Button
         color='error'
+        disabled={selectedIds.length === 0}
         size='small'
         startIcon={<FiTrash2 />}
         variant='outlined'
@@ -305,6 +309,24 @@ const AdminAnnouncementsPage = () => {
               },
               sortable: true,
               width: '250px',
+            },
+            {
+              field: 'visibility',
+              headerName: 'Visibilité',
+              render: row => (
+                <ColorDot
+                  color={
+                    row.visibility === 'PUBLIC'
+                      ? 'success.main'
+                      : 'text.secondary'
+                  }
+                  label={
+                    row.visibility === 'PUBLIC' ? 'Public' : 'Admin uniquement'
+                  }
+                />
+              ),
+              sortable: true,
+              width: '150px',
             },
             {
               field: 'expiresAt',

@@ -20,7 +20,7 @@ import type { IBadge } from '@/components/common/Hero';
 import { Hero } from '@/components/common/Hero';
 import { useArticle } from '@/hooks/useArticle';
 import dayjs from '@/lib/dayjs';
-import type { GameData } from '@/types';
+import type { IGameData } from '@/types';
 
 const ArticlePage = () => {
   const params = useParams();
@@ -57,7 +57,7 @@ const ArticlePage = () => {
 
   if (!article) return null;
 
-  const formattedGames: Array<Partial<GameData>> = article.games.map(game => ({
+  const formattedGames: Partial<IGameData>[] = article.games.map(game => ({
     id: game.id,
     title: game.title,
     description: game.description || undefined,

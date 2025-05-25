@@ -22,6 +22,7 @@ export async function GET(
         message: true,
         type: true,
         isActive: true,
+        visibility: true,
         expiresAt: true,
         createdAt: true,
         createdBy: {
@@ -61,7 +62,7 @@ export async function PUT(
     }
 
     const data = await request.json();
-    const { message, type, expiresAt, isActive } = data;
+    const { message, type, expiresAt, isActive, visibility } = data;
 
     if (!message || !type) {
       return NextResponse.json(
@@ -75,6 +76,7 @@ export async function PUT(
       data: {
         message,
         type,
+        visibility,
         expiresAt: expiresAt ? new Date(expiresAt) : null,
         isActive: ['active', 'inactive'].includes(isActive)
           ? isActive
@@ -85,6 +87,7 @@ export async function PUT(
         message: true,
         type: true,
         isActive: true,
+        visibility: true,
         expiresAt: true,
         createdAt: true,
         createdBy: {

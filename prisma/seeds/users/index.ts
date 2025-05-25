@@ -5,12 +5,13 @@ import { userTemplates } from './templates';
 /**
  * Configuration de la génération des utilisateurs
  */
-interface IUserGenConfig {
-  [key: string]: {
+type IUserGenConfig = Record<
+  string,
+  {
     count?: number; // Nombre d'utilisateurs par rôle (sauf le premier rôle du template)
     enabled: boolean;
-  };
-}
+  }
+>;
 
 const defaultConfig: IUserGenConfig = {
   editorial: {

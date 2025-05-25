@@ -12,6 +12,16 @@ export async function GET(request: Request) {
     const limit = parseInt(searchParams.get('limit') ?? '10');
     const search = searchParams.get('search') ?? '';
     const role = searchParams.get('role');
+    const sortField = searchParams.get('sortField') ?? 'name';
+    const sortOrder = (searchParams.get('sortOrder') ?? 'asc') as
+      | 'asc'
+      | 'desc';
+
+    // Validate sort field
+    const validSortFields = ['name', 'createdAt', 'updatedAt'] as const;
+    const validatedSortField = validSortFields.includes(sortField as any)
+      ? sortField
+      : 'name';
 
     // Build where clause
     const where: Prisma.CompanyWhereInput = {
@@ -39,7 +49,7 @@ export async function GET(request: Request) {
         skip,
         take: limit,
         orderBy: {
-          name: 'asc',
+          [validatedSortField]: sortOrder,
         },
       }),
       prisma.company.count(),

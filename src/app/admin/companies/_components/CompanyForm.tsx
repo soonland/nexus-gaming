@@ -112,6 +112,7 @@ export const CompanyForm = ({ initialData, mode }: ICompanyFormProps) => {
           helperText={nameError}
           label='Nom'
           name='name'
+          size='small'
           value={name}
           onChange={e => {
             setName(e.target.value);
@@ -124,6 +125,7 @@ export const CompanyForm = ({ initialData, mode }: ICompanyFormProps) => {
               control={
                 <Checkbox
                   checked={isDeveloper}
+                  size='small'
                   onChange={e => {
                     setIsDeveloper(e.target.checked);
                     if (roleError) setRoleError('');
@@ -136,6 +138,7 @@ export const CompanyForm = ({ initialData, mode }: ICompanyFormProps) => {
               control={
                 <Checkbox
                   checked={isPublisher}
+                  size='small'
                   onChange={e => {
                     setIsPublisher(e.target.checked);
                     if (roleError) setRoleError('');

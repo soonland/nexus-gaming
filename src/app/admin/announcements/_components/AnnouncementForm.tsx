@@ -9,7 +9,7 @@ import {
   TextField,
 } from '@mui/material';
 import { DateTimePicker } from '@mui/x-date-pickers';
-import type { AnnouncementType } from '@prisma/client';
+import type { AnnouncementType, AnnouncementVisibility } from '@prisma/client';
 import type { Dayjs } from 'dayjs';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -26,6 +26,11 @@ const ANNOUNCEMENT_TYPES: { value: AnnouncementType; label: string }[] = [
   { value: 'URGENT', label: 'Urgent' },
 ];
 
+const VISIBILITY_TYPES: { value: AnnouncementVisibility; label: string }[] = [
+  { value: 'ADMIN_ONLY', label: 'Administration uniquement' },
+  { value: 'PUBLIC', label: 'Public' },
+];
+
 const STATUS_OPTIONS: { value: ActiveStatus; label: string }[] = [
   { value: 'active', label: 'Actif' },
   { value: 'inactive', label: 'Inactif' },
@@ -37,6 +42,7 @@ interface IAnnouncementFormProps {
     message: string;
     type: AnnouncementType;
     isActive: ActiveStatus;
+    visibility: AnnouncementVisibility;
     expiresAt?: string | null;
   };
   mode: 'create' | 'edit';
@@ -54,6 +60,9 @@ export const AnnouncementForm = ({
   );
   const [isActive, setIsActive] = useState<ActiveStatus>(
     initialData?.isActive || 'active'
+  );
+  const [visibility, setVisibility] = useState<AnnouncementVisibility>(
+    initialData?.visibility || 'ADMIN_ONLY'
   );
   const [expiresAt, setExpiresAt] = useState<Dayjs | null>(
     initialData?.expiresAt ? dayjs(initialData.expiresAt) : null
@@ -93,6 +102,7 @@ export const AnnouncementForm = ({
         message: message.trim(),
         type,
         isActive,
+        visibility,
         expiresAt: expiresAt?.toDate(),
       };
 
@@ -134,53 +144,77 @@ export const AnnouncementForm = ({
           label='Message'
           name='message'
           rows={4}
+          size='small'
           value={message}
           onChange={e => {
             setMessage(e.target.value);
             if (messageError) setMessageError('');
           }}
         />
-        <FormControl>
-          <InputLabel id='type-label'>Type</InputLabel>
-          <Select
-            required
-            label='Type'
-            labelId='type-label'
-            name='type'
-            value={type}
-            onChange={e => setType(e.target.value as AnnouncementType)}
-          >
-            {ANNOUNCEMENT_TYPES.map(option => (
-              <MenuItem key={option.value} value={option.value}>
-                {option.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <FormControl>
-          <InputLabel id='status-label'>État</InputLabel>
-          <Select
-            required
-            label='État'
-            labelId='status-label'
-            name='isActive'
-            value={isActive}
-            onChange={e => setIsActive(e.target.value as ActiveStatus)}
-          >
-            {STATUS_OPTIONS.map(option => (
-              <MenuItem key={option.value} value={option.value}>
-                {option.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <FormControl>
-          <DateTimePicker
-            label="Date d'expiration"
-            value={expiresAt}
-            onChange={date => setExpiresAt(date)}
-          />
-        </FormControl>
+        <Stack direction='row' spacing={2}>
+          <FormControl fullWidth size='small'>
+            <InputLabel id='visibility-label'>Visibilité</InputLabel>
+            <Select
+              required
+              label='Visibilité'
+              labelId='visibility-label'
+              name='visibility'
+              value={visibility}
+              onChange={e =>
+                setVisibility(e.target.value as AnnouncementVisibility)
+              }
+            >
+              {VISIBILITY_TYPES.map(option => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth size='small'>
+            <InputLabel id='type-label'>Type</InputLabel>
+            <Select
+              required
+              label='Type'
+              labelId='type-label'
+              name='type'
+              value={type}
+              onChange={e => setType(e.target.value as AnnouncementType)}
+            >
+              {ANNOUNCEMENT_TYPES.map(option => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth size='small'>
+            <InputLabel id='status-label'>État</InputLabel>
+            <Select
+              required
+              label='État'
+              labelId='status-label'
+              name='isActive'
+              value={isActive}
+              onChange={e => setIsActive(e.target.value as ActiveStatus)}
+            >
+              {STATUS_OPTIONS.map(option => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth size='small'>
+            <DateTimePicker
+              format='YYYY-MM-DD HH:mm:ss'
+              label="Date d'expiration"
+              slotProps={{ textField: { size: 'small' } }}
+              value={expiresAt}
+              onChange={date => setExpiresAt(date)}
+            />
+          </FormControl>
+        </Stack>
       </Stack>
     </AdminForm>
   );

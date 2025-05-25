@@ -8,7 +8,7 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
-import { FiCamera } from 'react-icons/fi';
+import { FiCamera, FiTrash2 } from 'react-icons/fi';
 
 import { useNotifier } from '@/components/common/Notifier';
 import { useAuth } from '@/hooks/useAuth';
@@ -26,10 +26,21 @@ export const AvatarSection = () => {
     if (!file) return;
 
     try {
-      await updateAvatar.mutateAsync(file);
+      await updateAvatar.upload.mutateAsync(file);
       showSuccess('Avatar mis à jour avec succès');
-    } catch (error) {
+    } catch {
       showError("Erreur lors de la mise à jour de l'avatar");
+    }
+  };
+
+  const handleAvatarDelete = async () => {
+    if (!user?.avatarUrl) return;
+
+    try {
+      await updateAvatar.delete.mutateAsync();
+      showSuccess('Avatar supprimé avec succès');
+    } catch {
+      showError("Erreur lors de la suppression de l'avatar");
     }
   };
 
@@ -63,6 +74,28 @@ export const AvatarSection = () => {
                 <CircularProgress size={32} sx={{ color: 'white' }} />
               )}
             </Box>
+            {user?.avatarUrl && (
+              <IconButton
+                aria-label="Supprimer l'avatar"
+                disabled={updateAvatar.isPending}
+                size='small'
+                sx={{
+                  'position': 'absolute',
+                  'right': -10,
+                  'top': -10,
+                  'bgcolor': 'background.paper',
+                  'boxShadow': 1,
+                  'width': 30,
+                  'height': 30,
+                  '&:hover': {
+                    bgcolor: 'background.paper',
+                  },
+                }}
+                onClick={handleAvatarDelete}
+              >
+                <FiTrash2 size={16} />
+              </IconButton>
+            )}
             <IconButton
               aria-label="Changer l'avatar"
               component='label'

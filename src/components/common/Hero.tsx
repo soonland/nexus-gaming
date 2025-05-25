@@ -38,7 +38,7 @@ export interface IHeroProps {
   image?: string;
   badges?: IBadge[];
   metadata?: React.ReactNode;
-  minHeight?: string | { [key: string]: string };
+  minHeight?: string | Record<string, string>;
   overlay?: boolean;
   overlayStrength?: number;
   sx?: SxProps<Theme>;

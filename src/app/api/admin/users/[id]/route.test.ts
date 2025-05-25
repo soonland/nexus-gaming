@@ -49,7 +49,7 @@ const createNextPutRequest = (
     isActive?: boolean;
   }
 ): NextRequest =>
-  new NextRequest(new URL(`http://localhost/api/users/${userId}`), {
+  new NextRequest(new URL(`http://localhost/api/admin/users/${userId}`), {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -63,7 +63,7 @@ const createNextPatchRequest = (
     isActive: boolean;
   }
 ): NextRequest =>
-  new NextRequest(new URL(`http://localhost/api/users/${userId}`), {
+  new NextRequest(new URL(`http://localhost/api/admin/users/${userId}`), {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
@@ -88,7 +88,7 @@ const baseUser = {
   },
 };
 
-describe('GET /api/users/[id]', () => {
+describe('GET /api/admin/users/[id]', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -98,7 +98,7 @@ describe('GET /api/users/[id]', () => {
     (getCurrentUser as any).mockImplementation(getCurrentUserMock);
 
     const response = await GET(
-      createNextRequest('http://localhost/api/users/user-1'),
+      createNextRequest('http://localhost/api/admin/users/user-1'),
       {
         params: Promise.resolve({ id: 'user-1' }),
       }
@@ -117,7 +117,7 @@ describe('GET /api/users/[id]', () => {
     (getCurrentUser as any).mockImplementation(getCurrentUserMock);
 
     const response = await GET(
-      createNextRequest('http://localhost/api/users/user-1'),
+      createNextRequest('http://localhost/api/admin/users/user-1'),
       {
         params: Promise.resolve({ id: 'user-1' }),
       }
@@ -139,7 +139,7 @@ describe('GET /api/users/[id]', () => {
     (prisma.user.findUnique as any).mockImplementation(findUniqueMock);
 
     const response = await GET(
-      createNextRequest('http://localhost/api/users/user-1'),
+      createNextRequest('http://localhost/api/admin/users/user-1'),
       {
         params: Promise.resolve({ id: 'user-1' }),
       }
@@ -185,7 +185,7 @@ describe('GET /api/users/[id]', () => {
     (prisma.user.findUnique as any).mockImplementation(findUniqueMock);
 
     const response = await GET(
-      createNextRequest('http://localhost/api/users/non-existent'),
+      createNextRequest('http://localhost/api/admin/users/non-existent'),
       {
         params: Promise.resolve({ id: 'non-existent' }),
       }
@@ -209,7 +209,7 @@ describe('GET /api/users/[id]', () => {
     (prisma.user.findUnique as any).mockImplementation(findUniqueMock);
 
     const response = await GET(
-      createNextRequest('http://localhost/api/users/user-1'),
+      createNextRequest('http://localhost/api/admin/users/user-1'),
       {
         params: Promise.resolve({ id: 'user-1' }),
       }
@@ -221,7 +221,7 @@ describe('GET /api/users/[id]', () => {
   });
 });
 
-describe('PUT /api/users/[id]', () => {
+describe('PUT /api/admin/users/[id]', () => {
   const mockAdmin = {
     id: 'admin-1',
     email: 'admin@test.com',
@@ -326,7 +326,7 @@ describe('PUT /api/users/[id]', () => {
   });
 });
 
-describe('PATCH /api/users/[id]', () => {
+describe('PATCH /api/admin/users/[id]', () => {
   const mockAdmin = {
     id: 'admin-1',
     email: 'admin@test.com',
@@ -385,7 +385,7 @@ describe('PATCH /api/users/[id]', () => {
     (getCurrentUser as any).mockImplementation(getCurrentUserMock);
 
     const request = new NextRequest(
-      new URL('http://localhost/api/users/user-1'),
+      new URL('http://localhost/api/admin/users/user-1'),
       {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -443,7 +443,7 @@ describe('PATCH /api/users/[id]', () => {
   });
 });
 
-describe('DELETE /api/users/[id]', () => {
+describe('DELETE /api/admin/users/[id]', () => {
   const mockAdmin = {
     id: 'admin-1',
     email: 'admin@test.com',
@@ -473,7 +473,7 @@ describe('DELETE /api/users/[id]', () => {
     (prisma.user.delete as any).mockImplementation(deleteMock);
 
     const response = await DELETE(
-      createNextRequest('http://localhost/api/users/user-1'),
+      createNextRequest('http://localhost/api/admin/users/user-1'),
       {
         params: Promise.resolve({ id: 'user-1' }),
       }
@@ -498,7 +498,7 @@ describe('DELETE /api/users/[id]', () => {
     (prisma.user.delete as any).mockImplementation(deleteMock);
 
     const response = await DELETE(
-      createNextRequest('http://localhost/api/users/user-1'),
+      createNextRequest('http://localhost/api/admin/users/user-1'),
       {
         params: Promise.resolve({ id: 'user-1' }),
       }
@@ -525,7 +525,7 @@ describe('DELETE /api/users/[id]', () => {
     (prisma.user.delete as any).mockImplementation(deleteMock);
 
     const response = await DELETE(
-      createNextRequest('http://localhost/api/users/sysadmin-2'),
+      createNextRequest('http://localhost/api/admin/users/sysadmin-2'),
       {
         params: Promise.resolve({ id: 'sysadmin-2' }),
       }
@@ -549,7 +549,7 @@ describe('DELETE /api/users/[id]', () => {
     (prisma.user.delete as any).mockImplementation(deleteMock);
 
     const response = await DELETE(
-      createNextRequest('http://localhost/api/users/sysadmin-1'),
+      createNextRequest('http://localhost/api/admin/users/sysadmin-1'),
       {
         params: Promise.resolve({ id: 'sysadmin-1' }),
       }
@@ -571,7 +571,7 @@ describe('DELETE /api/users/[id]', () => {
     (prisma.user.delete as any).mockImplementation(deleteMock);
 
     const response = await DELETE(
-      createNextRequest('http://localhost/api/users/admin-1'),
+      createNextRequest('http://localhost/api/admin/users/admin-1'),
       {
         params: Promise.resolve({ id: 'admin-1' }),
       }
@@ -593,7 +593,7 @@ describe('DELETE /api/users/[id]', () => {
     (prisma.user.delete as any).mockImplementation(deleteMock);
 
     const response = await DELETE(
-      createNextRequest('http://localhost/api/users/non-existent'),
+      createNextRequest('http://localhost/api/admin/users/non-existent'),
       {
         params: Promise.resolve({ id: 'non-existent' }),
       }
@@ -615,7 +615,7 @@ describe('DELETE /api/users/[id]', () => {
     (prisma.user.delete as any).mockImplementation(deleteMock);
 
     const response = await DELETE(
-      createNextRequest('http://localhost/api/users/user-1'),
+      createNextRequest('http://localhost/api/admin/users/user-1'),
       {
         params: Promise.resolve({ id: 'user-1' }),
       }

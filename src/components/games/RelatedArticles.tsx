@@ -8,7 +8,7 @@ import { ArticleCard } from '@/components/articles/ArticleCard';
 import type { IArticleBasicData } from '@/types/api';
 
 interface IRelatedArticlesProps {
-  articles: Array<Partial<IArticleBasicData>>;
+  articles: Partial<IArticleBasicData>[];
   title?: string;
   showIcon?: boolean;
   iconSize?: number;

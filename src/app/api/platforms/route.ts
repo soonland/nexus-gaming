@@ -10,15 +10,58 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') ?? '1');
     const limit = parseInt(searchParams.get('limit') ?? '10');
+    const search = searchParams.get('search') ?? '';
+    const sortField = searchParams.get('sortField') ?? 'name';
+    const sortOrder = (searchParams.get('sortOrder') ?? 'asc') as
+      | 'asc'
+      | 'desc';
 
     // Calculate pagination
     const skip = (page - 1) * limit;
+
+    // Build where clause for search
+    const where = search
+      ? {
+          OR: [
+            {
+              name: {
+                contains: search,
+                mode: 'insensitive' as const,
+              },
+            },
+            {
+              manufacturer: {
+                contains: search,
+                mode: 'insensitive' as const,
+              },
+            },
+          ],
+        }
+      : undefined;
+
+    // Validate sort field
+    const validSortFields = [
+      'name',
+      'manufacturer',
+      'releaseDate',
+      'createdAt',
+      'updatedAt',
+    ] as const;
+    const validatedSortField = validSortFields.includes(sortField as any)
+      ? sortField
+      : 'name';
+
+    // Build orderBy
+    const orderBy = {
+      [validatedSortField]: sortOrder,
+    };
 
     // Get platforms with pagination
     const [platforms, totalResults] = await Promise.all([
       prisma.platform.findMany({
         skip,
         take: limit,
+        where,
         select: {
           id: true,
           name: true,
@@ -35,9 +78,7 @@ export async function GET(request: Request) {
             },
           },
         },
-        orderBy: {
-          name: 'asc',
-        },
+        orderBy,
       }),
       prisma.platform.count(),
     ]);

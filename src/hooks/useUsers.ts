@@ -68,7 +68,7 @@ const fetchUsers = async (
 };
 
 const fetchUser = async (id: string): Promise<IUserData> => {
-  const response = await fetch(`/api/users/${id}`);
+  const response = await fetch(`/api/admin/users/${id}`);
   if (!response.ok) throw new Error('Failed to fetch user');
   const data: IUserResponse = await response.json();
   return data.user;
@@ -94,7 +94,7 @@ const updateUser = async (
   id: string,
   data: IUpdateUserData
 ): Promise<IUserData> => {
-  const response = await fetch(`/api/users/${id}`, {
+  const response = await fetch(`/api/admin/users/${id}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -110,7 +110,7 @@ const updateUser = async (
 };
 
 const deleteUser = async (id: string): Promise<void> => {
-  const response = await fetch(`/api/users/${id}`, {
+  const response = await fetch(`/api/admin/users/${id}`, {
     method: 'DELETE',
   });
   if (!response.ok) {
@@ -123,7 +123,7 @@ const toggleUserStatus = async (
   id: string,
   isActive: boolean
 ): Promise<IUserData> => {
-  const response = await fetch(`/api/users/${id}`, {
+  const response = await fetch(`/api/admin/users/${id}`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',

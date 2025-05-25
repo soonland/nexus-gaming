@@ -38,6 +38,7 @@ export const hasSufficientRole = (
   requiredRole?: Role,
   operator: '>' | '<' | '=' | '>=' | '<=' = '>='
 ): boolean => {
+  if (userRole === Role.SYSADMIN) return true;
   if (!userRole || !requiredRole) return false;
   const userLevel = roleHierarchy[userRole];
   const requiredLevel = roleHierarchy[requiredRole];
@@ -140,6 +141,30 @@ export const canDeleteArticles = (
     );
   }
 
+  return false;
+};
+
+export const canToggleUserStatus = (
+  currentUserRole: Role,
+  currentUserId: string,
+  targetUser: { id: string; role: Role }
+): boolean => {
+  // Un utilisateur peut toujours désactiver son propre compte
+  if (currentUserId === targetUser.id) {
+    return true;
+  }
+
+  // SYSADMIN peut tout faire
+  if (currentUserRole === Role.SYSADMIN) {
+    return true;
+  }
+
+  // ADMIN ne peut pas désactiver d'autres ADMIN ou SYSADMIN
+  if (currentUserRole === Role.ADMIN) {
+    return !hasSufficientRole(targetUser.role, Role.ADMIN);
+  }
+
+  // Les autres ne peuvent pas désactiver d'autres comptes
   return false;
 };
 

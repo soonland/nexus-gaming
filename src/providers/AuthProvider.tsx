@@ -4,10 +4,10 @@ import { useRouter } from 'next/navigation';
 import type React from 'react';
 import { createContext, useCallback, useEffect, useState } from 'react';
 
-import type { AuthUser, ILoginCredentials } from '@/types/auth';
+import type { IAuthUser, ILoginCredentials } from '@/types/auth';
 
 interface IAuthContextType {
-  user: AuthUser | null;
+  user: IAuthUser | null;
   isLoading: boolean;
   isError: boolean;
   login: (credentials: ILoginCredentials, redirectTo?: string) => Promise<void>;
@@ -19,13 +19,19 @@ export const AuthContext = createContext<IAuthContextType>({
   user: null,
   isLoading: true,
   isError: false,
-  login: async () => {},
-  logout: async () => {},
-  refresh: async () => {},
+  login: async () => {
+    throw new Error('AuthContext not initialized: login()');
+  },
+  logout: async () => {
+    throw new Error('AuthContext not initialized: logout()');
+  },
+  refresh: async () => {
+    throw new Error('AuthContext not initialized: refresh()');
+  },
 });
 
 interface IAuthState {
-  user: AuthUser | null;
+  user: IAuthUser | null;
   isLoading: boolean;
   isError: boolean;
 }

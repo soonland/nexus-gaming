@@ -2,12 +2,12 @@ import type { Role } from '@prisma/client';
 import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 
-import type { AuthUser, IJWTPayload } from '@/types/auth';
+import type { IAuthUser, IJWTPayload } from '@/types/auth';
 
 const secret = new TextEncoder().encode(process.env.JWT_SECRET);
 const TOKEN_COOKIE = 'auth_token';
 
-export async function signToken(user: AuthUser): Promise<string> {
+export async function signToken(user: IAuthUser): Promise<string> {
   const payload: IJWTPayload = {
     sub: user.id,
     email: user.email,
@@ -30,7 +30,7 @@ export async function verifyToken(token: string) {
   try {
     const { payload } = await jwtVerify(token, secret);
     return payload as IJWTPayload;
-  } catch (error) {
+  } catch {
     return null;
   }
 }
@@ -44,7 +44,7 @@ export async function getToken(): Promise<string | null> {
   }
 }
 
-export async function getCurrentUser(): Promise<AuthUser | null> {
+export async function getCurrentUser(): Promise<IAuthUser | null> {
   const token = await getToken();
   if (!token) return null;
 

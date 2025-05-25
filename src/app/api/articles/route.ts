@@ -1,4 +1,4 @@
-import type { Prisma } from '@prisma/client';
+import type { ArticleStatus, Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
 import prisma from '@/lib/prisma';
@@ -11,19 +11,26 @@ export async function GET(request: Request) {
     const page = parseInt(searchParams.get('page') ?? '1');
     const limit = parseInt(searchParams.get('limit') ?? '10');
     const search = searchParams.get('search') ?? '';
+    const status = searchParams.get('status') as ArticleStatus | null;
 
     // Calculate pagination
     const skip = (page - 1) * limit;
 
-    // Build where clause for public route (only published articles)
+    // Build where clause
     const where: Prisma.ArticleWhereInput = {
-      status: 'PUBLISHED',
-      ...(search && {
-        OR: [
-          { title: { contains: search, mode: 'insensitive' } },
-          { content: { contains: search, mode: 'insensitive' } },
-        ],
-      }),
+      AND: [
+        // Default to PUBLISHED if no status provided (public route)
+        { status: (status ?? 'PUBLISHED') as ArticleStatus },
+        // Add search condition if provided
+        search
+          ? {
+              OR: [
+                { title: { contains: search, mode: 'insensitive' as const } },
+                { content: { contains: search, mode: 'insensitive' as const } },
+              ],
+            }
+          : {},
+      ],
     };
 
     // Get articles with pagination

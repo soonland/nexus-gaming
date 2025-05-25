@@ -4,10 +4,10 @@ import { Card, CardContent, CardMedia, Typography, Stack } from '@mui/material';
 import Link from 'next/link';
 
 import { PlatformChip } from '@/components/common/PlatformChip';
-import type { GameData } from '@/types';
+import type { IGameData } from '@/types';
 
 interface IGameCardProps {
-  game: Partial<GameData>;
+  game: Partial<IGameData>;
 }
 
 export const GameCardMiniature = ({ game }: IGameCardProps) => {

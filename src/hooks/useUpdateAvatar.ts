@@ -1,4 +1,3 @@
-import type { UseMutationResult } from '@tanstack/react-query';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { useAuth } from '@/hooks/useAuth';
@@ -25,17 +24,42 @@ const updateUserAvatar = async (file: File): Promise<string> => {
   return result.secure_url;
 };
 
-export function useUpdateAvatar(): UseMutationResult<string, Error, File> {
+const deleteUserAvatar = async (): Promise<void> => {
+  const response = await fetch('/api/users/me/avatar', {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(
+      error.message || "Erreur lors de la suppression de l'avatar"
+    );
+  }
+};
+
+export function useUpdateAvatar() {
   const queryClient = useQueryClient();
   const { refresh } = useAuth();
 
-  return useMutation({
+  const uploadMutation = useMutation({
     mutationFn: updateUserAvatar,
     onSuccess: async () => {
-      // Invalider le cache des requêtes auth
       queryClient.invalidateQueries({ queryKey: ['auth'] });
-      // Rafraîchir les données utilisateur dans le contexte
       await refresh();
     },
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteUserAvatar,
+    onSuccess: async () => {
+      queryClient.invalidateQueries({ queryKey: ['auth'] });
+      await refresh();
+    },
+  });
+
+  return {
+    upload: uploadMutation,
+    delete: deleteMutation,
+    isPending: uploadMutation.isPending || deleteMutation.isPending,
+  };
 }

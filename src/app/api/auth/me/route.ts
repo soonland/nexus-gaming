@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { getCurrentUser } from '@/lib/jwt';
 import prisma from '@/lib/prisma';
-import type { AuthUser } from '@/types/auth';
+import type { IAuthUser } from '@/types/auth';
 
 const TOKEN_COOKIE = 'auth_token';
 
@@ -53,7 +53,7 @@ export async function GET() {
       return response;
     }
 
-    return NextResponse.json<{ user: AuthUser }>({
+    return NextResponse.json<{ user: IAuthUser }>({
       user: {
         ...user,
         lastPasswordChange: user.lastPasswordChange.toISOString(),

@@ -9,7 +9,7 @@ const getBaseUrl = () => {
 
 export const uploadImage = async (
   file: File,
-  folder: string = 'default'
+  folder = 'default'
 ): Promise<IUploadResult> => {
   const formData = new FormData();
   formData.append('file', file);

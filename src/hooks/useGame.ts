@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import type { ICategoryData } from '@/types';
 
-export type ArticlePreview = {
+export interface IArticlePreview {
   id: string;
   title: string;
   heroImage?: string;
@@ -18,9 +18,9 @@ export type ArticlePreview = {
     id: string;
     title: string;
   }[];
-};
+}
 
-export type RelatedArticle = {
+export interface IRelatedArticle {
   id: string;
   title: string;
   content: string;
@@ -33,7 +33,7 @@ export type RelatedArticle = {
     username: string;
     role: Role;
   };
-};
+}
 
 type GameWithRelations = Omit<Game, 'developerId' | 'publisherId'> & {
   platforms: Pick<
@@ -54,7 +54,7 @@ type GameWithRelations = Omit<Game, 'developerId' | 'publisherId'> & {
     Company,
     'id' | 'name' | 'createdAt' | 'updatedAt' | 'isDeveloper' | 'isPublisher'
   >;
-  articles: RelatedArticle[];
+  articles: IRelatedArticle[];
 };
 
 export const GAME_QUERY_KEY = 'game';

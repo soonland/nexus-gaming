@@ -1,10 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 
-import type { GameData, GameForm } from '@/types';
+import type { IGameData, IGameForm } from '@/types';
 
 interface IGamesResponse {
-  games: GameData[];
+  games: IGameData[];
   pagination: {
     total: number;
     pages: number;
@@ -33,20 +33,20 @@ const gamesApi = {
 
   getById: async (id: string) => {
     const { data } = await axios.get(`/api/games/${id}`);
-    return data as GameData;
+    return data as IGameData;
   },
 
-  create: async (data: GameForm) => {
+  create: async (data: IGameForm) => {
     const response = await axios.post('/api/games', data);
     return response.data;
   },
 
-  update: async (id: string, data: GameForm) => {
+  update: async (id: string, data: IGameForm) => {
     const response = await axios.put(`/api/games/${id}`, data);
     return response.data;
   },
 
-  updatePartial: async (id: string, data: Partial<GameForm>) => {
+  updatePartial: async (id: string, data: Partial<IGameForm>) => {
     const response = await axios.patch(`/api/games/${id}`, data);
     return response.data;
   },
@@ -74,7 +74,7 @@ export function useCreateGame() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: GameForm) => {
+    mutationFn: async (data: IGameForm) => {
       const response = await axios.post('/api/games', data);
       return response.data;
     },
@@ -88,7 +88,7 @@ export function useUpdateGame() {
   const queryClient = useQueryClient();
 
   const updateGame = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: GameForm }) => {
+    mutationFn: async ({ id, data }: { id: string; data: IGameForm }) => {
       const response = await axios.put(`/api/games/${id}`, data);
       return response.data;
     },
@@ -104,7 +104,7 @@ export function useUpdateGame() {
       data,
     }: {
       id: string;
-      data: Partial<GameForm>;
+      data: Partial<IGameForm>;
     }) => {
       const response = await axios.patch(`/api/games/${id}`, data);
       return response.data;
@@ -137,7 +137,7 @@ export function useGame(id: string) {
     data: game,
     isLoading,
     error,
-  } = useQuery<GameData>({
+  } = useQuery<IGameData>({
     queryKey: ['game', id],
     queryFn: () => gamesApi.getById(id),
     enabled: !!id,
