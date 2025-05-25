@@ -1,6 +1,6 @@
 'use client';
 
-import { Box, Container } from '@mui/material';
+import { Box } from '@mui/material';
 import type React from 'react';
 
 import { PublicAnnouncements } from '@/components/common';
@@ -36,9 +36,7 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
           backdropFilter: 'blur(8px)',
         }}
       >
-        <Container maxWidth='lg' sx={{ py: 0.5 }}>
-          <PublicAnnouncements />
-        </Container>
+        <PublicAnnouncements />
       </Box>
       <Box
         component='main'
