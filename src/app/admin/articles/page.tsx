@@ -2,8 +2,12 @@
 
 import { Skeleton, Stack } from '@mui/material';
 import { Suspense } from 'react';
+import { FiPlus as AddIcon, FiTrash2 } from 'react-icons/fi';
 
-import { AdminPageLayout } from '@/components/admin';
+import { AdminActions, AdminPageLayout } from '@/components/admin';
+import type { IActionButton } from '@/components/admin/common';
+import { useAuth } from '@/hooks';
+import { hasSufficientRole } from '@/lib/permissions';
 
 import { ArticlesContent } from './_components';
 
@@ -15,8 +19,29 @@ const LoadingFallback = () => (
 );
 
 const AdminArticlesPage = () => {
+  const { user } = useAuth();
+
+  const actions: IActionButton[] = [
+    {
+      label: 'Ajouter un article',
+      icon: AddIcon,
+      href: '/admin/articles/new',
+      variant: 'contained',
+    },
+    {
+      label: 'Corbeille',
+      icon: FiTrash2,
+      href: '/admin/articles/trash',
+      variant: 'outlined',
+      disabled: !hasSufficientRole(user?.role, 'SENIOR_EDITOR'),
+    },
+  ];
+
   return (
-    <AdminPageLayout title='Gestion des articles'>
+    <AdminPageLayout
+      actions={<AdminActions actions={actions} />}
+      title='Gestion des articles'
+    >
       <Suspense fallback={<LoadingFallback />}>
         <ArticlesContent />
       </Suspense>

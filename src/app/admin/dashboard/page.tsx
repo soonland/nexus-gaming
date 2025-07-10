@@ -153,7 +153,7 @@ const DashboardPage = () => {
   }
 
   return (
-    <Container maxWidth='lg' sx={{ py: 4 }}>
+    <Container maxWidth='lg'>
       {alerts.length > 0 && (
         <Box mb={6}>
           <Stack spacing={0}>{alerts}</Stack>

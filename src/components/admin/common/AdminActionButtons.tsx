@@ -13,7 +13,7 @@ import { useState } from 'react';
 import { FiEdit2, FiMoreVertical, FiTrash, FiEye } from 'react-icons/fi';
 import type { IconType } from 'react-icons/lib';
 
-export interface IAction {
+export interface IActionMenuItem {
   label: string;
   icon: IconType;
   href?: string;
@@ -24,7 +24,7 @@ export interface IAction {
 }
 
 interface IAdminActionButtonsProps {
-  actions: IAction[];
+  actions: IActionMenuItem[];
   maxButtons?: number;
 }
 
@@ -43,7 +43,7 @@ export const AdminActionButtons = ({
     setMenuAnchor(null);
   };
 
-  const handleAction = (action: IAction) => {
+  const handleAction = (action: IActionMenuItem) => {
     handleMenuClose();
     action.onClick?.();
   };
@@ -72,10 +72,11 @@ export const AdminActionButtons = ({
           onClose={handleMenuClose}
         >
           {actions.map((action, index) => {
+            const k = `key-${index}`;
             if (action.href) {
               return (
                 <Link
-                  key={index}
+                  key={k}
                   href={action.href}
                   style={{ textDecoration: 'none', color: 'inherit' }}
                 >
@@ -94,7 +95,7 @@ export const AdminActionButtons = ({
 
             return (
               <MuiMenuItem
-                key={index}
+                key={k}
                 disabled={action.disabled}
                 sx={{ color: action.color }}
                 onClick={() => handleAction(action)}
@@ -116,9 +117,10 @@ export const AdminActionButtons = ({
     <Stack direction='row' spacing={1}>
       {actions.map((action, index) => {
         const ButtonWrapper = action.href ? Link : 'span';
+        const k = `key-${index}`;
         return (
           <Tooltip
-            key={index}
+            key={k}
             title={
               action.disabled && action.tooltip ? action.tooltip : action.label
             }
@@ -147,20 +149,20 @@ export const AdminActionButtons = ({
 
 // Actions prédéfinies
 export const defaultActions = {
-  view: (href: string): IAction => ({
+  view: (href: string): IActionMenuItem => ({
     label: 'Voir',
     icon: FiEye,
     href,
     color: 'info.main',
   }),
-  edit: (href: string, disabled?: boolean): IAction => ({
+  edit: (href: string, disabled?: boolean): IActionMenuItem => ({
     label: 'Modifier',
     icon: FiEdit2,
     href,
     color: 'primary.main',
     disabled,
   }),
-  delete: (onClick: () => void, disabled?: boolean): IAction => ({
+  delete: (onClick: () => void, disabled?: boolean): IActionMenuItem => ({
     label: 'Supprimer',
     icon: FiTrash,
     onClick,

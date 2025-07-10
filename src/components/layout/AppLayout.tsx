@@ -20,28 +20,11 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
       }}
     >
       <Navbar />
-      <Box
-        component='div'
-        sx={{
-          bgcolor: theme =>
-            theme.palette.mode === 'dark'
-              ? 'background.paper'
-              : theme.palette.grey[50],
-          borderBottom: theme => `1px solid ${theme.palette.divider}`,
-          position: 'fixed',
-          top: '64px',
-          width: '100%',
-          zIndex: theme => theme.zIndex.appBar - 1,
-          WebkitBackdropFilter: 'blur(8px)',
-          backdropFilter: 'blur(8px)',
-        }}
-      >
-        <PublicAnnouncements />
-      </Box>
+      <PublicAnnouncements />
       <Box
         component='main'
         sx={theme => ({
-          pt: theme.spacing(15),
+          pt: theme.spacing(5),
           flex: 1,
           bgcolor: 'background.default',
           transition: 'background-color 0.3s, opacity 0.15s, padding-top 0.3s',

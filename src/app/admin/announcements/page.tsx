@@ -2,7 +2,13 @@
 
 import { Button, Stack } from '@mui/material';
 import { useState } from 'react';
-import { FiClock, FiEye, FiEyeOff, FiTrash2 } from 'react-icons/fi';
+import {
+  FiPlus as AddIcon,
+  FiClock,
+  FiEye,
+  FiEyeOff,
+  FiTrash2,
+} from 'react-icons/fi';
 
 import {
   AdminActionButtons,
@@ -14,6 +20,7 @@ import {
   AdminPageLayout,
   defaultActions,
 } from '@/components/admin';
+import type { IActionButton } from '@/components/admin/common';
 import { ColorDot, useNotifier } from '@/components/common';
 import { useAdminAnnouncement } from '@/hooks/useAdminAnnouncement';
 import type { IAdminAnnouncement } from '@/hooks/useAdminAnnouncement';
@@ -266,14 +273,17 @@ const AdminAnnouncementsPage = () => {
     </Stack>
   );
 
+  const actions: IActionButton[] = [
+    {
+      label: 'Ajouter une annonce',
+      icon: AddIcon,
+      href: '/admin/announcements/new',
+      variant: 'contained',
+    },
+  ];
   return (
     <AdminPageLayout
-      actions={
-        <AdminActions
-          createHref='/admin/announcements/new'
-          createLabel='Ajouter une annonce'
-        />
-      }
+      actions={<AdminActions actions={actions} />}
       title='Gestion des annonces'
     >
       <AdminFilters

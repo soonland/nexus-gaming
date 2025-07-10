@@ -2,32 +2,46 @@
 
 import { Box, Button } from '@mui/material';
 import Link from 'next/link';
-import { FiPlus as AddIcon } from 'react-icons/fi';
 
-interface IAdminActionsProps {
-  createHref?: string;
-  createLabel?: string;
-  extra?: React.ReactNode;
+// Define the structure for a single action button
+export interface IActionButton {
+  label: string;
+  icon: React.ElementType; // Use React.ElementType for the icon component
+  href?: string;
+  variant?: 'contained' | 'outlined' | 'text';
+  color?:
+    | 'primary'
+    | 'secondary'
+    | 'success'
+    | 'error'
+    | 'info'
+    | 'warning'
+    | 'inherit';
+  onClick?: () => void;
+  disabled?: boolean;
 }
 
-export const AdminActions = ({
-  createHref,
-  createLabel = 'Créer',
-  extra,
-}: IAdminActionsProps) => {
+interface IAdminActionsProps {
+  actions: IActionButton[]; // Array of actions
+}
+
+export const AdminActions = ({ actions }: IAdminActionsProps) => {
   return (
     <Box sx={{ display: 'flex', gap: 2 }}>
-      {createHref && (
+      {actions.map((action, index) => (
         <Button
+          key={index} // Using index as key, consider a more stable key if possible
+          color={action.color}
           component={Link}
-          href={createHref}
-          startIcon={<AddIcon />}
-          variant='contained'
+          disabled={action.disabled}
+          href={action.href}
+          startIcon={<action.icon />}
+          variant={action.variant || 'contained'} // Default to 'contained'
+          onClick={action.onClick}
         >
-          {createLabel}
+          {action.label}
         </Button>
-      )}
-      {extra}
+      ))}
     </Box>
   );
 };

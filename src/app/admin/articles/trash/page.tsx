@@ -4,7 +4,12 @@ import { Box, Button, Stack } from '@mui/material';
 import { ArticleStatus } from '@prisma/client';
 import Link from 'next/link';
 import { useState } from 'react';
-import { FiTrash2, FiRotateCcw } from 'react-icons/fi';
+import {
+  FiTrash2,
+  FiRotateCcw,
+  FiPlus as AddIcon,
+  FiArrowLeft as BackIcon,
+} from 'react-icons/fi';
 
 import {
   AdminActionButtons,
@@ -212,8 +217,20 @@ const AdminArticlesTrashPage = () => {
     <AdminPageLayout
       actions={
         <AdminActions
-          createHref='/admin/articles'
-          createLabel='Retour aux articles'
+          actions={[
+            {
+              label: 'Retour aux articles',
+              icon: BackIcon,
+              href: '/admin/articles',
+              variant: 'contained',
+            },
+            {
+              label: 'Créer un article',
+              icon: AddIcon,
+              href: '/admin/articles/new',
+              variant: 'contained',
+            },
+          ]}
         />
       }
       title='Corbeille'

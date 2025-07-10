@@ -221,6 +221,10 @@ export const UserForm = ({ initialData, mode }: IUserFormProps) => {
           control={
             <Checkbox
               checked={isActive}
+              disabled={
+                currentUser?.role === 'SYSADMIN' &&
+                currentUser?.id === initialData?.id
+              }
               size='small'
               onChange={e => setIsActive(e.target.checked)}
             />

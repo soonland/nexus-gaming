@@ -215,6 +215,14 @@ export async function DELETE(
       );
     }
 
+    // Empêcher un SYSADMIN de supprimer son propre compte
+    if (targetUser.id === tokenUser.id && tokenUser.role === 'SYSADMIN') {
+      return NextResponse.json(
+        { error: 'Un SYSADMIN ne peut pas supprimer son propre compte.' },
+        { status: 403 }
+      );
+    }
+
     if (targetUser.id === tokenUser.id) {
       return NextResponse.json(
         { error: 'Cannot delete yourself' },

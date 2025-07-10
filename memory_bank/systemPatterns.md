@@ -85,13 +85,11 @@ interface IErrorResponse {
 ### Multi-Level Validation
 
 1. UI Level
-
    - Action visibility control
    - Permission pre-checks
    - Input validation
 
 2. API Level
-
    - Authentication check
    - Permission validation
    - Business rule enforcement

@@ -17,7 +17,6 @@ model User {
 ### User Status Management
 
 - `PATCH /api/admin/users/[id]/status`
-
   - Handles both immediate admin deactivation and user self-deactivation
   - Returns deactivationEffectiveDate for self-deactivation cases
   - Validates role hierarchy and permissions

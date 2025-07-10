@@ -5,20 +5,17 @@
 ### Completed Features
 
 1. Account Deactivation
-
    - ✅ Self-deactivation with grace period
    - ✅ Immediate admin deactivation
    - ✅ Deactivation cancellation
    - ✅ Status indicators and countdown
 
 2. Database Changes
-
    - ✅ Added deactivationRequestedAt field
    - ✅ Migration created and applied
    - ✅ Existing data handled
 
 3. UI Components
-
    - ✅ AdminDeactivateDialog
    - ✅ Status visualization
    - ✅ Batch actions
@@ -54,13 +51,11 @@
 ### Future Considerations
 
 1. Monitoring
-
    - Track deactivation patterns
    - Measure grace period usage
    - Monitor admin actions
 
 2. Enhancements
-
    - Custom grace period lengths
    - Deactivation scheduling
    - Bulk reactivation tools

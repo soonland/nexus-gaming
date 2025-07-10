@@ -3,7 +3,7 @@
 import { Button, Stack } from '@mui/material';
 import Link from 'next/link';
 import { useState } from 'react';
-import { FiTrash2 } from 'react-icons/fi';
+import { FiPlus as AddIcon, FiTrash2 } from 'react-icons/fi';
 
 import {
   AdminActionButtons,
@@ -15,6 +15,7 @@ import {
   AdminPageLayout,
   defaultActions,
 } from '@/components/admin';
+import type { IActionButton } from '@/components/admin/common';
 import { ColorDot } from '@/components/common';
 import { useNotifier } from '@/components/common/Notifier';
 import { useGames, useDeleteGame } from '@/hooks/useGames';
@@ -136,14 +137,17 @@ const AdminGamesPage = () => {
     );
   };
 
+  const actions: IActionButton[] = [
+    {
+      label: 'Ajouter un jeu',
+      icon: AddIcon,
+      href: '/admin/games/new',
+      variant: 'contained',
+    },
+  ];
   return (
     <AdminPageLayout
-      actions={
-        <AdminActions
-          createHref='/admin/games/new'
-          createLabel='Ajouter un jeu'
-        />
-      }
+      actions={<AdminActions actions={actions} />}
       title='Gestion des jeux'
     >
       <AdminFilters

@@ -9,7 +9,6 @@ import { FiCheck, FiEyeOff, FiTrash2 } from 'react-icons/fi';
 
 import {
   AdminActionButtons,
-  AdminActions,
   AdminDataTable,
   AdminDeleteDialog,
   AdminFilters,
@@ -32,7 +31,7 @@ import { getStatusStyle } from './articleStyles';
 
 type ArticleSortField = keyof Pick<
   IArticleData,
-  'title' | 'createdAt' | 'updatedAt' | 'status'
+  'title' | 'createdAt' | 'updatedAt' | 'status' | 'publishedAt'
 >;
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
@@ -350,27 +349,6 @@ export const ArticlesContent = () => {
   return (
     <>
       <Stack direction='row' justifyContent='space-between' mb={2}>
-        <Stack alignItems='center' direction='row'>
-          {hasSufficientRole(user?.role, 'SENIOR_EDITOR') && (
-            <Button
-              component={Link}
-              href='/admin/articles/trash'
-              size='small'
-              startIcon={<FiTrash2 />}
-              sx={{ mr: 2 }}
-              variant='outlined'
-            >
-              Corbeille
-            </Button>
-          )}
-          <AdminActions
-            createHref='/admin/articles/new'
-            createLabel='Ajouter un article'
-          />
-        </Stack>
-      </Stack>
-
-      <Stack direction='row' justifyContent='space-between' mb={2}>
         <AdminFilters<'all' | ArticleStatus>
           showStatusFilter
           searchPlaceholder='Rechercher un article...'
@@ -423,14 +401,24 @@ export const ArticlesContent = () => {
           {
             field: 'createdAt',
             headerName: 'Créé le',
-            render: row => dayjs(row.createdAt).format('LL'),
+            render: row => dayjs(row.createdAt).format('YYYY-MM-DD'),
+            sortable: true,
+            width: '200px',
+          },
+          {
+            field: 'publishedAt',
+            headerName: 'Publié le',
+            render: row =>
+              row.publishedAt
+                ? dayjs(row.publishedAt).format('YYYY-MM-DD')
+                : 'N/A',
             sortable: true,
             width: '200px',
           },
           {
             field: 'updatedAt',
             headerName: 'Mis à jour le',
-            render: row => dayjs(row.updatedAt).format('LL'),
+            render: row => dayjs(row.updatedAt).format('YYYY-MM-DD'),
             sortable: true,
             width: '200px',
           },
@@ -473,11 +461,7 @@ export const ArticlesContent = () => {
             ? `Êtes-vous sûr de vouloir déplacer les ${selectedIds.length} articles sélectionnés vers la corbeille ?`
             : 'Êtes-vous sûr de vouloir déplacer cet article vers la corbeille ?'
         }
-        title={
-          deleteDialog.isBatchDelete
-            ? 'Déplacer vers la corbeille'
-            : 'Déplacer vers la corbeille'
-        }
+        title={'Déplacer vers la corbeille'}
         onClose={() =>
           !deleteArticle.isPending &&
           setDeleteDialog({

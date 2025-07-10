@@ -10,7 +10,13 @@ import {
 } from '@mui/material';
 import { yellow } from '@mui/material/colors';
 import { useState } from 'react';
-import { FiStar, FiFolderPlus, FiFolder, FiInfo } from 'react-icons/fi';
+import {
+  FiPlus as AddIcon,
+  FiStar,
+  FiFolderPlus,
+  FiFolder,
+  FiInfo,
+} from 'react-icons/fi';
 
 import {
   AdminActionButtons,
@@ -22,6 +28,7 @@ import {
   AdminPageLayout,
   defaultActions,
 } from '@/components/admin';
+import type { IActionButton } from '@/components/admin/common';
 import { useNotifier } from '@/components/common/Notifier';
 import { useCategories } from '@/hooks/useCategories';
 import dayjs from '@/lib/dayjs';
@@ -171,14 +178,17 @@ const AdminCategoriesPage = () => {
     />
   );
 
+  const actions: IActionButton[] = [
+    {
+      label: 'Ajouter une catégorie',
+      icon: AddIcon,
+      href: '/admin/categories/new',
+      variant: 'contained',
+    },
+  ];
   return (
     <AdminPageLayout
-      actions={
-        <AdminActions
-          createHref='/admin/categories/new'
-          createLabel='Ajouter une catégorie'
-        />
-      }
+      actions={<AdminActions actions={actions} />}
       subtitle={
         <Stack
           alignItems='center'
