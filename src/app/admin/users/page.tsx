@@ -5,7 +5,7 @@ import { Role } from '@prisma/client';
 import dayjs from 'dayjs';
 import Link from 'next/link';
 import { useState } from 'react';
-import { FiCheck, FiX } from 'react-icons/fi';
+import { FiPlus as AddIcon, FiCheck, FiX } from 'react-icons/fi';
 
 import {
   AdminActionButtons,
@@ -17,6 +17,7 @@ import {
   AdminPageLayout,
   defaultActions,
 } from '@/components/admin';
+import type { IActionButton } from '@/components/admin/common';
 import type { IStatusOption } from '@/components/admin/common/AdminFilters';
 import { ColorDot, useNotifier } from '@/components/common';
 import { useAdminUsers, type IUserData } from '@/hooks/admin/useAdminUsers';
@@ -28,7 +29,8 @@ type UserStatusValue = 'all' | 'active' | 'inactive';
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 const DEFAULT_PAGE_SIZE = PAGE_SIZE_OPTIONS[0];
 
-const STATUS_OPTIONS: IStatusOption<'all' | 'active' | 'inactive'>[] = [
+type IStatusOptions = 'all' | 'active' | 'inactive';
+const STATUS_OPTIONS: IStatusOption<IStatusOptions>[] = [
   { value: 'all', label: 'Tous les statuts' },
   { value: 'active', label: 'Actif' },
   { value: 'inactive', label: 'Inactif' },
@@ -201,6 +203,7 @@ const AdminUsersPage = () => {
               userId: row.id,
               isBatchDeactivate: false,
             }),
+          disabled: user?.role === 'SYSADMIN' && user?.id === row.id, // Désactiver si SYSADMIN tente de se désactiver
         });
       } else {
         actions.push({
@@ -234,7 +237,8 @@ const AdminUsersPage = () => {
               userId: row.id,
               isBatchDelete: false,
             }),
-          !hasSufficientRole(user?.role, row.role, '>')
+          !hasSufficientRole(user?.role, row.role, '>') ||
+            (user?.role === 'SYSADMIN' && user?.id === row.id) // Désactiver si SYSADMIN tente de se supprimer
         )
       );
     }
@@ -309,7 +313,7 @@ const AdminUsersPage = () => {
           disabled={
             !eligibleIds.some(id => {
               const targetUser = users.find(u => u.id === id);
-              return targetUser && targetUser.isActive;
+              return targetUser?.isActive;
             })
           }
           size='small'
@@ -344,14 +348,17 @@ const AdminUsersPage = () => {
     );
   };
 
+  const actions: IActionButton[] = [
+    {
+      label: 'Ajouter un utilisateur',
+      icon: AddIcon,
+      href: '/admin/users/new',
+      variant: 'contained',
+    },
+  ];
   return (
     <AdminPageLayout
-      actions={
-        <AdminActions
-          createHref='/admin/users/new'
-          createLabel='Ajouter un utilisateur'
-        />
-      }
+      actions={<AdminActions actions={actions} />}
       title='Gestion des utilisateurs'
     >
       <Stack direction='row' justifyContent='space-between' mb={2}>

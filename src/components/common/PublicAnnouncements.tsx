@@ -16,7 +16,7 @@ export const PublicAnnouncements = () => {
   if (announcements.length === 0) return null;
 
   return (
-    <Container maxWidth='lg' sx={{ py: 0.5 }}>
+    <Container maxWidth='lg' sx={{ pt: 8 }}>
       <Box>
         <Stack spacing={1}>
           {announcements.map(announcement => {

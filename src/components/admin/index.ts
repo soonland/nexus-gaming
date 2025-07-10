@@ -1,5 +1,5 @@
 export { AdminActions } from './common/AdminActions';
-export type { IAction } from './common/AdminActionButtons';
+export type { IActionMenuItem } from './common/AdminActionButtons';
 export {
   AdminActionButtons,
   defaultActions,

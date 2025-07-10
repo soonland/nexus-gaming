@@ -25,10 +25,6 @@
       "eslint --max-warnings 0",
       "prettier --check"
     ],
-    "src/**/*.stories.{ts,tsx}": [
-      "eslint",
-      "prettier --check"
-    ],
     "*.{js,jsx,json,md}": [
       "prettier --check"
     ]

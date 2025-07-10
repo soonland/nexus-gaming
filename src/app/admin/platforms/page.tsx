@@ -2,7 +2,7 @@
 
 import { Button, Stack } from '@mui/material';
 import { useState } from 'react';
-import { FiTrash2 } from 'react-icons/fi';
+import { FiTrash2, FiPlus as AddIcon } from 'react-icons/fi';
 
 import {
   AdminActionButtons,
@@ -13,6 +13,7 @@ import {
   AdminPageLayout,
   defaultActions,
 } from '@/components/admin';
+import type { IActionButton } from '@/components/admin/common';
 import { useNotifier } from '@/components/common/Notifier';
 import { PlatformChip } from '@/components/common/PlatformChip';
 import { usePlatforms } from '@/hooks/usePlatforms';
@@ -130,14 +131,17 @@ const AdminPlatformsPage = () => {
     </Stack>
   );
 
+  const actions: IActionButton[] = [
+    {
+      label: 'Ajouter une plateforme',
+      icon: AddIcon,
+      href: '/admin/platforms/new',
+      variant: 'contained',
+    },
+  ];
   return (
     <AdminPageLayout
-      actions={
-        <AdminActions
-          createHref='/admin/platforms/new'
-          createLabel='Ajouter une plateforme'
-        />
-      }
+      actions={<AdminActions actions={actions} />}
       title='Gestion des plateformes'
     >
       <AdminFilters

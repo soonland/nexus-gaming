@@ -34,13 +34,11 @@ previews, and reviews with a clean, efficient interface.
 ## Target Audience
 
 1. **Core Gamers**
-
    - Daily news consumers
    - In-depth content seekers
    - Community participants
 
 2. **Content Creators**
-
    - Gaming journalists
    - Freelance writers
    - Industry experts

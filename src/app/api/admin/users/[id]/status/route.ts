@@ -37,6 +37,20 @@ export async function PATCH(
       );
     }
 
+    // Empêcher un SYSADMIN de désactiver son propre compte
+    if (
+      tokenUser.role === 'SYSADMIN' &&
+      tokenUser.id === targetUser.id &&
+      !isActive
+    ) {
+      return NextResponse.json(
+        {
+          error: 'Un SYSADMIN ne peut pas désactiver son propre compte.',
+        },
+        { status: 403 }
+      );
+    }
+
     // Si c'est une désactivation initiée par l'utilisateur lui-même (pas un admin)
     const isAdmin = ['ADMIN', 'SYSADMIN'].includes(tokenUser.role);
     const isSelfDeactivation = !isActive && tokenUser.id === targetUser.id;

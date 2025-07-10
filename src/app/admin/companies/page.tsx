@@ -2,7 +2,7 @@
 
 import { Button, Stack } from '@mui/material';
 import { useState } from 'react';
-import { FiTrash2 } from 'react-icons/fi';
+import { FiPlus as AddIcon, FiTrash2 } from 'react-icons/fi';
 
 import {
   AdminActionButtons,
@@ -13,6 +13,7 @@ import {
   AdminPageLayout,
   defaultActions,
 } from '@/components/admin';
+import type { IActionButton } from '@/components/admin/common';
 import { ColorDot } from '@/components/common';
 import { useNotifier } from '@/components/common/Notifier';
 import { useCompanies } from '@/hooks/useCompanies';
@@ -166,14 +167,17 @@ const AdminCompaniesPage = () => {
     </Stack>
   );
 
+  const actions: IActionButton[] = [
+    {
+      label: 'Ajouter une société',
+      icon: AddIcon,
+      href: '/admin/companies/new',
+      variant: 'contained',
+    },
+  ];
   return (
     <AdminPageLayout
-      actions={
-        <AdminActions
-          createHref='/admin/companies/new'
-          createLabel='Ajouter une société'
-        />
-      }
+      actions={<AdminActions actions={actions} />}
       title='Gestion des sociétés'
     >
       <AdminFilters

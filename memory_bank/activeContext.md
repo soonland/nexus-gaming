@@ -14,18 +14,15 @@ Currently implementing a dual-mode account deactivation system with:
 ### Key Files in Development
 
 1. Pages & Components:
-
    - `src/app/admin/users/page.tsx`
    - `src/components/admin/common/AdminDeactivateDialog.tsx`
    - `src/components/admin/common/AdminFilters.tsx`
 
 2. API Routes:
-
    - `src/app/api/admin/users/[id]/status/route.ts`
    - `src/app/api/admin/users/[id]/cancel-deactivation/route.ts`
 
 3. Database:
-
    - `prisma/migrations/20250524152600_add_deactivation_requested_at/migration.sql`
 
 4. Hooks & Utils:
@@ -42,13 +39,11 @@ Currently implementing a dual-mode account deactivation system with:
 ### Design Decisions
 
 1. Permission Model:
-
    - Strict role hierarchy
    - Operator-based role comparison
    - Protected admin accounts
 
 2. Status Management:
-
    - Clear state transitions
    - Visual status indicators
    - Cancellation capability
@@ -63,14 +58,12 @@ Currently implementing a dual-mode account deactivation system with:
 ### Current Priorities
 
 1. Feature Completeness:
-
    - ✅ Basic deactivation flows
    - ✅ Permission system
    - ✅ UI components
    - [ ] Testing coverage
 
 2. Code Quality:
-
    - ✅ Type safety
    - ✅ Permission checks
    - ✅ Error handling
@@ -85,7 +78,6 @@ Currently implementing a dual-mode account deactivation system with:
 ### Next Steps
 
 1. Testing
-
    - Add unit tests
    - Integration testing
    - Permission test cases
