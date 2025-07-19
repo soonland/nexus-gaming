@@ -34,7 +34,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [20.x]
+        node-version: [22.x]
 
     steps:
     - uses: actions/checkout@v4
@@ -74,8 +74,8 @@ jobs:
         # Add other required build env variables here
 
     # Uncomment when tests are added
-    # - name: Run tests
-    #   run: npm test
+    - name: Run tests
+      run: npm test
 
     # Optional: Add deployment steps here
     # - name: Deploy
