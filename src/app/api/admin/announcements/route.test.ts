@@ -121,6 +121,7 @@ describe('GET /api/admin/announcements', () => {
         message: true,
         type: true,
         isActive: true,
+        visibility: true,
         expiresAt: true,
         createdAt: true,
         createdBy: {
@@ -249,6 +250,7 @@ describe('POST /api/admin/announcements', () => {
         type: AnnouncementType.INFO,
         isActive: 'active',
         expiresAt: fixedDate,
+        visibility: 'ADMIN_ONLY',
         createdById: mockSeniorEditor.id,
       },
       select: expect.any(Object),
@@ -379,6 +381,7 @@ describe('PUT /api/admin/announcements', () => {
     message: string,
     type: AnnouncementType,
     isActive: string,
+    visibility: string,
     expiresAt?: string
   ): Request =>
     new Request('http://localhost/api/admin/announcements', {
@@ -392,6 +395,7 @@ describe('PUT /api/admin/announcements', () => {
         type,
         isActive,
         expiresAt,
+        visibility,
       }),
     });
 
@@ -415,6 +419,7 @@ describe('PUT /api/admin/announcements', () => {
       'Updated Announcement',
       AnnouncementType.ATTENTION,
       'inactive',
+      'ADMIN_ONLY',
       '2026-01-01T00:00:00.000Z'
     );
     const response = await PUT(request);
@@ -449,7 +454,8 @@ describe('PUT /api/admin/announcements', () => {
       'ann-1',
       'Updated Announcement',
       AnnouncementType.INFO,
-      'active'
+      'active',
+      'ADMIN_ONLY'
     );
     const response = await PUT(request);
     const data = await response.json();
@@ -462,7 +468,13 @@ describe('PUT /api/admin/announcements', () => {
     const getCurrentUserMock = vi.fn().mockResolvedValue(mockSeniorEditor);
     (getCurrentUser as any).mockImplementation(getCurrentUserMock);
 
-    const request = createRequest('ann-1', '', AnnouncementType.INFO, 'active');
+    const request = createRequest(
+      'ann-1',
+      '',
+      AnnouncementType.INFO,
+      'active',
+      'ADMIN_ONLY'
+    );
     const response = await PUT(request);
     const data = await response.json();
 
@@ -482,6 +494,7 @@ describe('PUT /api/admin/announcements', () => {
         message: 'Test',
         type: 'INVALID_TYPE',
         isActive: 'active',
+        visibility: 'ADMIN_ONLY',
       }),
     });
     const response = await PUT(request);
@@ -499,7 +512,8 @@ describe('PUT /api/admin/announcements', () => {
       'ann-1',
       'Test',
       AnnouncementType.INFO,
-      'invalid'
+      'invalid',
+      'ADMIN_ONLY'
     );
     const response = await PUT(request);
     const data = await response.json();
@@ -516,7 +530,8 @@ describe('PUT /api/admin/announcements', () => {
       'ann-1',
       'Test',
       AnnouncementType.INFO,
-      'active'
+      'active',
+      'ADMIN_ONLY'
     );
     const response = await PUT(request);
     const data = await response.json();
@@ -536,7 +551,8 @@ describe('PUT /api/admin/announcements', () => {
       'ann-1',
       'Test',
       AnnouncementType.INFO,
-      'active'
+      'active',
+      'ADMIN_ONLY'
     );
     const response = await PUT(request);
     const data = await response.json();

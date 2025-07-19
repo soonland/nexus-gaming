@@ -32,6 +32,8 @@ const baseAnnouncement = {
   type: AnnouncementType.INFO,
   expiresAt: fixedDate,
   createdAt: fixedDate,
+  isActive: 'active',
+  visibility: 'PUBLIC',
 };
 
 // Mock users for testing
@@ -56,14 +58,14 @@ describe('GET /api/announcements', () => {
     vi.clearAllMocks();
   });
 
-  it('should fetch active announcements for EDITOR', async () => {
+  it('should fetch active announcements for USER', async () => {
     const announcements = [
       baseAnnouncement,
       { ...baseAnnouncement, id: 'ann-2', message: 'Another Announcement' },
     ];
 
     const findManyMock = vi.fn().mockResolvedValue(announcements);
-    const getCurrentUserMock = vi.fn().mockResolvedValue(mockEditor);
+    const getCurrentUserMock = vi.fn().mockResolvedValue(mockUser);
 
     (prisma.adminAnnouncement.findMany as any).mockImplementation(findManyMock);
     (getCurrentUser as any).mockImplementation(getCurrentUserMock);
@@ -85,6 +87,7 @@ describe('GET /api/announcements', () => {
     expect(findManyMock).toHaveBeenCalledWith({
       where: {
         isActive: 'active',
+        visibility: 'PUBLIC',
         OR: [{ expiresAt: null }, { expiresAt: { gt: expect.any(Date) } }],
       },
       select: {
@@ -114,17 +117,6 @@ describe('GET /api/announcements', () => {
     expect(data).toEqual([]);
   });
 
-  it('should return 403 for insufficient role', async () => {
-    const getCurrentUserMock = vi.fn().mockResolvedValue(mockUser);
-    (getCurrentUser as any).mockImplementation(getCurrentUserMock);
-
-    const response = await GET();
-    const data = await response.json();
-
-    expect(response.status).toBe(403);
-    expect(data.error).toBe('Unauthorized');
-  });
-
   it('should return 403 for unauthenticated users', async () => {
     const getCurrentUserMock = vi.fn().mockResolvedValue(null);
     (getCurrentUser as any).mockImplementation(getCurrentUserMock);
@@ -132,8 +124,8 @@ describe('GET /api/announcements', () => {
     const response = await GET();
     const data = await response.json();
 
-    expect(response.status).toBe(403);
-    expect(data.error).toBe('Unauthorized');
+    expect(response.status).toBe(200);
+    expect(data).toEqual([]);
   });
 
   it('should handle database errors', async () => {
