@@ -4,7 +4,7 @@ import dayjs from '@/lib/dayjs';
 
 import { useAuth } from './useAuth';
 
-interface IPasswordExpirationInfo {
+export interface IPasswordExpirationInfo {
   daysUntilExpiration: number;
   warningLevel: 'none' | 'info' | 'warning' | 'urgent' | 'expired';
   expirationDate: string;
