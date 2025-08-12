@@ -179,7 +179,6 @@ export const AnnouncementDialog = ({
   return (
     <Dialog
       fullWidth
-      TransitionComponent={Fade}
       maxWidth='md'
       open={isOpen}
       transitionDuration={300}

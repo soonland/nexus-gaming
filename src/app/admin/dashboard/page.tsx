@@ -25,8 +25,8 @@ import {
 
 import { AnnouncementDialog } from '@/app/admin/announcements/_components/AnnouncementDialog';
 import { AnimatedCounter, IconAnimation } from '@/components/common';
+import { useAdminAnnouncement } from '@/hooks';
 import { usePendingArticlesCount } from '@/hooks/admin/usePendingArticlesCount';
-import { useAnnouncements } from '@/hooks/useAnnouncements';
 import { useArticles } from '@/hooks/useArticles';
 import { useAuth } from '@/hooks/useAuth';
 import { useGames } from '@/hooks/useGames';
@@ -82,20 +82,16 @@ const AdminCard = ({
 );
 
 const DashboardPage = () => {
-  const { announcements = [] } = useAnnouncements();
+  const { announcements = [] } = useAdminAnnouncement();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const activeAnnouncements = announcements.filter(announcement => {
-    if ('isActive' in announcement) {
-      return (
-        announcement.isActive === 'active' &&
-        (announcement.expiresAt
-          ? new Date(announcement.expiresAt) > new Date()
-          : true)
-      );
-    }
-    return announcement.expiresAt
-      ? new Date(announcement.expiresAt) > new Date()
-      : true;
+    return (
+      announcement.visibility === 'ADMIN_ONLY' &&
+      announcement.isActive === 'active' &&
+      (announcement.expiresAt
+        ? new Date(announcement.expiresAt) > new Date()
+        : true)
+    );
   });
   const { articles: articlesData } = useArticles();
   const { games: gamesData } = useGames();
@@ -155,7 +151,7 @@ const DashboardPage = () => {
   return (
     <Container maxWidth='lg'>
       {alerts.length > 0 && (
-        <Box mb={6}>
+        <Box mb={6} mt={3}>
           <Stack spacing={0}>{alerts}</Stack>
         </Box>
       )}

@@ -3,7 +3,6 @@
 import {
   Box,
   Button,
-  ButtonGroup,
   Card,
   CardContent,
   Divider,
@@ -22,6 +21,8 @@ import { useRouter } from 'next/navigation';
 import type { FormEvent } from 'react';
 import { useState } from 'react';
 import {
+  MdError as ErrorIcon,
+  MdAnnouncement as AnnouncementIcon,
   MdBuild as MaintenanceIcon,
   MdNewReleases as NewFeatureIcon,
   MdSystemUpdate as UpdateIcon,
@@ -74,6 +75,24 @@ const MESSAGE_TEMPLATES: IMessageTemplate[] = [
     icon: UpdateIcon,
     level: 'urgent',
     roleMin: 'MODERATOR',
+  },
+  {
+    label: 'Problème technique',
+    title: 'Problème technique détecté',
+    message:
+      'Un problème technique a été détecté. Nous travaillons activement à sa résolution.',
+    icon: ErrorIcon,
+    level: 'error',
+    roleMin: 'USER',
+  },
+  {
+    label: 'Annonce générale',
+    title: 'Annonce importante',
+    message:
+      'Voici une annonce générale pour tous les utilisateurs. Veuillez en prendre connaissance.',
+    icon: AnnouncementIcon,
+    level: 'info',
+    roleMin: 'USER',
   },
 ];
 
@@ -141,11 +160,13 @@ export const BroadcastForm = () => {
                 Sélectionnez un modèle prédéfini ou créez une notification
                 personnalisée ci-dessous
               </Typography>
-              <ButtonGroup fullWidth size='small' variant='outlined'>
+              <Stack spacing={2}>
                 {MESSAGE_TEMPLATES.map(template => (
                   <Tooltip key={template.label} title='Utiliser ce modèle'>
                     <Button
+                      fullWidth
                       startIcon={<template.icon />}
+                      variant='outlined'
                       onClick={() =>
                         setFormData({
                           level: template.level,
@@ -159,7 +180,7 @@ export const BroadcastForm = () => {
                     </Button>
                   </Tooltip>
                 ))}
-              </ButtonGroup>
+              </Stack>
             </Stack>
 
             <Divider />

@@ -137,8 +137,8 @@ const GamePage = () => {
         image={game.coverImage || undefined}
         metadata={
           <GameMeta
-            developer={game.developer.name}
-            publisher={game.publisher.name}
+            developer={game.developer}
+            publisher={game.publisher}
             releaseDate={game.releaseDate || undefined}
           />
         }

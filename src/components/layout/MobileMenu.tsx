@@ -68,6 +68,7 @@ export const MobileMenu = () => {
 
   const userNavigation = [
     ...publicNavigation,
+    { icon: <FiBell />, label: 'Notifications', path: '/notifications' },
     { icon: <FiUser />, label: 'Mon profil', path: '/profile' },
   ];
 

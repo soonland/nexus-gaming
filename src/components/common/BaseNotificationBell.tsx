@@ -9,8 +9,9 @@ import {
   CircularProgress,
   Tooltip,
 } from '@mui/material';
+import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
-import { FiBell, FiBarChart } from 'react-icons/fi';
+import { FiBell, FiBarChart, FiExternalLink } from 'react-icons/fi';
 
 import { NotificationIcon } from '@/components/common/NotificationIcon';
 import { isValidNotificationLevel } from '@/lib/notifications';
@@ -101,6 +102,7 @@ export const BaseNotificationBell = ({
   onAction,
 }: IBaseNotificationBellProps) => {
   const theme = useTheme();
+  const router = useRouter();
   const anchorRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
   const [updatingNotificationId, setUpdatingNotificationId] = useState<
@@ -207,28 +209,43 @@ export const BaseNotificationBell = ({
           <>
             <Box sx={styles.header}>
               <Typography variant='h6'>Notifications</Typography>
-              {hasUnreadNotifications && onMarkAllAsRead && (
-                <Tooltip title='Tout marquer comme lu'>
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                {hasUnreadNotifications && onMarkAllAsRead && (
+                  <Tooltip title='Tout marquer comme lu'>
+                    <IconButton
+                      color='primary'
+                      disabled={isMarkingAllAsRead}
+                      size='small'
+                      sx={styles.markAllButton}
+                      onClick={handleMarkAllAsRead}
+                    >
+                      {isMarkingAllAsRead ? (
+                        <CircularProgress size={20} />
+                      ) : (
+                        <FiBarChart
+                          size={20}
+                          style={{
+                            transform: 'rotate(-90deg) scaleY(-1)',
+                          }}
+                        />
+                      )}
+                    </IconButton>
+                  </Tooltip>
+                )}
+                <Tooltip title='Voir toutes les notifications'>
                   <IconButton
                     color='primary'
-                    disabled={isMarkingAllAsRead}
                     size='small'
                     sx={styles.markAllButton}
-                    onClick={handleMarkAllAsRead}
+                    onClick={() => {
+                      setOpen(false);
+                      router.push('/notifications');
+                    }}
                   >
-                    {isMarkingAllAsRead ? (
-                      <CircularProgress size={20} />
-                    ) : (
-                      <FiBarChart
-                        size={20}
-                        style={{
-                          transform: 'rotate(-90deg) scaleY(-1)',
-                        }}
-                      />
-                    )}
+                    <FiExternalLink size={20} />
                   </IconButton>
                 </Tooltip>
-              )}
+              </Box>
             </Box>
             <Stack spacing={2}>
               {notifications.map(notification => (
@@ -291,11 +308,36 @@ export const BaseNotificationBell = ({
                 </Box>
               ))}
             </Stack>
+            <Box sx={{ mt: 2, pt: 2, borderTop: 1, borderColor: 'divider' }}>
+              <Button
+                fullWidth
+                size='small'
+                startIcon={<FiExternalLink />}
+                onClick={() => {
+                  setOpen(false);
+                  router.push('/notifications');
+                }}
+              >
+                Voir toutes les notifications
+              </Button>
+            </Box>
           </>
         ) : (
-          <Typography color='text.secondary' variant='body2'>
-            Aucune notification
-          </Typography>
+          <Box sx={{ textAlign: 'center' }}>
+            <Typography color='text.secondary' sx={{ mb: 2 }} variant='body2'>
+              Aucune notification
+            </Typography>
+            <Button
+              size='small'
+              startIcon={<FiExternalLink />}
+              onClick={() => {
+                setOpen(false);
+                router.push('/notifications');
+              }}
+            >
+              Page notifications
+            </Button>
+          </Box>
         )}
       </Popover>
     </>
