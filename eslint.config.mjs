@@ -192,7 +192,6 @@ export default defineConfig([
   },
   {
     files: ['src/**/*.stories.*'],
-
     rules: {
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
@@ -200,4 +199,10 @@ export default defineConfig([
       'import/order': 'off',
     },
   },
+  {
+    files: ["next-env.d.ts"],
+    rules: {
+      "@typescript-eslint/triple-slash-reference": "off",
+    },
+  }
 ]);
