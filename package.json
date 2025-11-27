@@ -86,7 +86,7 @@
     "husky": "^9.1.7",
     "jsdom": "^26.1.0",
     "lint-staged": "^15.5.1",
-    "playwright": "^1.52.0",
+    "playwright": "^1.56.1",
     "prettier": "^3.5.3",
     "prisma": "^6.8.2",
     "ts-node": "^10.9.2",
