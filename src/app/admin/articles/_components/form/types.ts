@@ -9,11 +9,10 @@ import type {
   IArticleData,
 } from '@/types/api';
 
-export interface IArticleWithRelations
-  extends Omit<
-    IArticleData,
-    'category' | 'games' | 'user' | 'approvalHistory' | 'currentReviewer'
-  > {
+export interface IArticleWithRelations extends Omit<
+  IArticleData,
+  'category' | 'games' | 'user' | 'approvalHistory' | 'currentReviewer'
+> {
   slug: string;
   userId: string;
   currentReviewerId: string | null;
