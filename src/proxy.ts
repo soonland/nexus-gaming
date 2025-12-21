@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/jwt';
 import { canAccessDashboard } from '@/lib/permissions';
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   try {
     // All admin routes start with /admin
     const isAdminRoute = request.nextUrl.pathname.startsWith('/admin');
