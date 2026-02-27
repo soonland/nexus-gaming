@@ -95,8 +95,5 @@
   },
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
-  },
-  "overrides": {
-    "rollup": "4.52.5"
   }
 }
